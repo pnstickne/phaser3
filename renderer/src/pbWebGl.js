@@ -86,6 +86,8 @@ pbWebGl.prototype.initGL = function( canvas )
 		{
 			//this.gl = canvas.getContext( "webgl" );
 			this.gl = canvas.getContext( "webgl", { alpha: false } );
+			if (!this.gl)	// support IE11, lagging behind as usual
+				this.gl = canvas.getContext( "experimental-webgl", { alpha: false } );
 		}
 		catch ( e )
 		{
@@ -327,6 +329,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, image )
 
 	if ( this.currentProgram !== this.imageShaderProgram )
 		this.currentProgram = this.setImageProgram();
+
 	if ( !this.currentTexture || this.currentTexture.image !== image )
 	{
 		this.currentTexture = this.handleTexture( image );
@@ -343,7 +346,9 @@ pbWebGl.prototype.drawImage = function( _x, _y, image )
 	var high = image.height * scale * 0.5 / this.screenHigh2;
 
 	// split off a small part of the big buffer, for a single display object
-	var sa = this.quadArray.subarray(0, 16);
+	// IE uses first index/last index inclusive [http://msdn.microsoft.com/en-us/library/ie/br230723(v=vs.94).aspx], Chrome uses first index/last index exclusive as specified [https://www.khronos.org/registry/typedarray/specs/latest/]
+	var sa = this.quadArray.subarray(0, 15);
+	if (sa.length === 15) sa = this.quadArray.subarray(0, 16);
 
 	var x = _x * this.iWide - 1;
 	var y = -_y * this.iHigh + 1;

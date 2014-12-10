@@ -14,9 +14,8 @@ function pbLoader(callback, context)
 	this.queue = [];
 	this.images = [];
 
-	this.evt = new Event('finished');
+	this.callback = callback;
 	this.context = context;
-	window.addEventListener('finished', function(e) { callback.call(context) }, false);
 
 	console.log("pbLoader c'tor exit");
 }
@@ -47,10 +46,9 @@ pbLoader.prototype.loaded = function(evt)
 	if (i != -1)
 		this.queue.splice(i, 1);
 
+	// loaded all images so the queue is now empty?
 	if (this.queue.length === 0)
-	{
-		window.dispatchEvent(this.evt);
-	}
+		this.callback.call(this.context);
 };
 
 
