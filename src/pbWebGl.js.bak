@@ -1,0 +1,433 @@
+/**
+ *
+ * WebGL wrapper.
+ *
+ */
+
+
+/**
+ * graphicsShaderSources - shaders for graphics primitive drawing
+ * @type {Array}
+ */
+var graphicsShaderSources = {
+	fragment:
+		"  precision mediump float;" +
+		"  varying vec4 vColor;" +
+		"  void main(void) {" +
+		"    gl_FragColor = vColor;" +
+		"  }",
+
+	vertex:
+		"  uniform vec2 resolution;" +
+		"  attribute vec2 position;" +
+		"  attribute vec4 color;" +
+		"  varying vec4 vColor;" +
+		"  void main(void) {" +
+		"    vec2 zeroToOne = position / resolution;" +
+		"    vec2 zeroToTwo = zeroToOne * 2.0;" +
+		"    vec2 clipSpace = zeroToTwo - 1.0;" +
+		"    gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);" +
+		"    vColor = color;" +
+		"  }"
+};
+
+
+/**
+ * imageShaderSources - shaders for image drawing
+ * @type {Array}
+ */
+var imageShaderSources = {
+	fragment: "  precision mediump float;" +
+		"  uniform sampler2D imageSampler;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    gl_FragColor = texture2D(imageSampler, vTexCoord);" +
+		"  }",
+
+	vertex: "  uniform vec2 resolution;" +
+		"  attribute vec2 position;" +
+		"  attribute vec2 texCoord;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    vTexCoord = texCoord;" +
+		"    vec2 zeroToOne = position / resolution;" +
+		"    vec2 zeroToTwo = zeroToOne * 2.0;" +
+		"    vec2 clipSpace = zeroToTwo - 1.0;" +
+		"    gl_Position.zw = vec2(0, 1);" +
+		"    gl_Position.xy = clipSpace * vec2(1, -1);" +
+		"  }"
+};
+
+
+
+function pbWebGl()
+{
+	console.log( "pbWebGl c'tor" );
+	this.gl = null;
+	this.graphicsShaderProgram = null;
+	this.bgVertexBuffer = null;
+	this.bgColorBuffer = null;
+	this.currentProgram = null;
+	this.currentTexture = null;
+}
+
+
+pbWebGl.prototype.initGL = function( canvas )
+{
+	// https://www.khronos.org/webgl/wiki/FAQ
+	if ( window.WebGLRenderingContext )
+	{
+		console.log( "pbWebGl.initGl" );
+		try
+		{
+			//this.gl = canvas.getContext( "webgl" );
+			this.gl = canvas.getContext( "webgl", { alpha: false } );
+		}
+		catch ( e )
+		{
+			alert( "WebGL initialisation error: ", e.message );
+			return null;
+		}
+
+		// if this version can't use textures, it's useless to us
+		var numTexturesAvailableInVertexShader = this.gl.getParameter( this.gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS );
+		if ( numTexturesAvailableInVertexShader === 0 )
+		{
+			this.gl = null;
+			return null;
+		}
+
+		this.graphicsShaderProgram = this.initShaders( this.gl, graphicsShaderSources );
+		this.imageShaderProgram = this.initShaders( this.gl, imageShaderSources );
+		this.positionBuffer = this.gl.createBuffer();
+
+		// clear the render area to a dim red (so I can tell when webgl breaks)
+		this.gl.clearColor( 0.2, 0.0, 0.0, 1.0 );
+
+		//this.gl.enable( this.gl.DEPTH_TEST );
+
+		this.fillRect( 0, 0, 640, 480,
+		{
+			r: 0,
+			g: 0.2,
+			b: 0,
+			a: 1
+		} );
+		return this.gl;
+	}
+	return null;
+};
+
+
+pbWebGl.prototype._getShader = function( gl, sources, typeString )
+{
+	// work out which type it is
+	var type;
+	switch ( typeString )
+	{
+		case "fragment":
+			type = gl.FRAGMENT_SHADER;
+			break;
+		case "vertex":
+			type = gl.VERTEX_SHADER;
+			break;
+		default:
+			alert( "Unrecognised shader type: " + typeString );
+			return null;
+	}
+
+	// create the correct shader type
+	var shader = gl.createShader( type );
+
+	// provide the shader source
+	var source = sources[ typeString ];
+	gl.shaderSource( shader, source );
+
+	// compile the shader (and check for errors)
+	gl.compileShader( shader );
+	var status = gl.getShaderParameter( shader, gl.COMPILE_STATUS );
+	if ( !status )
+	{
+		alert( "Shader compile error: " + gl.getShaderInfoLog( shader ) + "\n(" + typeString + ")" );
+		gl.deleteShader( shader );
+		return null;
+	}
+
+	return shader;
+};
+
+
+// originally from http://learningwebgl.com/
+pbWebGl.prototype.initShaders = function( gl, graphicsShaderSources )
+{
+	console.log( "pbWebGl.initShaders" );
+
+	// create an empty shader program
+	var program = gl.createProgram();
+
+	// get the fragment shader and attach it to the program
+	var fragmentShader = this._getShader( gl, graphicsShaderSources, "fragment" );
+	gl.attachShader( program, fragmentShader );
+
+	// get the vertex shader and attach it to the program
+	var vertexShader = this._getShader( gl, graphicsShaderSources, "vertex" );
+	gl.attachShader( program, vertexShader );
+
+	// link the attached shaders to the program
+	gl.linkProgram( program );
+	if ( !gl.getProgramParameter( program, gl.LINK_STATUS ) )
+	{
+		alert( "Could not initialise shaders: ", gl.getProgramInfoLog( program ) );
+		gl.deleteProgram( program );
+		program = null;
+		return null;
+	}
+	return program;
+};
+
+
+pbWebGl.prototype.setGraphicsProgram = function()
+{
+	console.log( "pbWebGl.setGraphicsProgram" );
+
+	var program = this.graphicsShaderProgram;
+	var gl = this.gl;
+
+	// set the shader program
+	gl.useProgram( program );
+
+	// remember location of shader attribute variables
+	program.resolution = gl.getUniformLocation( program, "resolution" );
+
+	program.position = gl.getAttribLocation( program, "position" );
+	gl.enableVertexAttribArray( program.position );
+
+	program.color = gl.getAttribLocation( program, "color" );
+	gl.enableVertexAttribArray( program.color );
+
+	return program;
+};
+
+
+pbWebGl.prototype.setImageProgram = function()
+{
+	console.log( "pbWebGl.setImageProgram" );
+
+	var program = this.imageShaderProgram;
+	var gl = this.gl;
+
+	// set the shader program
+	gl.useProgram( program );
+
+	// remember location of shader attribute variables
+	program.resolution = gl.getUniformLocation( program, "resolution" );
+
+	program.position = gl.getAttribLocation( program, "position" );
+	gl.enableVertexAttribArray( program.position );
+
+	program.texCoord = gl.getAttribLocation( program, "texCoord" );
+
+	this.currentTexture = null;
+
+	return program;
+};
+
+
+pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
+{
+	console.log( "pbWebGl.fillRect" );
+
+	var program = this.graphicsShaderProgram;
+	var gl = this.gl;
+
+	if ( this.currentProgram !== program )
+		this.currentProgram = this.setGraphicsProgram();
+
+	var x2 = x + wide;
+	var y2 = y + high;
+	var vertices =
+	[
+         x, y,
+         x2, y,
+         x, y2,
+         x2, y2
+    ];
+
+	this.bgVertexBuffer = gl.createBuffer();
+	this.bgVertexBuffer.numPoints = 4;
+	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgVertexBuffer );
+	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( vertices ), gl.STATIC_DRAW );
+
+	var colors =
+	[
+		color.r, color.g, color.b, color.a,
+		color.r, color.g, color.b, color.a,
+		color.r, color.g, color.b, color.a,
+		color.r, color.g, color.b, color.a
+	];
+
+	this.bgColorBuffer = gl.createBuffer();
+	this.bgColorBuffer.numPoints = 4;
+	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgColorBuffer );
+	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( colors ), gl.STATIC_DRAW );
+
+	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgVertexBuffer );
+	gl.vertexAttribPointer( program.position, 2, gl.FLOAT, gl.FALSE, 0, 0 );
+
+	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgColorBuffer );
+	gl.vertexAttribPointer( program.color, 4, gl.FLOAT, gl.FALSE, 0, 0 );
+
+	gl.drawArrays( gl.TRIANGLE_STRIP, 0, this.bgVertexBuffer.numPoints );
+};
+
+
+pbWebGl.prototype.handleTexture = function( image, program )
+{
+	var gl = this.gl;
+
+	console.log( "pbWebGl.handleTexture" );
+
+	// create the VBO
+	var vertices = new Float32Array( [
+	 				0.0, 0.0,
+	 				1.0, 0.0,
+	 				0.0, 1.0,
+	 				1.0, 1.0
+					] );
+	var vboID = gl.createBuffer();
+	gl.bindBuffer( gl.ARRAY_BUFFER, vboID );
+	gl.bufferData( gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW );
+
+	// point the texture coordinate attribute at the VBO
+	gl.vertexAttribPointer( program.texCoord, 2, gl.FLOAT, false, 0, 0 );
+	gl.enableVertexAttribArray( program.texCoord );
+	
+	// create the IBO
+	var indices = new Uint16Array( [
+					0, 1, 2, 2, 1, 3
+					] );
+	var iboID = gl.createBuffer();
+	gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, iboID );
+	gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW );
+
+	// create the texture from image
+	var texture = gl.createTexture();
+	gl.bindTexture( gl.TEXTURE_2D, texture );
+	gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image );
+
+	gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+	gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
+	gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+	gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+
+	// create and bind a buffer for drawImage to use for the screen drawing positions
+	var drawPosBuffer = gl.createBuffer();
+	gl.bindBuffer( gl.ARRAY_BUFFER, drawPosBuffer );
+
+	// point the screen position coordinate attribute at the drawing positions buffer
+	gl.vertexAttribPointer( program.position, 2, gl.FLOAT, false, 0, 0 );
+	gl.enableVertexAttribArray( program.position );
+
+	this.currentTexture = image;
+};
+
+
+pbWebGl.prototype.drawImage = function( x, y, image )
+{
+	var gl = this.gl;
+
+	if ( this.currentProgram !== this.imageShaderProgram )
+		this.currentProgram = this.setImageProgram();
+	if ( this.currentTexture !== image )
+		this.handleTexture( image, this.imageShaderProgram );
+
+	// two triangles in a strip to make the rectangle draw area
+	// using buffer pre-created in handleTexture
+	var r = x + image.width;
+	var b = y + image.height;
+	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( [
+         x, y,
+         r, y,
+         x, b,
+         x, b,
+         r, y,
+         r, b
+        ] ), gl.STATIC_DRAW );
+
+	// draw
+	gl.drawElements( gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0 );
+};
+
+
+pbWebGl.prototype.batchDrawImages = function( list, image )
+{
+	var gl = this.gl;
+
+	if ( this.currentProgram !== this.imageShaderProgram )
+		this.currentProgram = this.setImageProgram();
+
+	var l = list.length;
+	var quadArray = new Float32Array( l * 16 );
+
+	for ( var i = 0, c = 0; i < l; i++, c += 16 )
+	{
+		var x = list[ i ].x;
+		var y = list[ i ].y;
+		var r = x + image.width;
+		var b = y + image.height;
+
+		// screen destination position
+		// x, y,		0,1
+		// r, y,		4,5
+		// x, b,		8,9
+		// r, b,		12,13
+
+		quadArray[ c + 0 ] = quadArray[ c + 8 ] = x;
+		quadArray[ c + 1 ] = quadArray[ c + 5 ] = y;
+		quadArray[ c + 4 ] = quadArray[ c + 12] = r;
+		quadArray[ c + 9 ] = quadArray[ c + 13] = b;
+
+		// texture source position
+		// 0, 0,		2,3
+		// 1, 0,		6,7
+		// 0, 1,		10,11
+		// 1, 1,		14,15
+		quadArray[ c + 2 ] = quadArray[ c + 10 ] = 0;
+		quadArray[ c + 3 ] = quadArray[ c + 7 ] = 0;
+		quadArray[ c + 6 ] = quadArray[ c + 14 ] = 1;
+		quadArray[ c + 11] = quadArray[ c + 15 ] = 1;
+	}
+
+	// create the texture from image
+	var texture = gl.createTexture();
+    gl.activeTexture( gl.TEXTURE0 );
+   	gl.bindTexture( gl.TEXTURE_2D, texture );
+	gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image );
+	gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+	gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
+	gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+	gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, quadArray, gl.STREAM_DRAW);
+    this.positionBuffer.itemSize = 4;
+    this.positionBuffer.numItems = quadArray.length / this.positionBuffer.itemSize;
+    gl.vertexAttribPointer(this.imageShaderProgram.position, this.positionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.positionBuffer.numItems);
+};
+
+
+pbWebGl.prototype.preRender = function()
+{
+	// clear the viewport
+	this.gl.viewport( 0, 0, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight );
+	this.gl.clear( this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT );
+
+	// set blending mode
+	this.gl.blendFunc( this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA );
+	this.gl.enable( this.gl.BLEND );
+
+	this.gl.uniform2f( this.currentProgram.resolution, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight );
+};
+

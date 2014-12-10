@@ -1,0 +1,5 @@
+/**
+ *
+ * A complete raw texture.
+ * 
+ */
