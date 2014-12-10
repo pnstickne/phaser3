@@ -58,7 +58,7 @@ var imageShaderSources = {
 };
 
 
-var MAX_SPRITES = 100000;
+var MAX_SPRITES = 200000;
 
 
 function pbWebGl()
@@ -108,6 +108,15 @@ pbWebGl.prototype.initGL = function( canvas )
 		// clear the render area to a dim red (so I can tell when webgl breaks)
 		this.gl.clearColor( 0.2, 0.0, 0.0, 1.0 );
 		this.gl.clearDepth( 1.0 );
+
+		// precalculate the drawing buffer's half-width and height values
+		this.screenWide2 = this.gl.drawingBufferWidth * 0.5;
+		this.screenHigh2 = this.gl.drawingBufferHeight * 0.5;
+		// calculate inverse to avoid division in loop
+		this.iWide = 1.0 / this.screenWide2;
+		this.iHigh = 1.0 / this.screenHigh2;
+
+
 		return this.gl;
 	}
 	return null;
@@ -329,22 +338,15 @@ pbWebGl.prototype.drawImage = function( _x, _y, image )
 	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
 	}
 
-	var screenWide2 = gl.drawingBufferWidth * 0.5;
-	var screenHigh2 = gl.drawingBufferHeight * 0.5;
-
-	// calculate inverse to avoid division in loop
-	var iWide = 1.0 / screenWide2;
-	var iHigh = 1.0 / screenHigh2;
-
 	var scale = 1.0;
-	var wide = image.width * scale * 0.5 / screenWide2;
-	var high = image.height * scale * 0.5 / screenHigh2;
+	var wide = image.width * scale * 0.5 / this.screenWide2;
+	var high = image.height * scale * 0.5 / this.screenHigh2;
 
-	// create a new small buffer for a single display object
-	var qa = new Float32Array(16);
+	// split off a small part of the big buffer, for a single display object
+	var sa = this.quadArray.subarray(0, 16);
 
-	var x = _x * iWide - 1;
-	var y = -_y * iHigh + 1;
+	var x = _x * this.iWide - 1;
+	var y = -_y * this.iHigh + 1;
 	var l = x - wide;
 	var b = y + high;
 
@@ -354,22 +356,22 @@ pbWebGl.prototype.drawImage = function( _x, _y, image )
 	// r, b,		8,9
 	// r, t,		12,13
 
-	qa[ 0 ] = qa[ 4 ] = l;
-	qa[ 1 ] = qa[ 9 ] = b;
-	qa[ 8 ] = qa[ 12] = x + wide;
-	qa[ 5 ] = qa[ 13] = y - high;
+	sa[ 0 ] = sa[ 4 ] = l;
+	sa[ 1 ] = sa[ 9 ] = b;
+	sa[ 8 ] = sa[ 12] = x + wide;
+	sa[ 5 ] = sa[ 13] = y - high;
 
 	// texture source position
 	// 0, 0,		2,3
 	// 0, 1,		6,7
 	// 1, 0,		10,11
 	// 1, 1,		14,15
-	qa[ 2 ] = qa[ 6] = qa[ 3 ] = qa[ 11] = 0;
-	qa[ 10] = qa[ 14] = qa[ 7 ] = qa[ 15] = 1;
+	sa[ 2 ] = sa[ 6 ] = sa[ 3 ] = sa[ 11] = 0;
+	sa[ 10] = sa[ 14] = sa[ 7 ] = sa[ 15] = 1;
 
-    gl.bufferData( gl.ARRAY_BUFFER, qa, gl.STATIC_DRAW );
+    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
     this.positionBuffer.itemSize = 4;
-    this.positionBuffer.numItems = 16 / this.positionBuffer.itemSize;
+    this.positionBuffer.numItems = sa.length / this.positionBuffer.itemSize;
     gl.vertexAttribPointer( this.imageShaderProgram.position, this.positionBuffer.itemSize, gl.FLOAT, false, 0, 0 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.positionBuffer.numItems);
@@ -393,31 +395,24 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 		this.positionBuffer = this.gl.createBuffer();
 	}
 
-	var screenWide2 = gl.drawingBufferWidth * 0.5;
-	var screenHigh2 = gl.drawingBufferHeight * 0.5;
-
-	// calculate inverse to avoid division in loop
-	var iWide = 1.0 / screenWide2;
-	var iHigh = 1.0 / screenHigh2;
-
 	// TODO: generate warning if length is capped
 	var len = Math.min(list.length, MAX_SPRITES);
 
-	var scale = 0.10;	// make them smaller so we can see the difference between 5000 and 10000
-	var wide = image.width * scale * 0.5 / screenWide2;
-	var high = image.height * scale * 0.5 / screenHigh2;
+	var scale = 1.0;	// make them smaller so we can see the difference between 5000 and 10000
+	var wide = image.width * scale * 0.5 / this.screenWide2;
+	var high = image.height * scale * 0.5 / this.screenHigh2;
 
 	var old_t;
 	var old_r;
 
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
-	var qa = this.quadArray;
+    var qa = this.quadArray.subarray(0, len * 24 - 8);
 
 	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
 	for ( var i = -1, c = 0; ++i < len; c += 16 )
 	{
-		var x = list[ i ].x * iWide - 1;
-		var y = 1 - list[ i ].y * iHigh;
+		var x = list[ i ].x * this.iWide - 1;
+		var y = 1 - list[ i ].y * this.iHigh;
 		var l = x - wide;
 		var b = y + high;
 
@@ -456,9 +451,9 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, qa, gl.STREAM_DRAW );
+    gl.bufferData( gl.ARRAY_BUFFER, qa, gl.STATIC_DRAW );
     this.positionBuffer.itemSize = 4;
-    this.positionBuffer.numItems = (len * 24 - 8) / this.positionBuffer.itemSize;		// -8 because the last one isn't followed by a degenerate point pair
+    this.positionBuffer.numItems = qa.length / this.positionBuffer.itemSize;		// -8 because the last one isn't followed by a degenerate point pair
     gl.vertexAttribPointer( this.imageShaderProgram.position, this.positionBuffer.itemSize, gl.FLOAT, false, 0, 0 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.positionBuffer.numItems);

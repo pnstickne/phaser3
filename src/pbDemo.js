@@ -9,12 +9,14 @@
 
 
 
+var frameCount = 0;
 
 
 // created while the data is loading (preloader)
 function pbDemo( docId )
 {
 	console.log( "pbDemo c'tor entry" );
+
 	var _this = this;
 
 	this.docId = docId;
@@ -24,8 +26,9 @@ function pbDemo( docId )
 	// dat.GUI controlled variables and callbacks
 	this.useBatch = false;
 	this.numBalls = 200;
+	this.growthRate = 50;
 	var gui = new dat.GUI();
-	var numCtrl = gui.add(this, "numBalls").min(0).max(100000).step(100);
+	var numCtrl = gui.add(this, "numBalls").min(0).max(MAX_SPRITES).step(250).listen();
 	numCtrl.onFinishChange(function(value) { _this.restart(); });
 	var btcCtrl = gui.add(this, "useBatch");
 	btcCtrl.onFinishChange(function(value) { if (!value) _this.numBalls = 200; _this.restart(); });
@@ -47,6 +50,7 @@ function pbDemo( docId )
 pbDemo.prototype.loaded = function()
 {
 	console.log( "pbDemo.loaded" );
+
 	if ( this.bootFlag )
 	{
 		this.renderer = new pbRenderer( this.docId, this.update, this );
@@ -59,6 +63,7 @@ pbDemo.prototype.loaded = function()
 pbDemo.prototype.boot = function()
 {
 	console.log( "pbDemo.boot" );
+
 	if ( this.loadFlag )
 	{
 		this.renderer = new pbRenderer( this.docId, this.update, this );
@@ -78,8 +83,16 @@ pbDemo.prototype.init = function()
 
 pbDemo.prototype.create = function()
 {
+	console.log("pbDemo.create");
+
 	this.spriteList = [];
-	for ( var i = 0; i < this.numBalls; i++ )
+	this.addBalls(this.numBalls);
+};
+
+
+pbDemo.prototype.addBalls = function(num)
+{
+	for( var i = 0; i < num; i++ )
 	{
 		var x = Math.random() * 640;
 		var y = Math.random() * 480;
@@ -92,11 +105,24 @@ pbDemo.prototype.create = function()
 			img: this.loader.getImage( this.imgBall )
 		} );
 	}
+	this.numBalls = this.spriteList.length;
+};
+
+
+pbDemo.prototype.removeBalls = function(num)
+{
+	for( var i = 0; i < num; i++ )
+	{
+		this.spriteList.pop();
+	}
+	this.numBalls = this.spriteList.length;
 };
 
 
 pbDemo.prototype.destroy = function()
 {
+	console.log("pbDemo.destroy");
+
 	this.spriteList = null;
 	this.renderer.graphics.reset();
 };
@@ -104,6 +130,8 @@ pbDemo.prototype.destroy = function()
 
 pbDemo.prototype.restart = function()
 {
+	console.log("pbDemo.restart");
+	
 	this.destroy();
 	this.create();
 };
@@ -111,6 +139,8 @@ pbDemo.prototype.restart = function()
 
 pbDemo.prototype.update = function()
 {
+	frameCount++;
+
 	// bouncing balls!
 	var list = this.spriteList;
 	if (list)
@@ -130,6 +160,20 @@ pbDemo.prototype.update = function()
 		// TODO: send a spriteSheet and animate from within it
 		if (this.useBatch)
 			this.renderer.graphics.batchDrawImages( this.spriteList, this.spriteList[ 0 ].img );
+	}
+
+	if ((frameCount & 63) === 0)
+	{
+		if (fps > 55)
+		{
+			this.addBalls(this.growthRate);
+			this.growthRate += 100;
+		}
+		if (fps > 0 && fps < 50)
+		{
+			this.removeBalls(200);
+			this.growthRate = 50;
+		}
 	}
 
 	// show fps with a moving white square's vertical position (and confirm that the shader programs can switch from 'image' to 'graphics')

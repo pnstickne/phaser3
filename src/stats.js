@@ -2,12 +2,16 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
+var fps = 0;
+
+
 var Stats = function () {
 
 	var startTime = Date.now(), prevTime = startTime;
 	var ms = 0, msMin = Infinity, msMax = 0;
-	var fps = 0, fpsMin = Infinity, fpsMax = 0;
+	var fpsMin = Infinity, fpsMax = 0;
 	var frames = 0, mode = 0;
+	fps = 0;
 
 	var container = document.createElement( 'div' );
 	container.id = 'stats';
