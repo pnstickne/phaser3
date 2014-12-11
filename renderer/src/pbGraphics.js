@@ -67,14 +67,14 @@ pbGraphics.prototype.fillRect = function(param0, y, width, height)
 };
 
 
-pbGraphics.prototype.drawImage = function(x, y, image, angle)
+pbGraphics.prototype.drawImage = function(x, y, image, angle, scale)
 {
 	switch(renderer)
 	{
 		case "canvas":
 			break;
 		case "webgl":
-			webGl.drawImage(x, y, image, angle);
+			webGl.drawImage(x, y, image, angle, scale);
 			break;
 	}
 };

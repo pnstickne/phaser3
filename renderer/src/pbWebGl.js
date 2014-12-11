@@ -8,7 +8,7 @@
 
 
 /**
- * imageShaderSources - shaders for image drawing
+ * imageShaderSources - shaders for image drawing including matrix transforms for scalex,scaley, rotation and translation
  * @type {Array}
  */
 var imageShaderSources = {
@@ -33,7 +33,7 @@ var imageShaderSources = {
 
 
 /**
- * batchImageShaderSources - shaders for batch image drawing
+ * batchImageShaderSources - shaders for batch image drawing (fixed orientation and scale)
  * @type {Array}
  */
 var batchImageShaderSources = {
@@ -369,7 +369,7 @@ pbWebGl.prototype.handleTexture = function( image )
 };
 
 
-pbWebGl.prototype.drawImage = function( _x, _y, image, angle )
+pbWebGl.prototype.drawImage = function( _x, _y, image, angle, scale )
 {
 	var gl = this.gl;
 
@@ -423,7 +423,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, image, angle )
 	// TODO: most of these are semi-static, cache them
 	var translationMatrix = pbMatrix.makeTranslation(_x, _y);
 	var rotationMatrix = pbMatrix.makeRotation(angle);
-	var scaleMatrix = pbMatrix.makeScale(1.0, 1.0);
+	var scaleMatrix = pbMatrix.makeScale(scale, scale);
 
 	var matrix = pbMatrix.fastMultiply(scaleMatrix, rotationMatrix);
 	matrix = pbMatrix.fastMultiply(matrix, translationMatrix);

@@ -104,7 +104,9 @@ pbDemo.prototype.addBalls = function(num)
 			vx: Math.random() * 4 - 2,
 			vy: Math.random() * 4 - 2,
 			img: this.loader.getImage( this.imgBall ),
-			angle: 0
+			angle: 0,
+			scale: 0.1,
+			scaleDir: 0.05
 		} );
 	}
 	this.numBalls = this.spriteList.length;
@@ -149,8 +151,10 @@ pbDemo.prototype.update = function()
 	{
 		for ( var i = -1, l = list.length; ++i < l; )
 		{
-			// rotate at 1 degree per update
-			list[i].angle += Math.PI / 180.0;
+			list[i].angle += 2 * Math.PI / 180.0;
+			list[i].scale += list[i].scaleDir;
+			if (list[i].scale < 0.1) list[i].scaleDir = Math.abs(list[i].scaleDir);
+			if (list[i].scale > 2.0) list[i].scaleDir = -Math.abs(list[i].scaleDir);
 
 			list[ i ].x += list[ i ].vx;
 			if ( list[ i ].x < 0 || list[ i ].x > 640 ) list[ i ].vx *= -1;
@@ -158,7 +162,7 @@ pbDemo.prototype.update = function()
 			if ( list[ i ].y < 0 || list[ i ].y > 480 ) list[ i ].vy *= -1;
 
 			if (!this.useBatch)
-				this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].img, list[ i ].angle );
+				this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].img, list[ i ].angle, list[i].scale );
 		}
 		
 		// batch draw them all with a single image texture
