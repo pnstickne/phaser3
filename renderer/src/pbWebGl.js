@@ -59,6 +59,32 @@ var graphicsShaderSources = {
 };
 
 
+/**
+ * imageShaderSources - shaders for batch image drawing
+ * @type {Array}
+ */
+var batchImageShaderSources = {
+	fragment:
+		"  precision mediump float;" +
+		"  uniform sampler2D imageSampler;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    vec4 col;" +
+		"    col = texture2D(imageSampler, vTexCoord);" +
+		"    gl_FragColor = col;" +
+		"  }",
+
+	vertex:
+		"  attribute vec4 position;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    gl_Position.zw = vec2(1, 1);" +
+		"    gl_Position.xy = position.xy;" +
+		"    vTexCoord = position.zw;" +
+		"  }"
+};
+
+
 var MAX_SPRITES = 200000;
 
 
@@ -107,6 +133,7 @@ pbWebGl.prototype.initGL = function( canvas )
 		// create the shader programs for each drawing mode
 		this.graphicsShaderProgram = this.initShaders( this.gl, graphicsShaderSources );
 		this.imageShaderProgram = this.initShaders( this.gl, imageShaderSources );
+		this.batchImageShaderProgram = this.initShaders( this.gl, batchImageShaderSources );
 
 		// clear the render area to a dim red (so I can tell when webgl breaks)
 		this.gl.clearColor( 0.2, 0.0, 0.0, 1.0 );
@@ -239,6 +266,26 @@ pbWebGl.prototype.setImageProgram = function()
 	program.samplerUniform = gl.getUniformLocation( program, "uImageSampler" );
 	program.matrixUniform = gl.getUniformLocation( program, "uModelMatrix" );
 	program.projectionUniform = gl.getUniformLocation( program, "uProjectionMatrix" );
+
+	this.currentTexture = null;
+
+	return program;
+};
+
+
+pbWebGl.prototype.setBatchImageProgram = function()
+{
+	console.log( "pbWebGl.setBatchImageProgram" );
+
+	var program = this.batchImageShaderProgram;
+	var gl = this.gl;
+
+	gl.useProgram( program );
+
+	program.position = gl.getAttribLocation( program, "position" );
+	gl.enableVertexAttribArray( program.position );
+
+	program.samplerUniform = gl.getUniformLocation( program, "imageSampler" );
 
 	this.currentTexture = null;
 
@@ -395,90 +442,81 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 {
 	var gl = this.gl;
 
-	if ( this.currentProgram !== this.imageShaderProgram )
-		this.currentProgram = this.setImageProgram();
+	if ( this.currentProgram !== this.batchImageShaderProgram )
+		this.currentProgram = this.setBatchImageProgram();
 
 	if ( !this.currentTexture || this.currentTexture.image !== image )
 	{
-		// prepare the texture
 		this.currentTexture = this.handleTexture( image );
 	    gl.activeTexture( gl.TEXTURE0 );
 	   	gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
-	   	gl.uniform1i( this.imageShaderProgram.samplerUniform, 0 );
-
+	   	gl.uniform1i( this.batchImageShaderProgram.samplerUniform, 0 );
 		// create a buffer to transfer all the vertex position data through
 		this.positionBuffer = this.gl.createBuffer();
-	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
-
-		// set up the projection matrix in the vertex shader
-		gl.uniformMatrix3fv( this.imageShaderProgram.projectionUniform, false, pbMatrix.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
-
-		// TODO: generate warning if length is capped
-		var len = Math.min(list.length, MAX_SPRITES);
-
-		var wide = image.width * 0.5;
-		var high = image.height * 0.5;
-
-		var old_t;
-		var old_r;
-
-		// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
-	    var da = this.drawingArray.subarray(0, len * 24 - 8);
-
-		// weird loop speed-up (http://www.paulirish.com/i/d9f0.png)
-		for ( var i = -1, c = 0; ++i < len; c += 16 )
-		{
-			if ( i > 0 )
-			{
-				// degenerate triangle: repeat the last vertex
-				da[ c     ] = old_r;
-				da[ c + 1 ] = old_t;
-			 	// repeat the next vertex
-				da[ c + 4 ] = l;
-			 	da[ c + 5 ] = b;
-			 	// texture coordinates are unused
-				//da[ c + 2 ] = da[ c + 3 ] = da[ c + 6 ] = da[ c + 7 ] = 0;
-				c += 8;
-			}
-
-			// screen destination position
-			// l, b,		0,1
-			// l, t,		4,5
-			// r, b,		8,9
-			// r, t,		12,13
-
-			da[ c     ] = da[ c + 4 ] = -wide;
-			da[ c + 1 ] = da[ c + 9 ] =  high;
-			da[ c + 8 ] = da[ c + 12] =  wide;
-			da[ c + 5 ] = da[ c + 13] = -high;
-
-			// texture source position
-			// 0, 0,		2,3
-			// 0, 1,		6,7
-			// 1, 0,		10,11
-			// 1, 1,		14,15
-			da[ c + 2 ] = da[ c + 6] = da[ c + 3 ] = da[ c + 11] = 0;
-			da[ c + 10] = da[ c + 14] = da[ c + 7 ] = da[ c + 15] = 1;
-		}
-
-	    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
-	    this.positionBuffer.itemSize = 4;
-	    this.positionBuffer.numItems = sa.length / this.positionBuffer.itemSize;
 	}
 
+	// TODO: generate warning if length is capped
+	var len = Math.min(list.length, MAX_SPRITES);
+
+	var scale = 1.0;	// make them smaller so we can see the difference between 5000 and 10000
+	var wide = image.width * scale * 0.5 / this.screenWide2;
+	var high = image.height * scale * 0.5 / this.screenHigh2;
+
+	var old_t;
+	var old_r;
+
+	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
+    var qa = this.drawingArray.subarray(0, len * 24 - 8);
+
+	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
 	for ( var i = -1, c = 0; ++i < len; c += 16 )
 	{
-		var translationMatrix = pbMatrix.makeTranslation(_x, _y);
-		var rotationMatrix = pbMatrix.makeRotation(angle);
-		var scaleMatrix = pbMatrix.makeScale(1.0, 1.0);
-		var matrix = pbMatrix.fastMultiply(scaleMatrix, rotationMatrix);
-		matrix = pbMatrix.fastMultiply(matrix, translationMatrix);
-		// send the matrix to the vector shader
-		gl.uniformMatrix3fv( this.imageShaderProgram.matrixUniform, false, matrix );
+		var x = list[ i ].x * this.iWide - 1;
+		var y = 1 - list[ i ].y * this.iHigh;
+		var l = x - wide;
+		var b = y + high;
+
+		if ( i > 0 )
+		{
+			// degenerate triangle: repeat the last vertex
+			qa[ c     ] = old_r;
+			qa[ c + 1 ] = old_t;
+		 	// repeat the next vertex
+			qa[ c + 4 ] = l;
+		 	qa[ c + 5 ] = b;
+		 	// texture coordinates are unused
+			//qa[ c + 2 ] = qa[ c + 3 ] = qa[ c + 6 ] = qa[ c + 7 ] = 0;
+			c += 8;
+		}
+
+		// screen destination position
+		// l, b,		0,1
+		// l, t,		4,5
+		// r, b,		8,9
+		// r, t,		12,13
+
+		qa[ c     ] = qa[ c + 4 ] = l;
+		qa[ c + 1 ] = qa[ c + 9 ] = b;
+		qa[ c + 8 ] = qa[ c + 12] = old_r = x + wide;
+		qa[ c + 5 ] = qa[ c + 13] = old_t = y - high;
+
+		// texture source position
+		// 0, 0,		2,3
+		// 0, 1,		6,7
+		// 1, 0,		10,11
+		// 1, 1,		14,15
+		qa[ c + 2 ] = qa[ c + 6] = qa[ c + 3 ] = qa[ c + 11] = 0;
+		qa[ c + 10] = qa[ c + 14] = qa[ c + 7 ] = qa[ c + 15] = 1;
 	}
 
-    gl.vertexAttribPointer( this.imageShaderProgram.aPosition, this.positionBuffer.itemSize, gl.FLOAT, false, 0, 0 );
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, qa, gl.STATIC_DRAW );
+    this.positionBuffer.itemSize = 4;
+    this.positionBuffer.numItems = qa.length / this.positionBuffer.itemSize;		// -8 because the last one isn't followed by a degenerate point pair
+    gl.vertexAttribPointer( this.batchImageShaderProgram.position, this.positionBuffer.itemSize, gl.FLOAT, false, 0, 0 );
+
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.positionBuffer.numItems);
+
     gl.bindBuffer( gl.ARRAY_BUFFER, null );
 };
 
