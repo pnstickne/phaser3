@@ -425,7 +425,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, image, angle, scale )
 	var rotationMatrix = pbMatrix.makeRotation(angle);
 	var scaleMatrix = pbMatrix.makeScale(scale, scale);
 
-	var matrix = pbMatrix.fastMultiply(scaleMatrix, rotationMatrix);
+	var matrix = pbMatrix.fastMultiply(rotationMatrix, scaleMatrix);
 	matrix = pbMatrix.fastMultiply(matrix, translationMatrix);
 
 	// send the matrix to the vector shader

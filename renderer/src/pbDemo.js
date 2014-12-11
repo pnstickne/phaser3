@@ -25,7 +25,7 @@ function pbDemo( docId )
 
 	// dat.GUI controlled variables and callbacks
 	this.useBatch = false;
-	this.numBalls = 3;
+	this.numBalls = 10;
 	this.growthRate = 50;
 	var gui = new dat.GUI();
 	var numCtrl = gui.add(this, "numBalls").min(0).max(MAX_SPRITES).step(250).listen();
