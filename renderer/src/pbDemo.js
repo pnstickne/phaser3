@@ -24,8 +24,8 @@ function pbDemo( docId )
 	this.bootFlag = false;
 
 	// dat.GUI controlled variables and callbacks
-	this.useBatch = false;
-	this.numBalls = 10;
+	this.useBatch = true;
+	this.numBalls = 1;
 	this.growthRate = 50;
 	var gui = new dat.GUI();
 	var numCtrl = gui.add(this, "numBalls").min(0).max(MAX_SPRITES).step(250).listen();
