@@ -25,7 +25,7 @@ function pbDemo( docId )
 
 	// dat.GUI controlled variables and callbacks
 	this.useBatch = false;
-	this.numBalls = 200;
+	this.numBalls = 3;
 	this.growthRate = 50;
 	var gui = new dat.GUI();
 	var numCtrl = gui.add(this, "numBalls").min(0).max(MAX_SPRITES).step(250).listen();
@@ -35,6 +35,7 @@ function pbDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.loaded, this );
+//	this.imgBall = this.loader.loadImage( "../img/pete64.png" );
 	this.imgBall = this.loader.loadImage( "../img/sphere3.png" );
 
 	// callback for when the loading is complete (shouldn't happen until all the pbLoader stuff has finished, but pbLoader callback makes it bullet-proof - may be unnecessary)
@@ -102,7 +103,8 @@ pbDemo.prototype.addBalls = function(num)
 			y: y,
 			vx: Math.random() * 4 - 2,
 			vy: Math.random() * 4 - 2,
-			img: this.loader.getImage( this.imgBall )
+			img: this.loader.getImage( this.imgBall ),
+			angle: 0
 		} );
 	}
 	this.numBalls = this.spriteList.length;
@@ -147,13 +149,16 @@ pbDemo.prototype.update = function()
 	{
 		for ( var i = -1, l = list.length; ++i < l; )
 		{
+			// rotate at 1 degree per update
+			list[i].angle += Math.PI / 180.0;
+
 			list[ i ].x += list[ i ].vx;
 			if ( list[ i ].x < 0 || list[ i ].x > 640 ) list[ i ].vx *= -1;
 			list[ i ].y += list[ i ].vy;
 			if ( list[ i ].y < 0 || list[ i ].y > 480 ) list[ i ].vy *= -1;
 
 			if (!this.useBatch)
-				this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].img );
+				this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].img, list[ i ].angle );
 		}
 		
 		// batch draw them all with a single image texture

@@ -1,8 +1,35 @@
 /**
  *
- * WebGL wrapper.
+ * WebGL support code
  *
  */
+
+
+
+
+/**
+ * imageShaderSources - shaders for image drawing
+ * @type {Array}
+ */
+var imageShaderSources = {
+	fragment:
+		"  precision mediump float;" +
+		"  uniform sampler2D uImageSampler;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    gl_FragColor = texture2D(uImageSampler, vTexCoord);" +
+		"  }",
+
+	vertex:
+		"  attribute vec4 aPosition;" +
+		"  uniform mat3 uProjectionMatrix;" +
+		"  uniform mat3 uModelMatrix;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    gl_Position = vec4(uProjectionMatrix * uModelMatrix * vec3(aPosition.xy, 1), 1);" +
+		"    vTexCoord = aPosition.zw;" +
+		"  }"
+};
 
 
 /**
@@ -19,41 +46,15 @@ var graphicsShaderSources = {
 
 	vertex:
 		"  uniform vec2 resolution;" +
-		"  attribute vec2 position;" +
+		"  attribute vec2 aPosition;" +
 		"  attribute vec4 color;" +
 		"  varying vec4 vColor;" +
 		"  void main(void) {" +
-		"    vec2 zeroToOne = position / resolution;" +
+		"    vec2 zeroToOne = aPosition / resolution;" +
 		"    vec2 zeroToTwo = zeroToOne * 2.0;" +
 		"    vec2 clipSpace = zeroToTwo - 1.0;" +
 		"    gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);" +
 		"    vColor = color;" +
-		"  }"
-};
-
-
-/**
- * imageShaderSources - shaders for image drawing
- * @type {Array}
- */
-var imageShaderSources = {
-	fragment:
-		"  precision mediump float;" +
-		"  uniform sampler2D imageSampler;" +
-		"  varying vec2 vTexCoord;" +
-		"  void main(void) {" +
-		"    vec4 col;" +
-		"    col = texture2D(imageSampler, vTexCoord);" +
-		"    gl_FragColor = col;" +
-		"  }",
-
-	vertex:
-		"  attribute vec4 position;" +
-		"  varying vec2 vTexCoord;" +
-		"  void main(void) {" +
-		"    gl_Position.zw = vec2(1, 1);" +
-		"    gl_Position.xy = position.xy;" +
-		"    vTexCoord = position.zw;" +
 		"  }"
 };
 
@@ -71,8 +72,8 @@ function pbWebGl()
 	this.currentProgram = null;
 	this.currentTexture = null;
 	this.positionBuffer = null;
-	// pre-allocate the this.quadArray to avoid memory errors from fragmentation (seen on Chrome (debug Version 39.0.2171.71 m) after running 75000 sprite demo for 15 seconds)
-	this.quadArray = new Float32Array( MAX_SPRITES * 24 - 8 );		// -8 because the last one isn't followed by a degenerate triangle
+	// pre-allocate the this.drawingArray to avoid memory errors from fragmentation (seen on Chrome (debug Version 39.0.2171.71 m) after running 75000 sprite demo for 15 seconds)
+	this.drawingArray = new Float32Array( MAX_SPRITES * (3 * 3 + 8) - 8 );		// -8 because the last one isn't followed by a degenerate triangle
 }
 
 
@@ -112,12 +113,11 @@ pbWebGl.prototype.initGL = function( canvas )
 		this.gl.clearDepth( 1.0 );
 
 		// precalculate the drawing buffer's half-width and height values
-		this.screenWide2 = this.gl.drawingBufferWidth * 0.5;
-		this.screenHigh2 = this.gl.drawingBufferHeight * 0.5;
+		// this.screenWide2 = this.gl.drawingBufferWidth * 0.5;
+		// this.screenHigh2 = this.gl.drawingBufferHeight * 0.5;
 		// calculate inverse to avoid division in loop
-		this.iWide = 1.0 / this.screenWide2;
-		this.iHigh = 1.0 / this.screenHigh2;
-
+		// this.iWide = 1.0 / this.screenWide2;
+		// this.iHigh = 1.0 / this.screenHigh2;
 
 		return this.gl;
 	}
@@ -214,11 +214,8 @@ pbWebGl.prototype.setGraphicsProgram = function()
 	// set the shader program
 	gl.useProgram( program );
 
-	// remember location of shader attribute variables
-	// program.resolution = gl.getUniformLocation( program, "resolution" );
-
-	program.position = gl.getAttribLocation( program, "position" );
-	gl.enableVertexAttribArray( program.position );
+	program.aPosition = gl.getAttribLocation( program, "aPosition" );
+	gl.enableVertexAttribArray( program.aPosition );
 
 	program.color = gl.getAttribLocation( program, "color" );
 	gl.enableVertexAttribArray( program.color );
@@ -236,10 +233,12 @@ pbWebGl.prototype.setImageProgram = function()
 
 	gl.useProgram( program );
 
-	program.position = gl.getAttribLocation( program, "position" );
-	gl.enableVertexAttribArray( program.position );
+	program.aPosition = gl.getAttribLocation( program, "aPosition" );
+	gl.enableVertexAttribArray( program.aPosition );
 
-	program.samplerUniform = gl.getUniformLocation( program, "imageSampler" );
+	program.samplerUniform = gl.getUniformLocation( program, "uImageSampler" );
+	program.matrixUniform = gl.getUniformLocation( program, "uModelMatrix" );
+	program.projectionUniform = gl.getUniformLocation( program, "uProjectionMatrix" );
 
 	this.currentTexture = null;
 
@@ -286,7 +285,7 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( colors ), gl.STATIC_DRAW );
 
 	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgVertexBuffer );
-	gl.vertexAttribPointer( program.position, 2, gl.FLOAT, gl.FALSE, 0, 0 );
+	gl.vertexAttribPointer( program.aPosition, 2, gl.FLOAT, gl.FALSE, 0, 0 );
 
 	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgColorBuffer );
 	gl.vertexAttribPointer( program.color, 4, gl.FLOAT, gl.FALSE, 0, 0 );
@@ -323,7 +322,7 @@ pbWebGl.prototype.handleTexture = function( image )
 };
 
 
-pbWebGl.prototype.drawImage = function( _x, _y, image )
+pbWebGl.prototype.drawImage = function( _x, _y, image, angle )
 {
 	var gl = this.gl;
 
@@ -332,6 +331,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, image )
 
 	if ( !this.currentTexture || this.currentTexture.image !== image )
 	{
+		// prepare the texture
 		this.currentTexture = this.handleTexture( image );
 	    gl.activeTexture( gl.TEXTURE0 );
 	   	gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
@@ -339,45 +339,53 @@ pbWebGl.prototype.drawImage = function( _x, _y, image )
 		// create a buffer to transfer all the vertex position data through
 		this.positionBuffer = this.gl.createBuffer();
 	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+		// set up the projection matrix in the vertex shader
+		gl.uniformMatrix3fv( this.imageShaderProgram.projectionUniform, false, pbMatrix.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+
+
+		// split off a small part of the big buffer, for a single display object
+		// IE uses first index/last index inclusive [http://msdn.microsoft.com/en-us/library/ie/br230723(v=vs.94).aspx], Chrome uses first index/last index exclusive as specified [https://www.khronos.org/registry/typedarray/specs/latest/]
+		var sa = this.drawingArray.subarray(0, 15);
+		if (sa.length === 15) sa = this.drawingArray.subarray(0, 16);
+
+		// screen destination position
+		// l, b,		0,1
+		// l, t,		4,5
+		// r, b,		8,9
+		// r, t,		12,13
+		var wide = image.width * 0.5;
+		var high = image.height * 0.5;
+		sa[ 0 ] = sa[ 4 ] = -wide;
+		sa[ 1 ] = sa[ 9 ] =  high;
+		sa[ 8 ] = sa[ 12] =  wide;
+		sa[ 5 ] = sa[ 13] = -high;
+
+		// texture source position
+		// 0, 0,		2,3
+		// 0, 1,		6,7
+		// 1, 0,		10,11
+		// 1, 1,		14,15
+		sa[ 2 ] = sa[ 6 ] = sa[ 3 ] = sa[ 11] = 0;
+		sa[ 10] = sa[ 14] = sa[ 7 ] = sa[ 15] = 1;
+
+	    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
+	    this.positionBuffer.itemSize = 4;
+	    this.positionBuffer.numItems = sa.length / this.positionBuffer.itemSize;
 	}
 
-	var scale = 1.0;
-	var wide = image.width * scale * 0.5 / this.screenWide2;
-	var high = image.height * scale * 0.5 / this.screenHigh2;
+	// TODO: most of these are semi-static, cache them
+	var translationMatrix = pbMatrix.makeTranslation(_x, _y);
+	var rotationMatrix = pbMatrix.makeRotation(angle);
+	var scaleMatrix = pbMatrix.makeScale(1.0, 1.0);
 
-	// split off a small part of the big buffer, for a single display object
-	// IE uses first index/last index inclusive [http://msdn.microsoft.com/en-us/library/ie/br230723(v=vs.94).aspx], Chrome uses first index/last index exclusive as specified [https://www.khronos.org/registry/typedarray/specs/latest/]
-	var sa = this.quadArray.subarray(0, 15);
-	if (sa.length === 15) sa = this.quadArray.subarray(0, 16);
+	var matrix = pbMatrix.fastMultiply(scaleMatrix, rotationMatrix);
+	matrix = pbMatrix.fastMultiply(matrix, translationMatrix);
 
-	var x = _x * this.iWide - 1;
-	var y = -_y * this.iHigh + 1;
-	var l = x - wide;
-	var b = y + high;
+	// send the matrix to the vector shader
+	gl.uniformMatrix3fv( this.imageShaderProgram.matrixUniform, false, matrix );
 
-	// screen destination position
-	// l, b,		0,1
-	// l, t,		4,5
-	// r, b,		8,9
-	// r, t,		12,13
-
-	sa[ 0 ] = sa[ 4 ] = l;
-	sa[ 1 ] = sa[ 9 ] = b;
-	sa[ 8 ] = sa[ 12] = x + wide;
-	sa[ 5 ] = sa[ 13] = y - high;
-
-	// texture source position
-	// 0, 0,		2,3
-	// 0, 1,		6,7
-	// 1, 0,		10,11
-	// 1, 1,		14,15
-	sa[ 2 ] = sa[ 6 ] = sa[ 3 ] = sa[ 11] = 0;
-	sa[ 10] = sa[ 14] = sa[ 7 ] = sa[ 15] = 1;
-
-    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
-    this.positionBuffer.itemSize = 4;
-    this.positionBuffer.numItems = sa.length / this.positionBuffer.itemSize;
-    gl.vertexAttribPointer( this.imageShaderProgram.position, this.positionBuffer.itemSize, gl.FLOAT, false, 0, 0 );
+	// point the position attribute at the last bound buffer
+    gl.vertexAttribPointer( this.imageShaderProgram.aPosition, this.positionBuffer.itemSize, gl.FLOAT, false, 0, 0 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.positionBuffer.numItems);
 };
@@ -392,77 +400,85 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 
 	if ( !this.currentTexture || this.currentTexture.image !== image )
 	{
+		// prepare the texture
 		this.currentTexture = this.handleTexture( image );
 	    gl.activeTexture( gl.TEXTURE0 );
 	   	gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
 	   	gl.uniform1i( this.imageShaderProgram.samplerUniform, 0 );
+
 		// create a buffer to transfer all the vertex position data through
 		this.positionBuffer = this.gl.createBuffer();
-	}
+	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
 
-	// TODO: generate warning if length is capped
-	var len = Math.min(list.length, MAX_SPRITES);
+		// set up the projection matrix in the vertex shader
+		gl.uniformMatrix3fv( this.imageShaderProgram.projectionUniform, false, pbMatrix.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
 
-	var scale = 1.0;	// make them smaller so we can see the difference between 5000 and 10000
-	var wide = image.width * scale * 0.5 / this.screenWide2;
-	var high = image.height * scale * 0.5 / this.screenHigh2;
+		// TODO: generate warning if length is capped
+		var len = Math.min(list.length, MAX_SPRITES);
 
-	var old_t;
-	var old_r;
+		var wide = image.width * 0.5;
+		var high = image.height * 0.5;
 
-	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
-    var qa = this.quadArray.subarray(0, len * 24 - 8);
+		var old_t;
+		var old_r;
 
-	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
-	for ( var i = -1, c = 0; ++i < len; c += 16 )
-	{
-		var x = list[ i ].x * this.iWide - 1;
-		var y = 1 - list[ i ].y * this.iHigh;
-		var l = x - wide;
-		var b = y + high;
+		// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
+	    var da = this.drawingArray.subarray(0, len * 24 - 8);
 
-		if ( i > 0 )
+		// weird loop speed-up (http://www.paulirish.com/i/d9f0.png)
+		for ( var i = -1, c = 0; ++i < len; c += 16 )
 		{
-			// degenerate triangle: repeat the last vertex
-			qa[ c     ] = old_r;
-			qa[ c + 1 ] = old_t;
-		 	// repeat the next vertex
-			qa[ c + 4 ] = l;
-		 	qa[ c + 5 ] = b;
-		 	// texture coordinates are unused
-			//qa[ c + 2 ] = qa[ c + 3 ] = qa[ c + 6 ] = qa[ c + 7 ] = 0;
-			c += 8;
+			if ( i > 0 )
+			{
+				// degenerate triangle: repeat the last vertex
+				da[ c     ] = old_r;
+				da[ c + 1 ] = old_t;
+			 	// repeat the next vertex
+				da[ c + 4 ] = l;
+			 	da[ c + 5 ] = b;
+			 	// texture coordinates are unused
+				//da[ c + 2 ] = da[ c + 3 ] = da[ c + 6 ] = da[ c + 7 ] = 0;
+				c += 8;
+			}
+
+			// screen destination position
+			// l, b,		0,1
+			// l, t,		4,5
+			// r, b,		8,9
+			// r, t,		12,13
+
+			da[ c     ] = da[ c + 4 ] = -wide;
+			da[ c + 1 ] = da[ c + 9 ] =  high;
+			da[ c + 8 ] = da[ c + 12] =  wide;
+			da[ c + 5 ] = da[ c + 13] = -high;
+
+			// texture source position
+			// 0, 0,		2,3
+			// 0, 1,		6,7
+			// 1, 0,		10,11
+			// 1, 1,		14,15
+			da[ c + 2 ] = da[ c + 6] = da[ c + 3 ] = da[ c + 11] = 0;
+			da[ c + 10] = da[ c + 14] = da[ c + 7 ] = da[ c + 15] = 1;
 		}
 
-		// screen destination position
-		// l, b,		0,1
-		// l, t,		4,5
-		// r, b,		8,9
-		// r, t,		12,13
-
-		qa[ c     ] = qa[ c + 4 ] = l;
-		qa[ c + 1 ] = qa[ c + 9 ] = b;
-		qa[ c + 8 ] = qa[ c + 12] = old_r = x + wide;
-		qa[ c + 5 ] = qa[ c + 13] = old_t = y - high;
-
-		// texture source position
-		// 0, 0,		2,3
-		// 0, 1,		6,7
-		// 1, 0,		10,11
-		// 1, 1,		14,15
-		qa[ c + 2 ] = qa[ c + 6] = qa[ c + 3 ] = qa[ c + 11] = 0;
-		qa[ c + 10] = qa[ c + 14] = qa[ c + 7 ] = qa[ c + 15] = 1;
+	    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
+	    this.positionBuffer.itemSize = 4;
+	    this.positionBuffer.numItems = sa.length / this.positionBuffer.itemSize;
 	}
 
+	for ( var i = -1, c = 0; ++i < len; c += 16 )
+	{
+		var translationMatrix = pbMatrix.makeTranslation(_x, _y);
+		var rotationMatrix = pbMatrix.makeRotation(angle);
+		var scaleMatrix = pbMatrix.makeScale(1.0, 1.0);
+		var matrix = pbMatrix.fastMultiply(scaleMatrix, rotationMatrix);
+		matrix = pbMatrix.fastMultiply(matrix, translationMatrix);
+		// send the matrix to the vector shader
+		gl.uniformMatrix3fv( this.imageShaderProgram.matrixUniform, false, matrix );
+	}
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, qa, gl.STATIC_DRAW );
-    this.positionBuffer.itemSize = 4;
-    this.positionBuffer.numItems = qa.length / this.positionBuffer.itemSize;		// -8 because the last one isn't followed by a degenerate point pair
-    gl.vertexAttribPointer( this.imageShaderProgram.position, this.positionBuffer.itemSize, gl.FLOAT, false, 0, 0 );
-
+    gl.vertexAttribPointer( this.imageShaderProgram.aPosition, this.positionBuffer.itemSize, gl.FLOAT, false, 0, 0 );
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.positionBuffer.numItems);
-
     gl.bindBuffer( gl.ARRAY_BUFFER, null );
 };
 
