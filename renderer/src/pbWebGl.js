@@ -33,6 +33,30 @@ var imageShaderSources = {
 
 
 /**
+ * batchImageShaderSources - shaders for batch image drawing
+ * @type {Array}
+ */
+var batchImageShaderSources = {
+	fragment:
+		"  precision mediump float;" +
+		"  uniform sampler2D imageSampler;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    gl_FragColor = texture2D(imageSampler, vTexCoord);" +
+		"  }",
+
+	vertex:
+		"  attribute vec4 position;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    gl_Position.zw = vec2(1, 1);" +
+		"    gl_Position.xy = position.xy;" +
+		"    vTexCoord = position.zw;" +
+		"  }"
+};
+
+
+/**
  * graphicsShaderSources - shaders for graphics primitive drawing
  * @type {Array}
  */
@@ -59,32 +83,6 @@ var graphicsShaderSources = {
 };
 
 
-/**
- * imageShaderSources - shaders for batch image drawing
- * @type {Array}
- */
-var batchImageShaderSources = {
-	fragment:
-		"  precision mediump float;" +
-		"  uniform sampler2D imageSampler;" +
-		"  varying vec2 vTexCoord;" +
-		"  void main(void) {" +
-		"    vec4 col;" +
-		"    col = texture2D(imageSampler, vTexCoord);" +
-		"    gl_FragColor = col;" +
-		"  }",
-
-	vertex:
-		"  attribute vec4 position;" +
-		"  varying vec2 vTexCoord;" +
-		"  void main(void) {" +
-		"    gl_Position.zw = vec2(1, 1);" +
-		"    gl_Position.xy = position.xy;" +
-		"    vTexCoord = position.zw;" +
-		"  }"
-};
-
-
 var MAX_SPRITES = 200000;
 
 
@@ -93,13 +91,15 @@ function pbWebGl()
 	console.log( "pbWebGl c'tor" );
 	this.gl = null;
 	this.graphicsShaderProgram = null;
+	this.imageShaderProgram = null;
+	this.batchImageShaderProgram = null;
 	this.bgVertexBuffer = null;
 	this.bgColorBuffer = null;
 	this.currentProgram = null;
 	this.currentTexture = null;
 	this.positionBuffer = null;
-	// pre-allocate the this.drawingArray to avoid memory errors from fragmentation (seen on Chrome (debug Version 39.0.2171.71 m) after running 75000 sprite demo for 15 seconds)
-	this.drawingArray = new Float32Array( MAX_SPRITES * (3 * 3 + 8) - 8 );		// -8 because the last one isn't followed by a degenerate triangle
+	// pre-allocate the this.drawingArray to avoid memory errors from fragmentation (seen on Chrome (debug Version 39.0.2171.71 m) after running 75000 sprite demo for ~15 seconds)
+	this.drawingArray = new Float32Array( MAX_SPRITES * (16 + 8) - 8 );		// -8 because the last one isn't followed by a degenerate triangle
 }
 
 
@@ -140,11 +140,11 @@ pbWebGl.prototype.initGL = function( canvas )
 		this.gl.clearDepth( 1.0 );
 
 		// precalculate the drawing buffer's half-width and height values
-		// this.screenWide2 = this.gl.drawingBufferWidth * 0.5;
-		// this.screenHigh2 = this.gl.drawingBufferHeight * 0.5;
+		this.screenWide2 = this.gl.drawingBufferWidth * 0.5;
+		this.screenHigh2 = this.gl.drawingBufferHeight * 0.5;
 		// calculate inverse to avoid division in loop
-		// this.iWide = 1.0 / this.screenWide2;
-		// this.iHigh = 1.0 / this.screenHigh2;
+		this.iWide = 1.0 / this.screenWide2;
+		this.iHigh = 1.0 / this.screenHigh2;
 
 		return this.gl;
 	}
