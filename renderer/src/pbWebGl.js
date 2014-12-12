@@ -18,6 +18,7 @@ var imageShaderSources = {
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
 		"    gl_FragColor = texture2D(uImageSampler, vTexCoord);" +
+		"    if (gl_FragColor.a < 0.01) discard;" +
 		"  }",
 
 	vertex:
@@ -42,52 +43,27 @@ var batchImageShaderSources = {
 		"  uniform sampler2D uImageSampler;" +
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
-		"    gl_FragColor = texture2D(uImageSampler, vTexCoord);" +
+		"    gl_FragColor = texture2D( uImageSampler, vTexCoord );" +
+		"    if (gl_FragColor.a < 0.01) discard;" +
 		"  }",
 
 	vertex:
 		"  attribute vec4 aPosition;" +
 		"  attribute vec4 aTransform;" +
-		"  attribute vec2 aTranslate;" +
+		"  attribute vec3 aTranslate;" +
 		"  uniform mat3 uProjectionMatrix;" +
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
 		"    mat3 modelMatrix;" +
-		"    modelMatrix[0] = vec3( aTransform.x * aTransform.z,-aTransform.y * aTransform.w, 0);" +
-		"    modelMatrix[1] = vec3( aTransform.y * aTransform.z, aTransform.x * aTransform.w, 0);" +
-		"    modelMatrix[2] = vec3( aTranslate.x, aTranslate.y, 1);" +
-		"    gl_Position = vec4(uProjectionMatrix * modelMatrix * vec3(aPosition.xy, 1), 1);" +
+		"    modelMatrix[0] = vec3( aTransform.x * aTransform.z,-aTransform.y * aTransform.w, 0 );" +
+		"    modelMatrix[1] = vec3( aTransform.y * aTransform.z, aTransform.x * aTransform.w, 0 );" +
+		"    modelMatrix[2] = vec3( aTranslate.x, aTranslate.y, 1 );" +
+		"    vec3 pos = uProjectionMatrix * modelMatrix * vec3( aPosition.xy, 1 );" +
+		"    gl_Position = vec4(pos.xy, aTranslate.z, 1);" +
 		"    vTexCoord = aPosition.zw;" +
 		"  }"
 };
 
-		// "  attribute vec4 aPosition;" +
-		// "  attribute vec4 aTransform;" +
-		// "  attribute vec2 aTranslate;" +
-		// "  uniform mat3 uProjectionMatrix;" +
-		// "  varying vec2 vTexCoord;" +
-		// "  void main(void) {" +
-		// "    mat3 modelMatrix;" +
-		// "    modelMatrix[0] = vec3( aTransform.x * aTransform.z,-aTransform.y * aTransform.w, 0);" +
-		// "    modelMatrix[1] = vec3( aTransform.y * aTransform.z, aTransform.x * aTransform.w, 0);" +
-		// "    modelMatrix[2] = vec3( aTranslate.x, aTranslate.y, 1);" +
-		// "    gl_Position = vec4(uProjectionMatrix * modelMatrix * vec3(aPosition.xy, 1), 1);" +
-		// "    vTexCoord = aPosition.zw;" +
-		// "  }"
-
-		// "  attribute vec4 aPosition;" +
-		// "  attribute vec4 aTransform;" +
-		// "  attribute vec2 aTranslate;" +
-		// "  uniform mat3 uProjectionMatrix;" +
-		// "  varying vec2 vTexCoord;" +
-		// "  void main(void) {" +
-		// "    mat3 modelMatrix;" +
-		// "    modelMatrix[0] = vec3( aTransform.x * aTransform.z, aTransform.y * aTransform.z, aTranslate.x);" +
-		// "    modelMatrix[1] = vec3(-aTransform.y * aTransform.w, aTransform.x * aTransform.w, aTranslate.y);" +
-		// "    modelMatrix[2] = vec3(0, 0, 1);" +
-		// "    gl_Position = vec4(uProjectionMatrix * modelMatrix * vec3(aPosition.xy, 1), 1);" +
-		// "    vTexCoord = aPosition.zw;" +
-		// "  }"
 
 /**
  * graphicsShaderSources - shaders for graphics primitive drawing
@@ -166,7 +142,16 @@ pbWebGl.prototype.initGL = function( canvas )
 		// create the shader programs for each drawing mode
 		this.graphicsShaderProgram = this.initShaders( this.gl, graphicsShaderSources );
 		this.imageShaderProgram = this.initShaders( this.gl, imageShaderSources );
+
 		this.batchImageShaderProgram = this.initShaders( this.gl, batchImageShaderSources );
+
+		// enable the depth buffer so we can order our sprites
+		this.gl.enable(this.gl.DEPTH_TEST);
+		this.gl.depthFunc(this.gl.LEQUAL);
+
+		// set blending mode
+		this.gl.blendFunc( this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA );
+		this.gl.enable( this.gl.BLEND );
 
 		// clear the render area to a dim red (so I can tell when webgl breaks)
 		this.gl.clearColor( 0.2, 0.0, 0.0, 1.0 );
@@ -190,10 +175,6 @@ pbWebGl.prototype.preRender = function()
 	// clear the viewport
 	this.gl.viewport( 0, 0, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight );
 	this.gl.clear( this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT );
-
-	// set blending mode
-	this.gl.blendFunc( this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA );
-	this.gl.enable( this.gl.BLEND );
 };
 
 
@@ -486,41 +467,54 @@ pbWebGl.prototype.drawImage = function( _x, _y, image, angle, scale )
 	    gl.activeTexture( gl.TEXTURE0 );
 	   	gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
 	   	gl.uniform1i( this.imageShaderProgram.samplerUniform, 0 );
+
 		// create a buffer to transfer all the vertex position data through
 		this.positionBuffer = this.gl.createBuffer();
 	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+
 		// set up the projection matrix in the vertex shader
 		gl.uniformMatrix3fv( this.currentProgram.projectionUniform, false, pbMatrix.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
 
-		// split off a small part of the big buffer, for a single display object
-		// IE uses first index/last index inclusive [http://msdn.microsoft.com/en-us/library/ie/br230723(v=vs.94).aspx], Chrome uses first index/last index exclusive as specified [https://www.khronos.org/registry/typedarray/specs/latest/]
-		var sa = this.drawingArray.subarray(0, 15);
-		if (sa.length === 15) sa = this.drawingArray.subarray(0, 16);
-
-		// screen destination position
-		// l, b,		0,1
-		// l, t,		4,5
-		// r, b,		8,9
-		// r, t,		12,13
-		var wide = image.width * 0.5;
-		var high = image.height * 0.5;
-		sa[ 0 ] = sa[ 4 ] = -wide;
-		sa[ 1 ] = sa[ 9 ] =  high;
-		sa[ 8 ] = sa[ 12] =  wide;
-		sa[ 5 ] = sa[ 13] = -high;
-
-		// texture source position
-		// 0, 0,		2,3
-		// 0, 1,		6,7
-		// 1, 0,		10,11
-		// 1, 1,		14,15
-		sa[ 2 ] = sa[ 6 ] = sa[ 3 ] = sa[ 11] = 0;
-		sa[ 10] = sa[ 14] = sa[ 7 ] = sa[ 15] = 1;
-
-	    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
 	    this.positionBuffer.itemSize = 4;
-	    this.positionBuffer.numItems = sa.length / this.positionBuffer.itemSize;
+	    this.positionBuffer.numItems = 4;
 	}
+
+	// split off a small part of the big buffer, for a single display object
+	var sa = this.drawingArray.subarray(0, 16);
+
+	// set up the animation frame
+	var cell = 0;
+	var cx = cell % image.cellsWide;
+	var cy = Math.floor(cell / image.cellsWide);
+	var rect = image.cellTextureBounds[cx][cy];
+	var tex_x = rect.x;
+	var tex_y = rect.y;
+	var tex_r = rect.x + rect.width;
+	var tex_b = rect.y + rect.height;
+
+	// screen destination position
+	// l, b,		0,1
+	// l, t,		4,5
+	// r, b,		8,9
+	// r, t,		12,13
+	var wide = image.cellWide * 0.5;
+	var high = image.cellHigh * 0.5;
+	sa[ 0 ] = sa[ 4 ] = -wide;
+	sa[ 1 ] = sa[ 9 ] =  high;
+	sa[ 8 ] = sa[ 12] =  wide;
+	sa[ 5 ] = sa[ 13] = -high;
+
+	// texture source position
+	// 0, 0,		2,3
+	// 0, 1,		6,7
+	// 1, 0,		10,11
+	// 1, 1,		14,15
+	sa[ 2 ] = sa[ 6 ] = tex_x;
+	sa[ 3 ] = sa[ 11] = tex_b;
+	sa[ 10] = sa[ 14] = tex_r;
+	sa[ 7 ] = sa[ 15] = tex_y;
+
+    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
 
 	// TODO: most of these are semi-static, cache them
 	var translationMatrix = pbMatrix.makeTranslation(_x, _y);
@@ -562,90 +556,117 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 	// TODO: generate warning if length is capped
 	var len = Math.min(list.length, MAX_SPRITES);
 
-	// half width, half height (of source image)
-	var wide = image.width * 0.5;
-	var high = image.height * 0.5;
+	// half width, half height (of source frame)
+	var wide = image.cellWide * 0.5;
+	var high = image.cellHigh * 0.5;
 
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
-    var sa = this.drawingArray.subarray(0, len * 80 - 40);
+    var sa = this.drawingArray.subarray(0, len * 44 * 2 - 44);
 
 	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
-	for ( var i = -1, c = 0; ++i < len; c += 40 )
+	for ( var i = -1, c = 0; ++i < len; c += 44 )
 	{
+		// set up texture reference coordinates based on the image frame number
+		var img = list[i].img;
+		var cell = Math.floor(list[i].cell);
+		var cx = cell % img.cellsWide;
+		var cy = Math.floor(cell / img.cellsWide);
+		var rect = img.cellTextureBounds[cx][cy];
+		var tex_x = rect.x;
+		var tex_y = rect.y;
+		var tex_r = rect.x + rect.width;
+		var tex_b = rect.y + rect.height;
+
+		var cos = -Math.cos(list[i].angle);
 		var sin = Math.sin(list[i].angle);
-		var cos = Math.cos(list[i].angle);
 		var scale = list[i].scale;
 		var x = list[i].x;
 		var y = list[i].y;
+		var z = list[i].z;
 
 		if ( i > 0 )
 		{
-			// degenerate triangle: repeat the last vertex
-			sa[ c     ] = wide;					// old r
-			sa[ c + 1 ] = -high;				// old t
-			sa[ c + 4 ] = sa[ c - 40 + 34 ];	// old sin
-			sa[ c + 5 ] = sa[ c - 40 + 35 ];	// old cos
-			sa[ c + 6 ] = sa[ c - 40 + 36 ];	// old scale
-			sa[ c + 7 ] = sa[ c - 40 + 37 ];	// old scale
-			sa[ c + 8 ] = sa[ c - 40 + 38 ];	// old x
-			sa[ c + 9 ] = sa[ c - 40 + 39 ];	// old y
-		 	// repeat the next vertex to fill out this entire stride
-			sa[ c + 10] = sa[ c + 20] = sa[ c + 30] = -wide;		// l
-		 	sa[ c + 11] = sa[ c + 21] = sa[ c + 31] = high;			// b
-			sa[ c + 34 ] = sin;
-			sa[ c + 35 ] = cos;
-			sa[ c + 36 ] = scale;
-			sa[ c + 37 ] = scale;
-			sa[ c + 38] = x;
-			sa[ c + 39] = y;
-			c += 40;
+			// degenerate triangle: repeat the last vertex and the next vertex
+			// 
+			// screen destination position
+			sa[ c     ] = sa[ c - 44 + 33 ];
+			sa[ c + 1 ] = sa[ c - 44 + 34 ];
+			sa[ c + 11] = sa[ c + 22] = sa[ c + 33] = -wide;
+			sa[ c + 12] = sa[ c + 23] = sa[ c + 34] =  high;
+
+			// rotation cos & sin components
+			sa[ c + 4 ] = sa[c - 44 + 37];
+			sa[ c + 5 ] = sa[c - 44 + 38];
+			sa[ c + 15] = sa[ c + 26] = sa[ c + 37] = cos;
+			sa[ c + 16] = sa[ c + 27] = sa[ c + 38] = sin;
+
+			// scaling sx & sy components
+			sa[ c + 6 ] = sa[ c - 44 + 39];
+			sa[ c + 7 ] = sa[ c - 44 + 40];
+			sa[ c + 17] = sa[ c + 28] = sa[ c + 39] = scale;
+			sa[ c + 18] = sa[ c + 29] = sa[ c + 40] = scale;
+
+			// world translation
+			sa[ c + 8 ] = sa[c - 44 + 41];
+			sa[ c + 9 ] = sa[c - 44 + 42];
+			sa[ c + 10] = sa[c - 44 + 43];
+			sa[ c + 19] = sa[ c + 30] = sa[ c + 41] = x;
+			sa[ c + 20] = sa[ c + 31] = sa[ c + 42] = y;
+			sa[ c + 21] = sa[ c + 32] = sa[ c + 43] = z;
+
+			c += 44;
 		}
 
 		// screen destination position
 		// l, b,		0,1
-		// l, t,		10,11
-		// r, b,		20,21
-		// r, t,		30,31
-		sa[ c     ] = sa[ c + 10] = -wide;		// l
-		sa[ c + 1 ] = sa[ c + 21] =  high;		// b
-		sa[ c + 20] = sa[ c + 30] =  wide;		// r
-		sa[ c + 11] = sa[ c + 31] = -high;		// t
+		// l, t,		11,12
+		// r, b,		22,23
+		// r, t,		33,34
+		sa[ c     ] = sa[ c + 11] = -wide;		// l
+		sa[ c + 1 ] = sa[ c + 23] =  high;		// b
+		sa[ c + 22] = sa[ c + 33] =  wide;		// r
+		sa[ c + 12] = sa[ c + 34] = -high;		// t
 
 		// texture source position
-		// 0, 0,		2,3
-		// 0, 1,		12,13
-		// 1, 0,		22,23
-		// 1, 1,		32,33
-		sa[ c + 2 ] = sa[ c + 12] = sa[ c + 3 ] = sa[ c + 23] = 0;
-		sa[ c + 22] = sa[ c + 32] = sa[ c + 13] = sa[ c + 33] = 1;
+		// l, b,		2,3
+		// l, t,		13,14
+		// r, b,		24,25
+		// r, t,		35,36
+		sa[ c + 2 ] = sa[ c + 13] = tex_x;		// l
+		sa[ c + 3 ] = sa[ c + 25] = tex_y;		// b
+		sa[ c + 24] = sa[ c + 35] = tex_r;		// r
+		sa[ c + 14] = sa[ c + 36] = tex_b;		// t
 
-		// rotation sin & cos components
+		// rotation cos & sin components
 		//  4, 5
-		// 14,15
-		// 24,25
-		// 34,34
-		sa[ c + 4 ] = sa[ c + 14] = sa[ c + 24] = sa[ c + 34] = sin;
-		sa[ c + 5 ] = sa[ c + 15] = sa[ c + 25] = sa[ c + 35] = cos;
+		// 15,16
+		// 26,27
+		// 37,38
+		sa[ c + 4 ] = sa[ c + 15] = sa[ c + 26] = sa[ c + 37] = cos;
+		sa[ c + 5 ] = sa[ c + 16] = sa[ c + 27] = sa[ c + 38] = sin;
 
 		// scaling sx & sy components
 		//  6, 7
-		// 16,17
-		// 26,27
-		// 36,37
-		sa[ c + 6 ] = sa[ c + 16] = sa[ c + 26] = sa[ c + 36] = scale;
-		sa[ c + 7 ] = sa[ c + 17] = sa[ c + 27] = sa[ c + 37] = scale;
+		// 17,18
+		// 28,29
+		// 39,40
+		sa[ c + 6 ] = sa[ c + 17] = sa[ c + 28] = sa[ c + 39] = scale;
+		sa[ c + 7 ] = sa[ c + 18] = sa[ c + 29] = sa[ c + 40] = scale;
 
 		// world translation
-		sa[ c + 8 ] = sa[ c + 18] = sa[ c + 28] = sa[ c + 38] = x;
-		sa[ c + 9 ] = sa[ c + 19] = sa[ c + 29] = sa[ c + 39] = y;
+		sa[ c + 8 ] = sa[ c + 19] = sa[ c + 30] = sa[ c + 41] = x;
+		sa[ c + 9 ] = sa[ c + 20] = sa[ c + 31] = sa[ c + 42] = y;
+
+		// world depth (0 = front, 1 = back)
+		sa[ c + 10] = sa[ c + 21] = sa[ c + 32] = sa[ c + 43] = z;
 	}
 
 	// point the attributes at the buffer (stride and offset are in bytes, there are 4 bytes per gl.FLOAT)
     gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
-	gl.vertexAttribPointer( this.currentProgram.aPosition , 4, gl.FLOAT, false, 10 * 4, 0 * 4 );
-	gl.vertexAttribPointer( this.currentProgram.aTransform, 4, gl.FLOAT, false, 10 * 4, 4 * 4 );
-	gl.vertexAttribPointer( this.currentProgram.aTranslate, 2, gl.FLOAT, false, 10 * 4, 8 * 4 );
+	gl.vertexAttribPointer( this.currentProgram.aPosition , 4, gl.FLOAT, false, 11 * 4, 0 * 4 );
+	gl.vertexAttribPointer( this.currentProgram.aTransform, 4, gl.FLOAT, false, 11 * 4, 4 * 4 );
+	gl.vertexAttribPointer( this.currentProgram.aTranslate, 3, gl.FLOAT, false, 11 * 4, 8 * 4 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 4);		// four vertices per sprite
 };

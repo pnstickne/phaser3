@@ -25,18 +25,19 @@ function pbDemo( docId )
 
 	// dat.GUI controlled variables and callbacks
 	this.useBatch = true;
-	this.numBalls = 1;
-	this.growthRate = 50;
+	this.numSprites = 1;
 	var gui = new dat.GUI();
-	var numCtrl = gui.add(this, "numBalls").min(0).max(MAX_SPRITES).step(250).listen();
-	numCtrl.onFinishChange(function(value) { _this.restart(); });
+	var numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
+	numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 50; _this.growthRate = 1; _this.restart(); });
 	var btcCtrl = gui.add(this, "useBatch");
-	btcCtrl.onFinishChange(function(value) { if (!value) _this.numBalls = 200; _this.restart(); });
+	btcCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 50; _this.growthRate = 1; _this.restart(); });
 
 	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.loaded, this );
-//	this.imgBall = this.loader.loadImage( "../img/pete64.png" );
-	this.imgBall = this.loader.loadImage( "../img/sphere3.png" );
+	this.loader = new pbLoader( this.allLoaded, this );
+	this.spriteImg = this.loader.loadImage( "../img/soldier_a_run.png" );
+//	this.spriteImg = this.loader.loadImage( "../img/pete64.png" );
+//	this.spriteImg = this.loader.loadImage( "../img/sphere3.png" );
+//	
 
 	// callback for when the loading is complete (shouldn't happen until all the pbLoader stuff has finished, but pbLoader callback makes it bullet-proof - may be unnecessary)
 	window.onload = function( e )
@@ -46,19 +47,6 @@ function pbDemo( docId )
 
 	console.log( "pbDemo c'tor exit" );
 }
-
-
-pbDemo.prototype.loaded = function()
-{
-	console.log( "pbDemo.loaded" );
-
-	if ( this.bootFlag )
-	{
-		this.renderer = new pbRenderer( this.docId, this.update, this );
-		this.init(); // TODO: dodgy calling this after the renderer sets update!
-	}
-	this.loadFlag = true;
-};
 
 
 pbDemo.prototype.boot = function()
@@ -74,9 +62,26 @@ pbDemo.prototype.boot = function()
 };
 
 
+pbDemo.prototype.allLoaded = function()
+{
+	console.log( "pbDemo.allLoaded" );
+
+	if ( this.bootFlag )
+	{
+		this.renderer = new pbRenderer( this.docId, this.update, this );
+		this.init(); // TODO: dodgy calling this after the renderer sets update!
+	}
+	this.loadFlag = true;
+};
+
+
 pbDemo.prototype.init = function()
 {
 	console.log( "pbDemo.init" );
+
+	// calculate cell position bounds in source texture and attach it to the image
+	var img = this.loader.getImage( this.spriteImg );
+	this.createCellData(img, 32, 64, 8, 5);
 
 	this.create();
 };
@@ -86,40 +91,12 @@ pbDemo.prototype.create = function()
 {
 	console.log("pbDemo.create");
 
+	this.targetx = 0;
+	this.targety = 440;
+	this.depth = 1;
+
 	this.spriteList = [];
-	this.addBalls(this.numBalls);
-};
-
-
-pbDemo.prototype.addBalls = function(num)
-{
-	for( var i = 0; i < num; i++ )
-	{
-		var x = Math.random() * 640;
-		var y = Math.random() * 480;
-		this.spriteList.push(
-		{
-			x: x,
-			y: y,
-			vx: Math.random() * 4 - 2,
-			vy: Math.random() * 4 - 2,
-			img: this.loader.getImage( this.imgBall ),
-			angle: 0,
-			scale: 0.1,
-			scaleDir: 0.05
-		} );
-	}
-	this.numBalls = this.spriteList.length;
-};
-
-
-pbDemo.prototype.removeBalls = function(num)
-{
-	for( var i = 0; i < num; i++ )
-	{
-		this.spriteList.pop();
-	}
-	this.numBalls = this.spriteList.length;
+	this.addSprites(this.numSprites);
 };
 
 
@@ -141,25 +118,110 @@ pbDemo.prototype.restart = function()
 };
 
 
+pbDemo.prototype.createCellData = function(img, cellWide, cellHigh, cellsWide, cellsHigh)
+{
+	img.cellWide = cellWide;
+	img.cellHigh = cellHigh;
+	img.cellsWide = cellsWide;
+	img.cellsHigh = cellsHigh;
+	img.padRight = img.width - img.cellWide * img.cellsWide;
+	img.padBottom = img.height - img.cellHigh * img.cellsHigh;
+	img.cellTextureBounds = [];
+
+	// dimensions of one cell in texture coordinates (0 = left/top, 1 = right/bottom)
+	var texWide = 1.0 / (img.width / img.cellWide);
+	var texHigh = 1.0 / (img.height / img.cellHigh);
+
+	for(var x = 0; x < cellsWide; x++)
+	{
+		img.cellTextureBounds[x] = [];
+		for(var y = 0; y < cellsHigh; y++)
+			img.cellTextureBounds[x][y] = new pbRectangle(x * texWide, y * texHigh, texWide, texHigh);
+	}
+};
+
+
+pbDemo.prototype.addSprites = function(num)
+{
+	// create animation data
+	var img = this.loader.getImage( this.spriteImg );
+	for( var i = 0; i < num; i++ )
+	{
+		// line up in ranks getting smaller and smaller
+		var finalScale = 2 * (this.targety + 24) / 480;
+		this.targetx += img.cellWide * finalScale;
+		if (this.targetx >= 640)
+		{
+			this.targetx = 0;
+			this.targety -= img.cellHigh * 0.25 * finalScale;
+			this.targets *= 0.985;
+		}
+
+		// start from the top centre of the screen
+		var x = 320;
+		var y = 0;
+		this.spriteList.push(
+		{
+			x: x,
+			y: y,
+			z: 1.0,
+			tx: this.targetx,
+			ty: this.targety,
+			img: img,
+			cell: Math.floor(Math.random() * 3),
+			angle: 0,
+			scale: 2 * 24 / 480
+		} );
+	}
+	this.numSprites = this.spriteList.length;
+};
+
+
+pbDemo.prototype.removeSprites = function(num)
+{
+	for( var i = 0; i < num; i++ )
+	{
+		this.spriteList.pop();
+	}
+	this.numSprites = this.spriteList.length;
+};
+
+
 pbDemo.prototype.update = function()
 {
 	frameCount++;
 
-	// bouncing balls!
+	// marching sprites
 	var list = this.spriteList;
 	if (list)
 	{
 		for ( var i = -1, l = list.length; ++i < l; )
 		{
-			list[i].angle += 2 * Math.PI / 180.0;
-			list[i].scale += list[i].scaleDir;
-			if (list[i].scale < 0.1) list[i].scaleDir = Math.abs(list[i].scaleDir);
-			if (list[i].scale > 2.0) list[i].scaleDir = -Math.abs(list[i].scaleDir);
+			// animation
+			list[i].cell += 0.1;
+			if (list[i].cell >= 8) list[i].cell = 0;
 
-			list[ i ].x += list[ i ].vx;
-			if ( list[ i ].x < 0 || list[ i ].x > 640 ) list[ i ].vx *= -1;
-			list[ i ].y += list[ i ].vy;
-			if ( list[ i ].y < 0 || list[ i ].y > 480 ) list[ i ].vy *= -1;
+			// movement towards target location
+			var dx = list[i].tx - list[i].x;
+			var dy = list[i].ty - list[i].y;
+			var dist = Math.sqrt(dx * dx + dy * dy);
+			if (dist > 0.1)
+			{
+				list[i].x += dx / dist;
+				list[i].y += dy / dist;
+				list[i].z = 1 - list[i].y / 480;
+				list[i].scale = 2 * (list[i].y + 24) / 480;
+			}
+
+			// list[i].angle += 2 * Math.PI / 180.0;
+			// list[i].scale += list[i].scaleDir;
+			// if (list[i].scale < 0.1) list[i].scaleDir = Math.abs(list[i].scaleDir);
+			// if (list[i].scale > 2.0) list[i].scaleDir = -Math.abs(list[i].scaleDir);
+
+			// list[ i ].x += list[ i ].vx;
+			// if ( list[ i ].x < 0 || list[ i ].x > 640 ) list[ i ].vx *= -1;
+			// list[ i ].y += list[ i ].vy;
+			// if ( list[ i ].y < 0 || list[ i ].y > 480 ) list[ i ].vy *= -1;
 
 			if (!this.useBatch)
 				this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].img, list[ i ].angle, list[i].scale );
@@ -171,19 +233,17 @@ pbDemo.prototype.update = function()
 			this.renderer.graphics.batchDrawImages( this.spriteList, this.spriteList[ 0 ].img );
 	}
 
-	if ((frameCount & 63) === 0)
-	{
-		if (fps > 55)
-		{
-			this.addBalls(this.growthRate);
-			this.growthRate += 100;
-		}
-		if (fps > 0 && fps < 50)
-		{
-			this.removeBalls(200);
-			this.growthRate = 50;
-		}
-	}
+	if ((frameCount & 63) == 0)
+		this.addSprites(1);
+
+	// if (fps >= 59)
+	// {
+	// 	this.addSprites(1);
+	// }
+	// if (fps > 0 && fps < 55)
+	// {
+	// 	this.removeSprites(2);
+	// }
 
 	// show fps with a moving white square's vertical position (and confirm that the shader programs can switch from 'image' to 'graphics')
 	//	var x = this.renderer.frameCount % canvas.width;
