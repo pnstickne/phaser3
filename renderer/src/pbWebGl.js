@@ -44,7 +44,7 @@ var batchImageShaderSources = {
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
 		"    gl_FragColor = texture2D( uImageSampler, vTexCoord );" +
-		"    if (gl_FragColor.a < 0.01) discard;" +
+		"    if (gl_FragColor.a < 0.90) discard;" +
 		"  }",
 
 	vertex:
@@ -108,7 +108,7 @@ function pbWebGl()
 	this.currentTexture = null;
 	this.positionBuffer = null;
 	// pre-allocate the this.drawingArray to avoid memory errors from fragmentation (seen on Chrome (debug Version 39.0.2171.71 m) after running 75000 sprite demo for ~15 seconds)
-	this.drawingArray = new Float32Array( MAX_SPRITES * 80 );
+	this.drawingArray = new Float32Array( MAX_SPRITES * (44 + 22) - 22 );
 }
 
 
@@ -561,7 +561,7 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 	var high = image.cellHigh * 0.5;
 
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
-    var sa = this.drawingArray.subarray(0, len * 44 * 2 - 44);
+    var sa = this.drawingArray.subarray(0, len * (44 + 22) - 22);
 
 	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
 	for ( var i = -1, c = 0; ++i < len; c += 44 )
@@ -580,41 +580,47 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 		var cos = -Math.cos(list[i].angle);
 		var sin = Math.sin(list[i].angle);
 		var scale = list[i].scale;
-		var x = list[i].x;
-		var y = list[i].y;
+		var x = Math.round(list[i].x);
+		var y = Math.round(list[i].y);
 		var z = list[i].z;
 
-		if ( i > 0 )
+		if ( i > 0 && i < len - 1 )
 		{
 			// degenerate triangle: repeat the last vertex and the next vertex
 			// 
 			// screen destination position
 			sa[ c     ] = sa[ c - 44 + 33 ];
 			sa[ c + 1 ] = sa[ c - 44 + 34 ];
-			sa[ c + 11] = sa[ c + 22] = sa[ c + 33] = -wide;
-			sa[ c + 12] = sa[ c + 23] = sa[ c + 34] =  high;
+			sa[ c + 11] = -wide;
+			sa[ c + 12] =  high;
+
+			// rotation cos & sin components
+			sa[ c + 2 ] = sa[c - 44 + 35];
+			sa[ c + 3 ] = sa[c - 44 + 36];
+			sa[ c + 15] = tex_x;
+			sa[ c + 16] = tex_y;
 
 			// rotation cos & sin components
 			sa[ c + 4 ] = sa[c - 44 + 37];
 			sa[ c + 5 ] = sa[c - 44 + 38];
-			sa[ c + 15] = sa[ c + 26] = sa[ c + 37] = cos;
-			sa[ c + 16] = sa[ c + 27] = sa[ c + 38] = sin;
+			sa[ c + 15] = cos;
+			sa[ c + 16] = sin;
 
 			// scaling sx & sy components
 			sa[ c + 6 ] = sa[ c - 44 + 39];
 			sa[ c + 7 ] = sa[ c - 44 + 40];
-			sa[ c + 17] = sa[ c + 28] = sa[ c + 39] = scale;
-			sa[ c + 18] = sa[ c + 29] = sa[ c + 40] = scale;
+			sa[ c + 17] = scale;
+			sa[ c + 18] = scale;
 
 			// world translation
 			sa[ c + 8 ] = sa[c - 44 + 41];
 			sa[ c + 9 ] = sa[c - 44 + 42];
 			sa[ c + 10] = sa[c - 44 + 43];
-			sa[ c + 19] = sa[ c + 30] = sa[ c + 41] = x;
-			sa[ c + 20] = sa[ c + 31] = sa[ c + 42] = y;
-			sa[ c + 21] = sa[ c + 32] = sa[ c + 43] = z;
+			sa[ c + 19] = x;
+			sa[ c + 20] = y;
+			sa[ c + 21] = z;
 
-			c += 44;
+			c += 22;
 		}
 
 		// screen destination position

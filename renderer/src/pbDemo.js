@@ -157,6 +157,9 @@ pbDemo.prototype.addSprites = function(num)
 			this.targets *= 0.985;
 		}
 
+this.targetx = Math.random() * this.renderer.width;
+this.targety = Math.random() * (this.renderer.height - 24);
+
 		// start from the top centre of the screen
 		var x = 320;
 		var y = 0;
@@ -233,17 +236,14 @@ pbDemo.prototype.update = function()
 			this.renderer.graphics.batchDrawImages( this.spriteList, this.spriteList[ 0 ].img );
 	}
 
-	if ((frameCount & 63) == 0)
-		this.addSprites(1);
-
-	// if (fps >= 59)
-	// {
-	// 	this.addSprites(1);
-	// }
-	// if (fps > 0 && fps < 55)
-	// {
-	// 	this.removeSprites(2);
-	// }
+	if (fps > 59)
+	{
+	 	this.addSprites(5);
+	}
+	if (fps > 0 && fps < 55)
+	{
+	 	this.removeSprites(1);
+	}
 
 	// show fps with a moving white square's vertical position (and confirm that the shader programs can switch from 'image' to 'graphics')
 	//	var x = this.renderer.frameCount % canvas.width;
