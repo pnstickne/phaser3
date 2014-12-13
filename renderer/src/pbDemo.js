@@ -92,7 +92,7 @@ pbDemo.prototype.create = function()
 	console.log("pbDemo.create");
 
 	this.targetx = 0;
-	this.targety = 440;
+	this.targety = 460;
 	this.depth = 1;
 
 	this.spriteList = [];
@@ -146,21 +146,8 @@ pbDemo.prototype.addSprites = function(num)
 	var img = this.loader.getImage( this.spriteImg );
 	for( var i = 0; i < num; i++ )
 	{
-		// line up in ranks getting smaller and smaller
-		var finalScale = 2 * (this.targety + 24) / 480;
-		this.targetx += img.cellWide * 0.75 * finalScale;
-		if (this.targetx >= 640)
-		{
-			this.targetx = 0;
-			this.targety -= img.cellHigh * 0.20 * finalScale;
-			this.targets *= 0.985;
-		}
-
-//this.targetx = Math.random() * this.renderer.width;
-//this.targety = Math.random() * (this.renderer.height - 24);
-
 		// start from the top centre of the screen
-		var x = 320;
+		var x = Math.random() * this.renderer.width;
 		var y = 0;
 		this.spriteList.push(
 		{
@@ -172,8 +159,17 @@ pbDemo.prototype.addSprites = function(num)
 			img: img,
 			cell: Math.floor(Math.random() * 3),
 			angle: 0,
-			scale: 2 * 24 / 480
+			scale: 96 / 480
 		} );
+
+		// line up in ranks getting smaller and smaller
+		var finalScale = (this.targety + 96) / 480;
+		this.targetx += img.cellWide * 0.65 * finalScale;
+		if (this.targetx >= 800 + img.width * 0.5 * finalScale)
+		{
+			this.targetx = -img.width * 0.5 * finalScale;
+			this.targety -= img.cellHigh * 0.15 * finalScale;
+		}
 	}
 	this.numSprites = this.spriteList.length;
 };
@@ -200,7 +196,7 @@ pbDemo.prototype.update = function()
 		for ( var i = -1, l = list.length; ++i < l; )
 		{
 			// animation
-			list[i].cell += 0.1;
+			list[i].cell += 0.2;
 			if (list[i].cell >= 8) list[i].cell = 0;
 
 			// movement towards target location
@@ -212,7 +208,7 @@ pbDemo.prototype.update = function()
 				list[i].x += dx / dist;
 				list[i].y += dy / dist;
 				list[i].z = 1 - list[i].y / 480;
-				list[i].scale = 2 * (list[i].y + 24) / 480;
+				list[i].scale = (list[i].y + 96) / 480;
 			}
 
 			if (!this.useBatch)
@@ -224,7 +220,7 @@ pbDemo.prototype.update = function()
 			this.renderer.graphics.batchDrawImages( this.spriteList, this.spriteList[ 0 ].img );
 	}
 
-	if (fps > 59)
+	if (fps > 59 && this.targety > 0)
 	{
 	 	this.addSprites(5);
 	}

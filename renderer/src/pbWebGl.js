@@ -18,7 +18,7 @@ var imageShaderSources = {
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
 		"    gl_FragColor = texture2D(uImageSampler, vTexCoord);" +
-		"    if (gl_FragColor.a < 0.01) discard;" +
+		"    if (gl_FragColor.a < 0.80) discard;" +
 		"  }",
 
 	vertex:
@@ -44,7 +44,7 @@ var batchImageShaderSources = {
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
 		"    gl_FragColor = texture2D( uImageSampler, vTexCoord );" +
-		"    if (gl_FragColor.a < 0.90) discard;" +
+		"    if (gl_FragColor.a < 0.80) discard;" +
 		"  }",
 
 	vertex:
@@ -153,8 +153,8 @@ pbWebGl.prototype.initGL = function( canvas )
 		this.gl.blendFunc( this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA );
 		this.gl.enable( this.gl.BLEND );
 
-		// clear the render area to a dim red (so I can tell when webgl breaks)
-		this.gl.clearColor( 0.2, 0.0, 0.0, 1.0 );
+		// clear the render area
+		this.gl.clearColor( 0.1, 0.2, 0.1, 1.0 );
 		this.gl.clearDepth( 1.0 );
 
 		// precalculate the drawing buffer's half-width and height values
