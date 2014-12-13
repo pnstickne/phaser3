@@ -212,7 +212,7 @@ pbDemo.prototype.update = function()
 			}
 
 			if (!this.useBatch)
-				this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].img, list[ i ].angle, list[i].scale );
+				this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].z, list[ i ].img, list[ i ].cell, list[ i ].angle, list[i].scale );
 		}
 		
 		// batch draw them all with a single image texture

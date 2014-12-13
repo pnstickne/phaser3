@@ -23,11 +23,13 @@ var imageShaderSources = {
 
 	vertex:
 		"  attribute vec4 aPosition;" +
+		"  uniform float uZ;" +
 		"  uniform mat3 uProjectionMatrix;" +
 		"  uniform mat3 uModelMatrix;" +
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
-		"    gl_Position = vec4(uProjectionMatrix * uModelMatrix * vec3(aPosition.xy, 1), 1);" +
+		"    vec3 pos = uProjectionMatrix * uModelMatrix * vec3(aPosition.xy, 1);" +
+		"    gl_Position = vec4(pos.xy, uZ, 1);" +
 		"    vTexCoord = aPosition.zw;" +
 		"  }"
 };
@@ -319,6 +321,7 @@ pbWebGl.prototype.setImageProgram = function()
 	program.samplerUniform = gl.getUniformLocation( program, "uImageSampler" );
 	program.matrixUniform = gl.getUniformLocation( program, "uModelMatrix" );
 	program.projectionUniform = gl.getUniformLocation( program, "uProjectionMatrix" );
+	program.zUniform = gl.getUniformLocation( program, "uZ" );
 
 	this.currentTexture = null;
 
@@ -453,7 +456,7 @@ pbWebGl.prototype.handleTexture = function( image )
 };
 
 
-pbWebGl.prototype.drawImage = function( _x, _y, image, angle, scale )
+pbWebGl.prototype.drawImage = function( _x, _y, _z, image, cellFrame, angle, scale )
 {
 	var gl = this.gl;
 
@@ -474,16 +477,17 @@ pbWebGl.prototype.drawImage = function( _x, _y, image, angle, scale )
 
 		// set up the projection matrix in the vertex shader
 		gl.uniformMatrix3fv( this.currentProgram.projectionUniform, false, pbMatrix.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
-
-	    this.positionBuffer.itemSize = 4;
-	    this.positionBuffer.numItems = 4;
 	}
 
 	// split off a small part of the big buffer, for a single display object
-	var sa = this.drawingArray.subarray(0, 16);
+	var sa = this.drawingArray.subarray(0, 20);
+
+	// half width, half height (of source frame)
+	var wide = image.cellWide * 0.5;
+	var high = image.cellHigh * 0.5;
 
 	// set up the animation frame
-	var cell = 0;
+	var cell = Math.floor(cellFrame);
 	var cx = cell % image.cellsWide;
 	var cy = Math.floor(cell / image.cellsWide);
 	var rect = image.cellTextureBounds[cx][cy];
@@ -497,8 +501,6 @@ pbWebGl.prototype.drawImage = function( _x, _y, image, angle, scale )
 	// l, t,		4,5
 	// r, b,		8,9
 	// r, t,		12,13
-	var wide = image.cellWide * 0.5;
-	var high = image.cellHigh * 0.5;
 	sa[ 0 ] = sa[ 4 ] = -wide;
 	sa[ 1 ] = sa[ 9 ] =  high;
 	sa[ 8 ] = sa[ 12] =  wide;
@@ -527,10 +529,14 @@ pbWebGl.prototype.drawImage = function( _x, _y, image, angle, scale )
 	// send the matrix to the vector shader
 	gl.uniformMatrix3fv( this.currentProgram.matrixUniform, false, matrix );
 
-	// point the position attribute at the last bound buffer
-    gl.vertexAttribPointer( this.currentProgram.aPosition, this.positionBuffer.itemSize, gl.FLOAT, false, 0, 0 );
+	// set the depth value
+   	gl.uniform1f( this.imageShaderProgram.zUniform, _z );
 
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.positionBuffer.numItems);
+	// point the position attribute at the last bound buffer
+    gl.vertexAttribPointer( this.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+
+    // four vertices per quad, one quad
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 };
 
 
@@ -543,12 +549,16 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 
 	if ( !this.currentTexture || this.currentTexture.image !== image )
 	{
+		// prepare the texture
 		this.currentTexture = this.handleTexture( image );
 		gl.activeTexture( gl.TEXTURE0 );
 		gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
 		gl.uniform1i( this.currentProgram.samplerUniform, 0 );
+
 		// create a buffer to transfer all the vertex position data through
 		this.positionBuffer = this.gl.createBuffer();
+	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+
 		// set up the projection matrix in the vertex shader
 		gl.uniformMatrix3fv( this.currentProgram.projectionUniform, false, pbMatrix.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
 	}
@@ -556,12 +566,12 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 	// TODO: generate warning if length is capped
 	var len = Math.min(list.length, MAX_SPRITES);
 
+	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
+    var sa = this.drawingArray.subarray(0, len * (44 + 22) - 22);
+
 	// half width, half height (of source frame)
 	var wide = image.cellWide * 0.5;
 	var high = image.cellHigh * 0.5;
-
-	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
-    var sa = this.drawingArray.subarray(0, len * (44 + 22) - 22);
 
 	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
 	for ( var i = -1, c = 0; ++i < len; c += 44 )
@@ -668,7 +678,6 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 	}
 
 	// point the attributes at the buffer (stride and offset are in bytes, there are 4 bytes per gl.FLOAT)
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
 	gl.vertexAttribPointer( this.currentProgram.aPosition , 4, gl.FLOAT, false, 11 * 4, 0 * 4 );
 	gl.vertexAttribPointer( this.currentProgram.aTransform, 4, gl.FLOAT, false, 11 * 4, 4 * 4 );
