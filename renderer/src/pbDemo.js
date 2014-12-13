@@ -25,12 +25,12 @@ function pbDemo( docId )
 
 	// dat.GUI controlled variables and callbacks
 	this.useBatch = true;
-	this.numSprites = 1;
+	this.numSprites = 0;
 	var gui = new dat.GUI();
 	var numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
-	numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 50; _this.growthRate = 1; _this.restart(); });
+	numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
 	var btcCtrl = gui.add(this, "useBatch");
-	btcCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 50; _this.growthRate = 1; _this.restart(); });
+	btcCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
@@ -96,7 +96,6 @@ pbDemo.prototype.create = function()
 	this.depth = 1;
 
 	this.spriteList = [];
-	this.addSprites(this.numSprites);
 };
 
 
@@ -149,16 +148,16 @@ pbDemo.prototype.addSprites = function(num)
 	{
 		// line up in ranks getting smaller and smaller
 		var finalScale = 2 * (this.targety + 24) / 480;
-		this.targetx += img.cellWide * finalScale;
+		this.targetx += img.cellWide * 0.75 * finalScale;
 		if (this.targetx >= 640)
 		{
 			this.targetx = 0;
-			this.targety -= img.cellHigh * 0.25 * finalScale;
+			this.targety -= img.cellHigh * 0.20 * finalScale;
 			this.targets *= 0.985;
 		}
 
-this.targetx = Math.random() * this.renderer.width;
-this.targety = Math.random() * (this.renderer.height - 24);
+//this.targetx = Math.random() * this.renderer.width;
+//this.targety = Math.random() * (this.renderer.height - 24);
 
 		// start from the top centre of the screen
 		var x = 320;
@@ -216,23 +215,12 @@ pbDemo.prototype.update = function()
 				list[i].scale = 2 * (list[i].y + 24) / 480;
 			}
 
-			// list[i].angle += 2 * Math.PI / 180.0;
-			// list[i].scale += list[i].scaleDir;
-			// if (list[i].scale < 0.1) list[i].scaleDir = Math.abs(list[i].scaleDir);
-			// if (list[i].scale > 2.0) list[i].scaleDir = -Math.abs(list[i].scaleDir);
-
-			// list[ i ].x += list[ i ].vx;
-			// if ( list[ i ].x < 0 || list[ i ].x > 640 ) list[ i ].vx *= -1;
-			// list[ i ].y += list[ i ].vy;
-			// if ( list[ i ].y < 0 || list[ i ].y > 480 ) list[ i ].vy *= -1;
-
 			if (!this.useBatch)
 				this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].img, list[ i ].angle, list[i].scale );
 		}
 		
 		// batch draw them all with a single image texture
-		// TODO: send a spriteSheet and animate from within it
-		if (this.useBatch)
+		if (this.useBatch && this.numSprites > 0)
 			this.renderer.graphics.batchDrawImages( this.spriteList, this.spriteList[ 0 ].img );
 	}
 
@@ -244,9 +232,4 @@ pbDemo.prototype.update = function()
 	{
 	 	this.removeSprites(1);
 	}
-
-	// show fps with a moving white square's vertical position (and confirm that the shader programs can switch from 'image' to 'graphics')
-	//	var x = this.renderer.frameCount % canvas.width;
-	//	this.renderer.graphics.fillStyle( "#FFF" );
-	//	this.renderer.graphics.fillRect( x, this.renderer.rootTimer.elapsedTime, 4, 4 );
 };

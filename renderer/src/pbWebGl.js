@@ -584,7 +584,7 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 		var y = Math.round(list[i].y);
 		var z = list[i].z;
 
-		if ( i > 0 && i < len - 1 )
+		if ( i > 0)
 		{
 			// degenerate triangle: repeat the last vertex and the next vertex
 			// 
@@ -674,7 +674,7 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 	gl.vertexAttribPointer( this.currentProgram.aTransform, 4, gl.FLOAT, false, 11 * 4, 4 * 4 );
 	gl.vertexAttribPointer( this.currentProgram.aTranslate, 3, gl.FLOAT, false, 11 * 4, 8 * 4 );
 
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 4);		// four vertices per sprite
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points
 };
 
 
