@@ -117,8 +117,10 @@ pbDemo.prototype.restart = function()
 };
 
 
+// I'm using the term 'cell' in place of 'frame' for animation... avoids ambiguity with 'frame' as a measure of time (frames per second, etc)
 pbDemo.prototype.createCellData = function(img, cellWide, cellHigh, cellsWide, cellsHigh)
 {
+	// TODO: move the cell information into pbImage, work out a suitable animation system to store the cellTextureBounds array
 	img.cellWide = cellWide;
 	img.cellHigh = cellHigh;
 	img.cellsWide = cellsWide;
@@ -142,33 +144,40 @@ pbDemo.prototype.createCellData = function(img, cellWide, cellHigh, cellsWide, c
 
 pbDemo.prototype.addSprites = function(num)
 {
-	// create animation data
-	var img = this.loader.getImage( this.spriteImg );
+	// create animation data and set destination for movement
+	var surface = this.loader.getImage( this.spriteImg );
+
 	for( var i = 0; i < num; i++ )
 	{
-		// start from the top centre of the screen
+		// start from the top of the screen
 		var x = Math.random() * this.renderer.width;
 		var y = 0;
+
+		// unique image holder per soldier (permits individual animation)
+		var img = new pbImage();
+		img.create(this.renderer, surface, Math.floor(Math.random() * 3));
+
+		// unique sprite holder per soldier (holds transform)
+		var spr = new pbSprite();
+		spr.create(null, img, x, y, 1.0, 0, 96 / 480, 96 / 480);
+
+		// TODO: add pbLayer system to manage layers of pbSprites
+		// TODO: *maybe* add callback for pbSprite.update to implement AI functionality directly without needing unique objects for everything(?)
+		// OR: create a demoSoldier object
 		this.spriteList.push(
 		{
-			x: x,
-			y: y,
-			z: 1.0,
+			sprite: spr,
 			tx: this.targetx,
 			ty: this.targety,
-			img: img,
-			cell: Math.floor(Math.random() * 3),
-			angle: 0,
-			scale: 96 / 480
 		} );
 
 		// line up in ranks getting smaller and smaller
 		var finalScale = (this.targety + 96) / 480;
-		this.targetx += img.cellWide * 0.65 * finalScale;
-		if (this.targetx >= 800 + img.width * 0.5 * finalScale)
+		this.targetx += img.surface.cellWide * 0.65 * finalScale;
+		if (this.targetx >= 800 + img.surface.width * 0.5 * finalScale)
 		{
-			this.targetx = -img.width * 0.5 * finalScale;
-			this.targety -= img.cellHigh * 0.15 * finalScale;
+			this.targetx = -img.surface.width * 0.5 * finalScale;
+			this.targety -= img.surface.cellHigh * 0.15 * finalScale;
 		}
 	}
 	this.numSprites = this.spriteList.length;
@@ -195,37 +204,47 @@ pbDemo.prototype.update = function()
 	{
 		for ( var i = -1, l = list.length; ++i < l; )
 		{
+			var spr = list[i].sprite;
+			var img = spr.image;
+
 			// animation
-			list[i].cell += 0.2;
-			if (list[i].cell >= 8) list[i].cell = 0;
+			img.cellFrame += 0.2;
+			if (img.cellFrame >= 8) img.cellFrame = 0;
 
 			// movement towards target location
-			var dx = list[i].tx - list[i].x;
-			var dy = list[i].ty - list[i].y;
+			var dx = list[i].tx - spr.x;
+			var dy = list[i].ty - spr.y;
 			var dist = Math.sqrt(dx * dx + dy * dy);
 			if (dist > 0.1)
 			{
-				list[i].x += dx / dist;
-				list[i].y += dy / dist;
-				list[i].z = 1 - list[i].y / 480;
-				list[i].scale = (list[i].y + 96) / 480;
+				spr.x += dx / dist;
+				spr.y += dy / dist;
+				spr.z = 1 - spr.y / 480;
+				spr.scaleX = spr.scaleY = (spr.y + 96) / 480;
 			}
 
-			if (!this.useBatch)
-				this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].z, list[ i ].img, list[ i ].cell, list[ i ].angle, list[i].scale );
+			spr.angleInRadians += 0.02 * Math.random();
+
+
+			// TODO: pbLayer should handle calls to pbSprite.update for all sprites in that layer (equivalent to Stage.update)
+			spr.update();
+
+			// if (!this.useBatch)
+			// 	this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].z, list[ i ].img, list[ i ].cellFrame, list[ i ].angle, list[i].scale );
 		}
 		
 		// batch draw them all with a single image texture
-		if (this.useBatch && this.numSprites > 0)
-			this.renderer.graphics.batchDrawImages( this.spriteList, this.spriteList[ 0 ].img );
+		// if (this.useBatch && this.numSprites > 0)
+		// 	this.renderer.graphics.batchDrawImages( this.spriteList, this.spriteList[ 0 ].img );
 	}
 
 	if (fps > 59 && this.targety > 0)
 	{
-	 	this.addSprites(5);
+	 	this.addSprites(50);
 	}
 	if (fps > 0 && fps < 55)
 	{
-	 	this.removeSprites(1);
+	 	this.removeSprites(10);
 	}
 };
+

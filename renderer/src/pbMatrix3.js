@@ -1,17 +1,17 @@
 /**
  *
- * pbMatrix - general matrix stuff, plus some specific functions to help out with rendering
+ * pbMatrix3 - general matrix stuff, plus some specific functions to help out with rendering
  *
  */
 
 
 
-function pbMatrix()
+function pbMatrix3()
 {
 }
 
 
-pbMatrix.makeTranslation = function( tx, ty )
+pbMatrix3.makeTranslation = function( tx, ty )
 {
 	return [
 		     1,  0,  0,
@@ -21,7 +21,7 @@ pbMatrix.makeTranslation = function( tx, ty )
 };
 
 
-pbMatrix.makeRotation = function( angleInRadians )
+pbMatrix3.makeRotation = function( angleInRadians )
 {
 	var c = Math.cos( angleInRadians );
 	var s = Math.sin( angleInRadians );
@@ -33,7 +33,7 @@ pbMatrix.makeRotation = function( angleInRadians )
 };
 
 
-pbMatrix.makeScale = function( sx, sy )
+pbMatrix3.makeScale = function( sx, sy )
 {
 	return [
 		    sx,  0,  0,
@@ -43,7 +43,20 @@ pbMatrix.makeScale = function( sx, sy )
 };
 
 
-pbMatrix.makeProjection = function(width, height)
+pbMatrix3.makeTransform = function(_x, _y, _angleInRadians, _scaleX, _scaleY)
+{
+	var c = Math.cos( _angleInRadians );
+	var s = Math.sin( _angleInRadians );
+
+	return [
+		c * _scaleX, -s * _scaleY, 0,
+		s * _scaleX, c * _scaleY, 0,
+		_x, _y, 1
+	];
+};
+
+
+pbMatrix3.makeProjection = function(width, height)
 {
 	// project coordinates into a 2x2 number range, starting at (-1, 1)
 	return [
@@ -54,7 +67,7 @@ pbMatrix.makeProjection = function(width, height)
 };
 
 
-pbMatrix.makeIdentity = function()
+pbMatrix3.makeIdentity = function()
 {
 	return [
 		     1,  0,  0,
@@ -64,7 +77,7 @@ pbMatrix.makeIdentity = function()
 };
 
 
-pbMatrix.matrixMultiply = function( a, b )
+pbMatrix3.matrixMultiply = function( a, b )
 {
 	var a00 = a[         0 ];
 	var a01 = a[         1 ];
@@ -104,7 +117,7 @@ pbMatrix.matrixMultiply = function( a, b )
 // e, f, 1
 // 
 // we can speed up the multiplication by skipping the 0 and 1 multiplication steps
-pbMatrix.fastMultiply = function( a, b )
+pbMatrix3.fastMultiply = function( a, b )
 {
 	var a00 = a[         0 ];
 	var a01 = a[         1 ];

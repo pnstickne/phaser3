@@ -80,6 +80,19 @@ pbGraphics.prototype.drawImage = function(x, y, z, image, cell, angle, scale)
 };
 
 
+pbGraphics.prototype.drawImageWithTransform = function(_transform, _z_order, _surface, _cellFrame)
+{
+	switch(renderer)
+	{
+		case "canvas":
+			break;
+		case "webgl":
+			webGl.drawImageWithTransform(_transform, _z_order, _surface, _cellFrame);
+			break;
+	}
+};
+
+
 pbGraphics.prototype.batchDrawImages = function(list, image)
 {
 	switch(renderer)

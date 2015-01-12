@@ -132,7 +132,7 @@ pbRenderer.prototype.update = function()
 	  	webGl.preRender();
 
 	this.updateCallback.call(this.updateContext);
-
+	
 	stats.end();
 };
 
