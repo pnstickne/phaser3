@@ -9,18 +9,20 @@ var canvas = null;
 var ctx = null;
 var webGl = null;
 var renderer = "canvas";
+var rootLayer = null;
 
 
 // TODO: split RAF timer out of here and into it's own object, including updateCallback etc
  
-function pbRenderer(docId, updateCallback, updateContext)
+function pbRenderer(_docId, _bootCallback, _updateCallback, _context)
 {
 	console.log("pbRenderer c'tor entry");
 
 	// parameters
-	this.docId = docId;
-	this.updateCallback = updateCallback;
-	this.updateContext = updateContext;
+	this.docId = _docId;
+	this.bootCallback = _bootCallback;
+	this.updateCallback = _updateCallback;
+	this.context = _context;
 
 	// globals
  	webGl = null;
@@ -62,6 +64,13 @@ pbRenderer.prototype.destroy = function()
 		this.graphics.destroy();
 	this.graphics = null;
 
+	if (rootLayer)
+		rootLayer.destroy();
+	rootLayer = null;
+
+	this.updateCallback = null;
+	this.bootCallback = null;
+	this.context = null;
 	webGl = null;
 };
 
@@ -92,12 +101,19 @@ pbRenderer.prototype.boot = function()
     // get the canvas and context globals
 	this.setCanvas();
 
-    // start the update looping
-	this.rootTimer = new pbRootTimer();
-	this.rootTimer.start(this.update, this);
+	// create the rootLayer container for all graphics
+	rootLayer = new pbLayer();
+	rootLayer.create(null, 0, 0, 0, 0, 1, 1);
 
 	// create the drawing sub-systems
     this.graphics = new pbGraphics();
+
+    // call the boot callback now the renderer is ready
+    this.bootCallback.call(this.context);
+
+    // start the update looping
+	this.rootTimer = new pbRootTimer();
+	this.rootTimer.start(this.update, this);
 };
 
 
@@ -137,7 +153,10 @@ pbRenderer.prototype.update = function()
 	if (renderer === "webgl")
 	  	webGl.preRender();
 
-	this.updateCallback.call(this.updateContext);
+	if (rootLayer)
+		rootLayer.update();
+
+	this.updateCallback.call(this.context);
 	
 	stats.end();
 };

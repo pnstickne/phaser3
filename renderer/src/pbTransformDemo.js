@@ -39,19 +39,7 @@ pbTransformDemo.prototype.allLoaded = function()
 {
 	console.log( "pbTransformDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( this.docId, this.update, this );
-	this.init();
-};
-
-
-pbTransformDemo.prototype.init = function()
-{
-	console.log( "pbTransformDemo.init" );
-
-	// calculate cell position bounds in source texture and attach it to the image
-	var img = this.loader.getImage( this.spriteImg );
-
-	this.create();
+	this.renderer = new pbRenderer( this.docId, this.create, this.update, this );
 };
 
 
@@ -71,9 +59,11 @@ pbTransformDemo.prototype.destroy = function()
 {
 	console.log("pbTransformDemo.destroy");
 
-	this.spriteList = null;
-	if (this.renderer && this.renderer.graphics)
-		this.renderer.graphics.reset();
+	this.surface.destroy();
+	this.surface = null;
+
+	this.renderer.destroy();
+	this.renderer = null;
 };
 
 
@@ -89,6 +79,9 @@ pbTransformDemo.prototype.restart = function()
 pbTransformDemo.prototype.addSprites = function()
 {
 	console.log("pbTransformDemo.addSprites");
+
+	this.cameraZoom = 1.0;
+	this.cameraDirZ = 0.01;
 	
 	// create animation data and set destination for movement
 	var image = this.loader.getImage( this.spriteImg );
@@ -101,6 +94,7 @@ pbTransformDemo.prototype.addSprites = function()
 	this.dirx = 2;
 	this.spr = new pbSprite();
 	this.spr.create(img, 200, 200, 1.0, 0, 1.0, 1.0);
+	rootLayer.addChild(this.spr);
 
 	this.child = new pbSprite();
 	this.child.create(img, 0, -100, 1.0, 0, 0.75, 0.75);
@@ -132,13 +126,19 @@ pbTransformDemo.prototype.update = function()
 {
 	frameCount++;
 
+	// zoom the camera (rootLayer) in and out
+	this.cameraZoom += this.cameraDirZ;
+	if (this.cameraZoom < 0.5 || this.cameraZoom > 2.0) this.cameraDirZ = -this.cameraDirZ;
+	rootLayer.scaleX = rootLayer.scaleY = this.cameraZoom;
+
+	// make the first three depths rotate at different speeds
 	this.childchild.angleInRadians += 0.04;
 	this.child.angleInRadians += 0.02;
 	this.spr.angleInRadians += 0.01;
+
+	// bounce the top sprite across the renderer view
 	this.spr.x += this.dirx;
 	if (this.spr.x < 150) this.dirx = -this.dirx;
 	if (this.spr.x > this.renderer.width - 150) this.dirx = -this.dirx;
-
-	this.spr.update();
 };
 

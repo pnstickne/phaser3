@@ -61,9 +61,9 @@ pbSprite.prototype.update = function()
 
 	// build the transform matrix from parent and my own transform member variables
 	if (!this.parent || !this.parent.transform)
-		this.transform = pbMatrix3.makeTransform(this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY);
+		pbMatrix3.setTransform(this.transform, this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY);
 	else
-		this.transform = pbMatrix3.matrixMultiply(pbMatrix3.makeTransform(this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY), this.parent.transform);
+		pbMatrix3.setFastMultiply(this.transform, pbMatrix3.makeTransform(this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY), this.parent.transform);
 	
 	// draw if this sprite has an image
 	if (this.image)
