@@ -98,11 +98,33 @@ pbTransformDemo.prototype.addSprites = function()
 	var img = new pbImage();
 	img.create(this.renderer, this.surface, 0);
 
+	this.dirx = 2;
 	this.spr = new pbSprite();
-	this.spr.create(null, img, 200, 200, 1.0, 0, 1.0, 1.0);
+	this.spr.create(img, 200, 200, 1.0, 0, 1.0, 1.0);
 
 	this.child = new pbSprite();
-	this.child.create(this.spr, img, 0, -50, 1.0, 0, 0.5, 0.5);
+	this.child.create(img, 0, -100, 1.0, 0, 0.75, 0.75);
+	this.spr.addChild(this.child);
+
+	this.childchild = new pbSprite();
+	this.childchild.create(img, 0, -75, 1.0, 0, 0.75, 0.75);
+	this.child.addChild(this.childchild);
+
+	var childchildchild = new pbSprite();
+	childchildchild.create(img, 0, -50, 1.0, 0, 0.5, 0.5);
+	this.childchild.addChild(childchildchild);
+
+	childchildchild = new pbSprite();
+	childchildchild.create(img, 0, 50, 1.0, 0, 0.5, 0.5);
+	this.childchild.addChild(childchildchild);
+
+	childchildchild = new pbSprite();
+	childchildchild.create(img, -50, 0, 1.0, 0, 0.5, 0.5);
+	this.childchild.addChild(childchildchild);
+
+	childchildchild = new pbSprite();
+	childchildchild.create(img, 50, 0, 1.0, 0, 0.5, 0.5);
+	this.childchild.addChild(childchildchild);
 };
 
 
@@ -110,7 +132,13 @@ pbTransformDemo.prototype.update = function()
 {
 	frameCount++;
 
+	this.childchild.angleInRadians += 0.04;
+	this.child.angleInRadians += 0.02;
 	this.spr.angleInRadians += 0.01;
+	this.spr.x += this.dirx;
+	if (this.spr.x < 150) this.dirx = -this.dirx;
+	if (this.spr.x > this.renderer.width - 150) this.dirx = -this.dirx;
+
 	this.spr.update();
 };
 

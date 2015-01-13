@@ -108,7 +108,7 @@ pbSoldierDemo.prototype.addSprites = function(num)
 
 		// unique sprite holder per soldier (holds transform)
 		var spr = new pbSprite();
-		spr.create(null, img, x, y, 1.0, 0, 96 / 480, 96 / 480);
+		spr.create(img, x, y, 1.0, 0, 96 / 480, 96 / 480);
 
 		// TODO: add pbLayer system to manage layers of pbSprites
 		// TODO: *maybe* add callback for pbSprite.update to implement AI functionality directly without needing unique objects for everything(?)

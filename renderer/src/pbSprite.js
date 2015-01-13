@@ -22,14 +22,12 @@ function pbSprite()
 }
 
 
-pbSprite.prototype.create = function(_parent, _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
+pbSprite.prototype.create = function(_image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
 {
-	if (_parent === undefined) _parent = null;
-	this.parent = _parent;
-
 	if (_image === undefined) _image = null;
 	this.image = _image;
 
+	this.parent = null;
 	this.alive = true;
 	this.visible = true;
 
@@ -65,7 +63,7 @@ pbSprite.prototype.update = function()
 	if (!this.parent || !this.parent.transform)
 		this.transform = pbMatrix3.makeTransform(this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY);
 	else
-		this.transform = pbMatrix3.matrixMultiply(this.parent.transform, pbMatrix3.makeTransform(this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY));
+		this.transform = pbMatrix3.matrixMultiply(pbMatrix3.makeTransform(this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY), this.parent.transform);
 	
 	// draw if this sprite has an image
 	if (this.image)
@@ -108,6 +106,7 @@ pbSprite.prototype.addChild = function(_child)
 	if (!this.children)
 		this.children = [];
 	this.children.push(_child);
+	_child.parent = this;
 };
 
 
@@ -116,7 +115,10 @@ pbSprite.prototype.addChildAt = function(_child, _index)
 	if (!this.children)
 		this.children = [];
 	if (_index <= this.children.length)
+	{
 		this.children.splice(_index, 0, _child);
+		_child.parent = this;
+	}
 	//else // TODO: error or warning!
 };
 
@@ -126,7 +128,9 @@ pbSprite.prototype.removeChild = function(_child)
 	if (!this.children) return;
 	var index = this.children.indexOf(_child);
 	if (index != -1)
+	{
 		this.removeChildAt(_index);
+	}
 	// else // TODO: error or warning!
 };
 
@@ -135,6 +139,7 @@ pbSprite.prototype.removeChildAt = function(_index)
 {
 	if (!this.children) return;
 	if (this.children.length <= _index) return;
+	this.children[_index].parent = null;
 	this.children.splice(_index, 1);
 };
 
