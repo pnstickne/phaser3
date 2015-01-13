@@ -1,8 +1,15 @@
 /**
  *
- * A container for an Image surface (TODO: or other types of graphics object, pbImage abstracts them all)
- *
+ * Surface holder with a single pbSurface and a cellFrame index for the current animation cell.
  * 
+ * This information cannot be stored in pbSurface (they are reused so the cellFrame needs to be unique)
+ * and should not be in pbSprite (it's a logical transform object with an optional image attached).
+ *
+ * These objects will usually be one per pbSprite, but can safely be shared if a large number of pbSprite
+ * objects will animate entirely in sync.  Be careful not to update the cellFrame in every pbSprite though!
+ *
+ * TODO: this class might be a good place to build drawing lists in order to permit fast batch drawing via a surface dictionary
+ *
  */
 
 

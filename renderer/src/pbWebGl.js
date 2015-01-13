@@ -429,23 +429,23 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 };
 
 
-pbWebGl.prototype.handleTexture = function( image )
+pbWebGl.prototype.handleTexture = function( _image )
 {
 	console.log( "pbWebGl.handleTexture" );
 
 	var gl = this.gl;
 
     var maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-    if (image.width > maxSize || image.height > maxSize)
+    if (_image.width > maxSize || _image.height > maxSize)
     {
-	    alert("ERROR: Texture size not supported by this video card!", image.width, image.height, " > ", maxSize);
+	    alert("ERROR: Texture size not supported by this video card!", _image.width, _image.height, " > ", maxSize);
 	    return null;
     }
 
 	var texture = gl.createTexture();
-	texture.image = image;
+	texture.image = _image;
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _image);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -457,17 +457,17 @@ pbWebGl.prototype.handleTexture = function( image )
 };
 
 
-pbWebGl.prototype.drawImageWithTransform = function( _transform, _z, image, cellFrame )
+pbWebGl.prototype.drawImageWithTransform = function( _transform, _z, _surface, cellFrame )
 {
 	var gl = this.gl;
 
 	if ( this.currentProgram !== this.imageShaderProgram )
 		this.currentProgram = this.setImageProgram();
 
-	if ( !this.currentTexture || this.currentTexture.image !== image )
+	if ( !this.currentTexture || this.currentTexture.image !== _surface.image )
 	{
 		// prepare the texture
-		this.currentTexture = this.handleTexture( image );
+		this.currentTexture = this.handleTexture( _surface.image );
 	    gl.activeTexture( gl.TEXTURE0 );
 	   	gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
 	   	gl.uniform1i( this.imageShaderProgram.samplerUniform, 0 );
@@ -484,14 +484,14 @@ pbWebGl.prototype.drawImageWithTransform = function( _transform, _z, image, cell
 	var sa = this.drawingArray.subarray(0, 20);
 
 	// half width, half height (of source frame)
-	var wide = image.cellWide * 0.5;
-	var high = image.cellHigh * 0.5;
+	var wide = _surface.cellWide * 0.5;
+	var high = _surface.cellHigh * 0.5;
 
 	// set up the animation frame
 	var cell = Math.floor(cellFrame);
-	var cx = cell % image.cellsWide;
-	var cy = Math.floor(cell / image.cellsWide);
-	var rect = image.cellTextureBounds[cx][cy];
+	var cx = cell % _surface.cellsWide;
+	var cy = Math.floor(cell / _surface.cellsWide);
+	var rect = _surface.cellTextureBounds[cx][cy];
 	var tex_x = rect.x;
 	var tex_y = rect.y;
 	var tex_r = rect.x + rect.width;
@@ -533,17 +533,17 @@ pbWebGl.prototype.drawImageWithTransform = function( _transform, _z, image, cell
 };
 
 
-pbWebGl.prototype.drawImage = function( _x, _y, _z, image, cellFrame, angle, scale )
+pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, cellFrame, angle, scale )
 {
 	var gl = this.gl;
 
 	if ( this.currentProgram !== this.imageShaderProgram )
 		this.currentProgram = this.setImageProgram();
 
-	if ( !this.currentTexture || this.currentTexture.image !== image )
+	if ( !this.currentTexture || this.currentTexture.image !== _surface.image )
 	{
 		// prepare the texture
-		this.currentTexture = this.handleTexture( image );
+		this.currentTexture = this.handleTexture( _surface.image );
 	    gl.activeTexture( gl.TEXTURE0 );
 	   	gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
 	   	gl.uniform1i( this.imageShaderProgram.samplerUniform, 0 );
@@ -560,14 +560,14 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, image, cellFrame, angle, sca
 	var sa = this.drawingArray.subarray(0, 20);
 
 	// half width, half height (of source frame)
-	var wide = image.cellWide * 0.5;
-	var high = image.cellHigh * 0.5;
+	var wide = _surface.cellWide * 0.5;
+	var high = _surface.cellHigh * 0.5;
 
 	// set up the animation frame
 	var cell = Math.floor(cellFrame);
-	var cx = cell % image.cellsWide;
-	var cy = Math.floor(cell / image.cellsWide);
-	var rect = image.cellTextureBounds[cx][cy];
+	var cx = cell % _surface.cellsWide;
+	var cy = Math.floor(cell / _surface.cellsWide);
+	var rect = _surface.cellTextureBounds[cx][cy];
 	var tex_x = rect.x;
 	var tex_y = rect.y;
 	var tex_r = rect.x + rect.width;
@@ -619,17 +619,17 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, image, cellFrame, angle, sca
 };
 
 
-pbWebGl.prototype.batchDrawImages = function( list, image )
+pbWebGl.prototype.batchDrawImages = function( list, _surface )
 {
 	var gl = this.gl;
 
 	if ( this.currentProgram !== this.batchImageShaderProgram )
 		this.currentProgram = this.setBatchImageProgram();
 
-	if ( !this.currentTexture || this.currentTexture.image !== image )
+	if ( !this.currentTexture || this.currentTexture.image !== _surface.image )
 	{
 		// prepare the texture
-		this.currentTexture = this.handleTexture( image );
+		this.currentTexture = this.handleTexture( _surface.image );
 		gl.activeTexture( gl.TEXTURE0 );
 		gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
 		gl.uniform1i( this.currentProgram.samplerUniform, 0 );
@@ -643,8 +643,8 @@ pbWebGl.prototype.batchDrawImages = function( list, image )
 	}
 
 	// half width, half height (of source frame)
-	var wide = image.cellWide * 0.5;
-	var high = image.cellHigh * 0.5;
+	var wide = _surface.cellWide * 0.5;
+	var high = _surface.cellHigh * 0.5;
 
 	// TODO: generate warning if length is capped
 	var len = Math.min(list.length, MAX_SPRITES);

@@ -10,7 +10,6 @@
     <script type="text/javascript" src="dat.gui.js"></script>
     <script type="text/javascript" src="stats.js"></script>    
 
-    <script type="text/javascript" src="pbDemo.js"></script>
     <script type="text/javascript" src="pbLoader.js"></script>
     <script type="text/javascript" src="pbRenderer.js"></script>
     <script type="text/javascript" src="pbRootTimer.js"></script>
@@ -19,16 +18,59 @@
     <script type="text/javascript" src="pbRectangle.js"></script>
     <script type="text/javascript" src="pbMatrix3.js"></script>
     <script type="text/javascript" src="pbSprite.js"></script>
+    <script type="text/javascript" src="pbSurface.js"></script>
     <script type="text/javascript" src="pbImage.js"></script>
     <script type="text/javascript" src="pbLayer.js"></script>
+
+    <script type="text/javascript" src="pbSoldierDemo.js"></script>
+    <script type="text/javascript" src="pbTransformDemo.js"></script>
+
 </head>
 
 <body>
 <script type="text/javascript">
 
+/**
+ * NOTE: use of the 'pb' prefix on all classes in this test bed is essential for renaming class references without ambiguity.
+ * During development it is expected that class names, hierarchies and inter-relationships will change frequently as we feel our way to the final structure.
+ */
+    var demo;
     var docId = 'renderer-test';
-    var demo = new pbDemo(docId);
-    
+    var demoName = null;
+
+    // fps counter
+    var stats = null;
+    stats = new Stats();
+    stats.setMode(0);
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.right = '0px';
+    stats.domElement.style.bottom = '0px';
+    document.body.appendChild( stats.domElement );
+
+    var gui = new dat.GUI();
+    var pickDemo = gui.add(this, "demoName",
+        {
+            none: null,
+            soldiers: "pbSoldierDemo",
+            transforms: "pbTransformDemo"
+        }
+    );
+    pickDemo.onFinishChange(
+        function(value)
+        {
+            if (demo)
+            {
+                demo.destroy();
+                demo = null;
+            }
+
+            if (value && window[value])
+            {
+                demo = new window[value](docId);
+            }
+        }
+    );
+
 </script>
 </body>
 

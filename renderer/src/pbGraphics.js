@@ -17,6 +17,12 @@ function pbGraphics()
 }
 
 
+pbGraphics.prototype.destroy = function()
+{
+	this.reset();
+};
+
+
 pbGraphics.prototype.fillStyle = function(color)
 {
 	if (typeof color === "number")
@@ -67,14 +73,14 @@ pbGraphics.prototype.fillRect = function(param0, y, width, height)
 };
 
 
-pbGraphics.prototype.drawImage = function(x, y, z, image, cell, angle, scale)
+pbGraphics.prototype.drawImage = function(x, y, z, _surface, cell, angle, scale)
 {
 	switch(renderer)
 	{
 		case "canvas":
 			break;
 		case "webgl":
-			webGl.drawImage(x, y, z, image, cell, angle, scale);
+			webGl.drawImage(x, y, z, _surface, cell, angle, scale);
 			break;
 	}
 };
@@ -93,14 +99,14 @@ pbGraphics.prototype.drawImageWithTransform = function(_transform, _z_order, _su
 };
 
 
-pbGraphics.prototype.batchDrawImages = function(list, image)
+pbGraphics.prototype.batchDrawImages = function(list, _surface)
 {
 	switch(renderer)
 	{
 		case "canvas":
 			break;
 		case "webgl":
-			webGl.batchDrawImages(list, image);
+			webGl.batchDrawImages(list, _surface);
 			break;
 	}
 };

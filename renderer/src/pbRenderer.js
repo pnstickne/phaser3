@@ -9,7 +9,6 @@ var canvas = null;
 var ctx = null;
 var webGl = null;
 var renderer = "canvas";
-var stats = null;
 
 
 // TODO: split RAF timer out of here and into it's own object, including updateCallback etc
@@ -25,15 +24,6 @@ function pbRenderer(docId, updateCallback, updateContext)
 
 	// globals
  	webGl = null;
-
- 	// fps counter
- 	stats = new Stats();
- 	stats.setMode(0);
-	stats.domElement.style.position = 'absolute';
-	stats.domElement.style.right = '0px';
-	stats.domElement.style.bottom = '0px';
-
-	document.body.appendChild( stats.domElement );
 
 	// members
 	this.isBooted = false;
@@ -62,6 +52,20 @@ function pbRenderer(docId, updateCallback, updateContext)
 }
 
 
+pbRenderer.prototype.destroy = function()
+{
+	if (this.rootTimer)
+		this.rootTimer.destroy();
+	this.rootTimer = null;
+
+	if (this.graphics)
+		this.graphics.destroy();
+	this.graphics = null;
+
+	webGl = null;
+};
+
+
 pbRenderer.prototype.boot = function()
 {
     if (this.isBooted)
@@ -76,6 +80,8 @@ pbRenderer.prototype.boot = function()
         window.setTimeout(this._onBoot, 20);
         return;
     }
+
+   	console.log("pbRenderer boot");
 
     document.removeEventListener('DOMContentLoaded', this._onBoot);
     window.removeEventListener('load', this._onBoot);
