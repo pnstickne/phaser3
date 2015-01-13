@@ -45,8 +45,9 @@ pbSprite.prototype.create = function(_image, _x, _y, _z, _angleInRadians, _scale
 pbSprite.prototype.destroy = function()
 {
 	// destroy all my children too
-	for(var c = this.children.length - 1; c >= 0; --c)
-		this.children[c].destroy();
+	if (this.children)
+		for(var c = this.children.length - 1; c >= 0; --c)
+			this.children[c].destroy();
 	this.children = null;
 	this.parent = null;
 	this.image = null;
@@ -54,7 +55,7 @@ pbSprite.prototype.destroy = function()
 };
 
 
-pbSprite.prototype.update = function()
+pbSprite.prototype.update = function(_renderer, _drawDictionary)
 {
 	if (!this.alive)
 		return true;
@@ -67,7 +68,7 @@ pbSprite.prototype.update = function()
 	
 	// draw if this sprite has an image
 	if (this.image)
-		this.image.draw(this.transform, this.z);
+		this.image.draw(_drawDictionary, this.transform, this.z);
 
 	if (this.children)
 	{
@@ -77,7 +78,7 @@ pbSprite.prototype.update = function()
 			var child = this.children[c];
 
 			// update this child
-			if (!child.update())
+			if (!child.update(_renderer, _drawDictionary))
 			{
 				child.destroy();
 				this.removechildAt(c);

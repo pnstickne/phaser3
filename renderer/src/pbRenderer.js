@@ -33,6 +33,7 @@ function pbRenderer(_docId, _bootCallback, _updateCallback, _context)
 	this.frameCount = 0;
 
 	// drawing sub-systems
+ 
 	this.graphics = null;
 
 	// boot callback
@@ -153,12 +154,18 @@ pbRenderer.prototype.update = function()
 	if (renderer === "webgl")
 	  	webGl.preRender();
 
+	// update all object transforms then draw them
 	if (rootLayer)
-		rootLayer.update();
+	{
+		// the rootLayer update will iterate the entire display list
+		rootLayer.update(this);
+	}
 
 	this.updateCallback.call(this.context);
 	
 	stats.end();
 };
+
+
 
 

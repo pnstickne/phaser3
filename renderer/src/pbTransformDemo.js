@@ -127,9 +127,9 @@ pbTransformDemo.prototype.update = function()
 	frameCount++;
 
 	// zoom the camera (rootLayer) in and out
-	this.cameraZoom += this.cameraDirZ;
-	if (this.cameraZoom < 0.5 || this.cameraZoom > 2.0) this.cameraDirZ = -this.cameraDirZ;
-	rootLayer.scaleX = rootLayer.scaleY = this.cameraZoom;
+	// this.cameraZoom += this.cameraDirZ;
+	// if (this.cameraZoom < 0.5 || this.cameraZoom > 2.0) this.cameraDirZ = -this.cameraDirZ;
+	// rootLayer.scaleX = rootLayer.scaleY = this.cameraZoom;
 
 	// make the first three depths rotate at different speeds
 	this.childchild.angleInRadians += 0.04;

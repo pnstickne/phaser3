@@ -16,6 +16,7 @@ function pbLayer()
 {
 	this.list = null;
 	this.parent = null;
+	this.drawDictionary = null;
 }
 
 // pbLayer extends from the pbSprite prototype chain
@@ -26,10 +27,20 @@ pbLayer.prototype.__super__ = pbSprite;		// http://stackoverflow.com/questions/7
 
 pbLayer.prototype.create = function(_parent, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
 {
+	// TODO: add pass-through option so that layers can choose not to inherit their parent's transforms and will use the rootLayer transform instead
+	 
+	// TODO: pbLayer is rotating around it's top-left corner (because there's no width/height and no anchor point??)
+
+	// create dictionary to store drawing commands in the correct order, indexed by the source surface
+	// to prepare the data for fast batch drawing
+	this.drawDictionary = new pbDictionary();
+	this.drawDictionary.create();
+	 
 	this.parent = _parent;
 	// call the pbSprite create for this pbLayer
 	this.__super__.prototype.create.call(this, null, _x, _y, _z, _angleInRadians, _scaleX, _scaleY);
 	this.list = [];
+
 };
 
 
@@ -50,13 +61,21 @@ pbLayer.prototype.add = function()
 };
 
 
-pbLayer.prototype.update = function()
+pbLayer.prototype.update = function(_renderer, _dictionary)
 {
+	// keep reference to the renderer, we'll need it in the draw callbacks
+	this.renderer = _renderer;
+
+	// TODO: check this dictionary implementation works correctly with nested layers, nested sprites, and combinations of both
+	// prepare the dictionary
+	this.drawDictionary.clear();
+
 	// call update for all members of this layer
+	// (pbImage adds drawing data to the drawDictionary)
 	for(var i = this.list.length - 1; i >= 0; --i)
 	{
 		var member = this.list[i];
-		if (!member.update())
+		if (!member.update(_renderer, this.drawDictionary))
 		{
 			member.destroy();
 			this.list.splice(i, 1);
@@ -64,8 +83,17 @@ pbLayer.prototype.update = function()
 	}
 
 	// call the pbSprite update for this pbLayer to access the child hierarchy
-	this.__super__.prototype.update.call(this);
+	this.__super__.prototype.update.call(this, _renderer, this.drawDictionary);
+
+	// iterate the drawDictionary and draw everything in this layer
+	this.drawDictionary.iterateAll(this.draw, this);
 
 	return true;
 };
 
+
+
+pbLayer.prototype.draw = function(_obj)
+{
+	this.renderer.graphics.drawImageWithTransform( _obj.transform, _obj.z_order, _obj.surface, _obj.cellFrame );	
+};
