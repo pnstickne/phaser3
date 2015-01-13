@@ -45,8 +45,7 @@ pbSoldierDemo.prototype.allLoaded = function()
 {
 	console.log( "pbSoldierDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( this.docId, this.update, this );
-	this.create();
+	this.renderer = new pbRenderer( this.docId, this.create, this.update, this );
 };
 
 
@@ -109,6 +108,7 @@ pbSoldierDemo.prototype.addSprites = function(num)
 		// unique sprite holder per soldier (holds transform)
 		var spr = new pbSprite();
 		spr.create(img, x, y, 1.0, 0, 96 / 480, 96 / 480);
+		rootLayer.addChild(spr);
 
 		// TODO: add pbLayer system to manage layers of pbSprites
 		// TODO: *maybe* add callback for pbSprite.update to implement AI functionality directly without needing unique objects for everything(?)
@@ -142,6 +142,7 @@ pbSoldierDemo.prototype.removeSprites = function(num)
 			var spr = this.spriteList[this.spriteList.length - 1];
 			this.targetx = spr.tx;
 			this.targety = spr.ty;
+			spr.sprite.destroy();
 		}
 
 		this.spriteList.pop();
@@ -178,26 +179,12 @@ pbSoldierDemo.prototype.update = function()
 				spr.z = 1 - spr.y / 480;
 				spr.scaleX = spr.scaleY = (spr.y + 96) / 480;
 			}
-
-			// rotation test
-			//spr.angleInRadians += 0.02 * Math.random();
-
-
-			// TODO: pbLayer should handle calls to pbSprite.update for all sprites in that layer (equivalent to Stage.update)
-			spr.update();
-
-			// if (!this.useBatch)
-			// 	this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].z, list[ i ].img, list[ i ].cellFrame, list[ i ].angle, list[i].scale );
 		}
-		
-		// batch draw them all with a single image texture
-		// if (this.useBatch && this.numSprites > 0)
-		// 	this.renderer.graphics.batchDrawImages( this.spriteList, this.spriteList[ 0 ].img );
 	}
 
 	if (fps > 59 && this.targety > 0)
 	{
-	 	this.addSprites(2);
+	 	this.addSprites(5);
 	}
 	if (fps > 0 && fps < 55)
 	{

@@ -61,11 +61,8 @@ pbLayer.prototype.add = function()
 };
 
 
-pbLayer.prototype.update = function(_renderer, _dictionary)
+pbLayer.prototype.update = function(_dictionary)
 {
-	// keep reference to the renderer, we'll need it in the draw callbacks
-	this.renderer = _renderer;
-
 	// TODO: check this dictionary implementation works correctly with nested layers, nested sprites, and combinations of both
 	// prepare the dictionary
 	this.drawDictionary.clear();
@@ -75,7 +72,7 @@ pbLayer.prototype.update = function(_renderer, _dictionary)
 	for(var i = this.list.length - 1; i >= 0; --i)
 	{
 		var member = this.list[i];
-		if (!member.update(_renderer, this.drawDictionary))
+		if (!member.update(this.drawDictionary))
 		{
 			member.destroy();
 			this.list.splice(i, 1);
@@ -83,7 +80,7 @@ pbLayer.prototype.update = function(_renderer, _dictionary)
 	}
 
 	// call the pbSprite update for this pbLayer to access the child hierarchy
-	this.__super__.prototype.update.call(this, _renderer, this.drawDictionary);
+	this.__super__.prototype.update.call(this, this.drawDictionary);
 
 	// iterate the drawDictionary and draw everything in this layer
 	this.drawDictionary.iterateAll(this.draw, this);
@@ -95,5 +92,9 @@ pbLayer.prototype.update = function(_renderer, _dictionary)
 
 pbLayer.prototype.draw = function(_obj)
 {
-	this.renderer.graphics.drawImageWithTransform( _obj.transform, _obj.z_order, _obj.surface, _obj.cellFrame );	
+	_obj.renderer.graphics.drawImageWithTransform( _obj.transform, _obj.z_order, _obj.surface, _obj.cellFrame );	
 };
+
+// sprite batching...
+// if (!this.useBatch)
+// 	this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].z, list[ i ].img, list[ i ].cellFrame, list[ i ].angle, list[i].scale );

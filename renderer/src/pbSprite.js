@@ -49,13 +49,18 @@ pbSprite.prototype.destroy = function()
 		for(var c = this.children.length - 1; c >= 0; --c)
 			this.children[c].destroy();
 	this.children = null;
+
+	// remove me from my parent
+	if (this.parent)
+		this.parent.removeChild(this);
 	this.parent = null;
+
 	this.image = null;
 	this.transform = null;
 };
 
 
-pbSprite.prototype.update = function(_renderer, _drawDictionary)
+pbSprite.prototype.update = function(_drawDictionary)
 {
 	if (!this.alive)
 		return true;
@@ -78,7 +83,7 @@ pbSprite.prototype.update = function(_renderer, _drawDictionary)
 			var child = this.children[c];
 
 			// update this child
-			if (!child.update(_renderer, _drawDictionary))
+			if (!child.update(_drawDictionary))
 			{
 				child.destroy();
 				this.removechildAt(c);
@@ -130,7 +135,7 @@ pbSprite.prototype.removeChild = function(_child)
 	var index = this.children.indexOf(_child);
 	if (index != -1)
 	{
-		this.removeChildAt(_index);
+		this.removeChildAt(index);
 	}
 	// else // TODO: error or warning!
 };

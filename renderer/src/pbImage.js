@@ -49,6 +49,6 @@ pbImage.prototype.draw = function(_drawDictionary, _transform, _z_order)
 	// TODO: produce batches of images in each layer which all use the same source surface. Draw them using the much faster batch draw options
 	//this.renderer.graphics.drawImageWithTransform( _transform, _z_order, this.surface, this.cellFrame );
 
-	_drawDictionary.add( this.surface, { transform: _transform, z_order: _z_order, surface: this.surface, cellFrame: this.cellFrame });
+	_drawDictionary.add( this.surface, { renderer: this.renderer, transform: _transform, z_order: _z_order, surface: this.surface, cellFrame: this.cellFrame });
 };
 
