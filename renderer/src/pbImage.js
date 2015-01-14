@@ -18,6 +18,7 @@ function pbImage()
 	this.renderer = null;
 	this.surface = null;
 	this.cellFrame = 0;
+	this.gpuTexture = null;
 }
 
 
@@ -28,6 +29,7 @@ pbImage.prototype.create = function(_renderer, _surface, _cellFrame)
 	this.renderer = _renderer;
 	this.surface = _surface;
 	this.cellFrame = _cellFrame;
+	this.gpuTexture = null;
 };
 
 
@@ -35,6 +37,7 @@ pbImage.prototype.destroy = function()
 {
 	this.renderer = null;
 	this.surface = null;
+	this.gpuTexture = null;
 };
 
 

@@ -147,6 +147,7 @@ function pbWebGl()
 	this.currentProgram = null;
 	this.currentTexture = null;
 	this.positionBuffer = null;
+	this.onGPU = [];
 	// pre-allocate the this.drawingArray to avoid memory errors from fragmentation (seen on Chrome (debug Version 39.0.2171.71 m) after running 75000 sprite demo for ~15 seconds)
 	this.drawingArray = new Float32Array( MAX_SPRITES * (44 + 22) - 22 );
 }
@@ -519,29 +520,62 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 
 pbWebGl.prototype.handleTexture = function( _image )
 {
-	console.log( "pbWebGl.handleTexture" );
+	// this _image is already the selected texture
+	if (this.currentTexture && this.currentTexture.image === _image)
+		return;
 
 	var gl = this.gl;
+	var index = this.onGPU.indexOf(_image);
+	var texture = null;
 
-    var maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-    if (_image.width > maxSize || _image.height > maxSize)
+    if (index != -1)
     {
-	    alert("ERROR: Texture size not supported by this video card!", _image.width, _image.height, " > ", maxSize);
-	    return null;
+		// the _image is already on the GPU
+		texture = this.onGPU[index].gpuTexture;
     }
+    else
+    {
+    	// upload it
+	    var maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+	    if (_image.width > maxSize || _image.height > maxSize)
+	    {
+		    alert("ERROR: Texture size not supported by this video card!", _image.width, _image.height, " > ", maxSize);
+		    return;
+	    }
 
-	var texture = gl.createTexture();
-	texture.image = _image;
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _image);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-    gl.generateMipmap(gl.TEXTURE_2D);
-    gl.bindTexture(gl.TEXTURE_2D, null);
+		console.log( "pbWebGl.handleTexture uploading new texture : ", _image.width, "x", _image.height );
 
-	return texture;
+	    // link the texture object to the image and vice-versa
+		texture = gl.createTexture();
+		texture.image = _image;
+		_image.gpuTexture = texture;
+
+	    gl.bindTexture(gl.TEXTURE_2D, texture);
+	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _image);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+	    gl.generateMipmap(gl.TEXTURE_2D);
+
+	    // remember that this texture has been uploaded
+	    this.onGPU.push(_image);
+	}
+
+	// activate the texture
+    this.currentTexture = texture;
+    gl.activeTexture( gl.TEXTURE0 );
+   	gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
+
+   	// TODO: the rest of this stuff doesn't belong here...
+   	gl.uniform1i( this.imageShaderProgram.samplerUniform, 0 );
+
+	// create a buffer to transfer all the vertex position data through
+	this.positionBuffer = this.gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+
+	// set up the projection matrix in the vertex shader
+	gl.uniformMatrix3fv( this.currentProgram.projectionUniform, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
 };
 
 
@@ -552,21 +586,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _transform, _z, _surface, c
 	if ( this.currentProgram !== this.imageShaderProgram )
 		this.currentProgram = this.setImageProgram();
 
-	if ( !this.currentTexture || this.currentTexture.image !== _surface.image )
-	{
-		// prepare the texture
-		this.currentTexture = this.handleTexture( _surface.image );
-	    gl.activeTexture( gl.TEXTURE0 );
-	   	gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
-	   	gl.uniform1i( this.imageShaderProgram.samplerUniform, 0 );
-
-		// create a buffer to transfer all the vertex position data through
-		this.positionBuffer = this.gl.createBuffer();
-	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
-
-		// set up the projection matrix in the vertex shader
-		gl.uniformMatrix3fv( this.currentProgram.projectionUniform, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
-	}
+	this.handleTexture( _surface.image );
 
 	// split off a small part of the big buffer, for a single display object
 	var sa = this.drawingArray.subarray(0, 20);
@@ -628,21 +648,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, cellFrame, angle, 
 	if ( this.currentProgram !== this.imageShaderProgram )
 		this.currentProgram = this.setImageProgram();
 
-	if ( !this.currentTexture || this.currentTexture.image !== _surface.image )
-	{
-		// prepare the texture
-		this.currentTexture = this.handleTexture( _surface.image );
-	    gl.activeTexture( gl.TEXTURE0 );
-	   	gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
-	   	gl.uniform1i( this.imageShaderProgram.samplerUniform, 0 );
-
-		// create a buffer to transfer all the vertex position data through
-		this.positionBuffer = this.gl.createBuffer();
-	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
-
-		// set up the projection matrix in the vertex shader
-		gl.uniformMatrix3fv( this.currentProgram.projectionUniform, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
-	}
+	this.handleTexture( _surface.image );
 
 	// split off a small part of the big buffer, for a single display object
 	var sa = this.drawingArray.subarray(0, 20);
@@ -714,21 +720,7 @@ pbWebGl.prototype.batchDrawImages = function( list, _surface )
 	if ( this.currentProgram !== this.batchImageShaderProgram )
 		this.currentProgram = this.setBatchImageProgram();
 
-	if ( !this.currentTexture || this.currentTexture.image !== _surface.image )
-	{
-		// prepare the texture
-		this.currentTexture = this.handleTexture( _surface.image );
-		gl.activeTexture( gl.TEXTURE0 );
-		gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
-		gl.uniform1i( this.currentProgram.samplerUniform, 0 );
-
-		// create a buffer to transfer all the vertex position data through
-		this.positionBuffer = this.gl.createBuffer();
-	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
-
-		// set up the projection matrix in the vertex shader
-		gl.uniformMatrix3fv( this.currentProgram.projectionUniform, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
-	}
+	this.handleTexture( _surface.image );
 
 	// half width, half height (of source frame)
 	var wide = _surface.cellWide * 0.5;
@@ -863,21 +855,7 @@ pbWebGl.prototype.rawBatchDrawImages = function( list )
 	if ( this.currentProgram !== this.rawBatchImageShaderProgram )
 		this.currentProgram = this.setRawBatchImageProgram();
 
-	if ( !this.currentTexture || this.currentTexture.image !== surface.image )
-	{
-		// prepare the texture
-		this.currentTexture = this.handleTexture( surface.image );
-		gl.activeTexture( gl.TEXTURE0 );
-		gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
-		gl.uniform1i( this.currentProgram.samplerUniform, 0 );
-
-		// create a buffer to transfer all the vertex position data through
-		this.positionBuffer = this.gl.createBuffer();
-	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
-
-		// set up the projection matrix in the vertex shader
-		gl.uniformMatrix3fv( this.currentProgram.projectionUniform, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
-	}
+	this.handleTexture( surface.image );
 
 	// half width, half height (of source frame)
 	var wide = surface.cellWide * 0.5;
