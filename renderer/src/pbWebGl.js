@@ -867,6 +867,12 @@ pbWebGl.prototype.rawBatchDrawImages = function( list )
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
     var sa = this.drawingArray.subarray(0, len * (44 + 22) - 22);
 
+    // TODO: hardwired offset multipliers for each corner position (eg: lt = left, top)
+    var ltx = 3, lty = 1;
+    var lbx = 1, lby = 1;
+    var rtx = 0, rty = 1;
+    var rbx = 1, rby = 1;
+
 	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
 	for ( var i = -1, c = 0; ++i < len; c += 44 )
 	{
@@ -889,8 +895,8 @@ pbWebGl.prototype.rawBatchDrawImages = function( list )
 			// screen destination position
 			sa[ c     ] = sa[ c - 44 + 33 ];
 			sa[ c + 1 ] = sa[ c - 44 + 34 ];
-			sa[ c + 11] = -wide;
-			sa[ c + 12] =  high;
+			sa[ c + 11] = -wide * lbx;
+			sa[ c + 12] =  high * lby;
 
 			// last transform matrix
 			sa[ c + 4 ] = sa[ c + 4  - 44 ];
@@ -909,10 +915,10 @@ pbWebGl.prototype.rawBatchDrawImages = function( list )
 		// l, t,		11,12
 		// r, b,		22,23
 		// r, t,		33,34
-		sa[ c     ] = sa[ c + 11] = -wide;		// l
-		sa[ c + 1 ] = sa[ c + 23] =  high;		// b
-		sa[ c + 22] = sa[ c + 33] =  wide;		// r
-		sa[ c + 12] = sa[ c + 34] = -high;		// t
+		sa[ c     ] = -wide * lbx; sa[ c + 11] = -wide * ltx;		// l
+		sa[ c + 1 ] = high * lby; sa[ c + 23] =  high * rby;		// b
+		sa[ c + 22] = wide * rbx; sa[ c + 33] =  wide * rtx;		// r
+		sa[ c + 12] = -high * lty; sa[ c + 34] = -high * rty;		// t
 
 		// texture source position
 		// l, b,		2,3
