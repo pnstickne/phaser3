@@ -18,7 +18,8 @@ function pbSoldierDemo( docId )
 
 	this.docId = docId;
 
-	this.surface = null;
+	this.surface_run = null;
+	this.surface_smash = null;
 	this.targetx = 0;
 	this.targety = 0;
 	this.numSprites = 0;
@@ -35,7 +36,8 @@ function pbSoldierDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "../img/soldier_a_run.png" );
+	this.sprite_run = this.loader.loadImage( "../img/soldier_a_run.png" );
+	this.sprite_smash = this.loader.loadImage( "../img/soldier_a_smash.png" );
 
 	console.log( "pbSoldierDemo c'tor exit" );
 }
@@ -67,8 +69,10 @@ pbSoldierDemo.prototype.destroy = function()
 	this.gui.destroy();
 
 	this.spriteList = null;
-	this.surface.destroy();
-	this.surface = null;
+	this.surface_run.destroy();
+	this.surface_run = null;
+	this.surface_smash.destroy();
+	this.surface_smash = null;
 
 	this.renderer.destroy();
 	this.renderer = null;
@@ -87,11 +91,15 @@ pbSoldierDemo.prototype.restart = function()
 pbSoldierDemo.prototype.addSprites = function(num)
 {
 	// calculate cell position bounds in source texture and attach it to the image
-	if (!this.surface)
+	if (!this.surface_run)
 	{
-		var image = this.loader.getImage( this.spriteImg );
-		this.surface = new pbSurface();
-		this.surface.create(32, 64, 8, 5, image);
+		this.surface_run = new pbSurface();
+		this.surface_run.create(32, 64, 8, 5, this.loader.getImage( this.sprite_run ));
+	}
+	if (!this.surface_smash)
+	{
+		this.surface_smash = new pbSurface();
+		this.surface_smash.create(32, 64, 8, 5, this.loader.getImage( this.sprite_smash ));
 	}
 
 	// create animation data and set destination for movement
@@ -102,8 +110,18 @@ pbSoldierDemo.prototype.addSprites = function(num)
 		var y = 0;
 
 		// unique image holder per soldier (permits individual animation)
+		var frames = 0;
 		var img = new pbImage();
-		img.create(this.renderer, this.surface, Math.floor(Math.random() * 3));
+		if (i % 2 == 1)
+		{
+			img.create(this.renderer, this.surface_run, Math.floor(Math.random() * 3));
+			frames = 8;
+		}
+		else
+		{
+			img.create(this.renderer, this.surface_smash, Math.floor(Math.random() * 3));
+			frames = 6;
+		}
 
 		// unique sprite holder per soldier (holds transform)
 		var spr = new pbSprite();
@@ -118,6 +136,7 @@ pbSoldierDemo.prototype.addSprites = function(num)
 			sprite: spr,
 			tx: this.targetx,
 			ty: this.targety,
+			lastFrame: frames
 		} );
 
 		// line up in ranks getting smaller and smaller
@@ -166,7 +185,7 @@ pbSoldierDemo.prototype.update = function()
 
 			// animation
 			img.cellFrame += 0.2;
-			if (img.cellFrame >= 8) img.cellFrame = 0;
+			if (img.cellFrame >= list[i].lastFrame) img.cellFrame = 0;
 
 			// movement towards target location
 			var dx = list[i].tx - spr.x;
