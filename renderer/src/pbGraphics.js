@@ -1,6 +1,9 @@
 /**
  *
  * pbGraphics - a drawing API to wrap the canvas, webGL, and anything else we end up with
+ *
+ *
+ * TODO: this is horrible, all these switches... clean it up or eliminate it!
  * 
  */
 
