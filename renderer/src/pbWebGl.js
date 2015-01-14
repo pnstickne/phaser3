@@ -37,6 +37,7 @@ var imageShaderSources = {
 
 /**
  * batchImageShaderSources - shaders for batch image drawing (fixed orientation and scale)
+ * calculates the transform matrix from the values provided in the data buffer stream
  * @type {Array}
  */
 var batchImageShaderSources = {
@@ -63,6 +64,41 @@ var batchImageShaderSources = {
 		"    modelMatrix[2] = vec3( aTranslate.x, aTranslate.y, 1 );" +
 		"    vec3 pos = uProjectionMatrix * modelMatrix * vec3( aPosition.xy, 1 );" +
 		"    gl_Position = vec4(pos.xy, aTranslate.z, 1);" +
+		"    vTexCoord = aPosition.zw;" +
+		"  }"
+};
+
+
+/**
+ * rawBatchImageShaderSources - shaders for batch image drawing (fixed orientation and scale)
+ * requires the transform matrix in the data buffer stream
+ * @type {Array}
+ */
+var rawBatchImageShaderSources = {
+	fragment:
+		"  precision mediump float;" +
+		"  uniform sampler2D uImageSampler;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    gl_FragColor = texture2D(uImageSampler, vTexCoord);" +
+		"    if (gl_FragColor.a < 0.80) discard;" +
+		"  }",
+
+	vertex:
+		"  attribute vec4 aPosition;" +
+		"  attribute vec2 aModelMatrix0;" +
+		"  attribute vec2 aModelMatrix1;" +
+		"  attribute vec3 aModelMatrix2;" +
+		"  uniform mat3 uProjectionMatrix;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    float z = aModelMatrix2.z;" +
+		"    mat3 modelMatrix;" +
+		"    modelMatrix[0] = vec3(aModelMatrix0, 0);" +
+		"    modelMatrix[1] = vec3(aModelMatrix1, 0);" +
+		"    modelMatrix[2] = vec3(aModelMatrix2.xy, 1);" +
+		"    vec3 pos = uProjectionMatrix * modelMatrix * vec3(aPosition.xy, 1);" +
+		"    gl_Position = vec4(pos.xy, z, 1);" +
 		"    vTexCoord = aPosition.zw;" +
 		"  }"
 };
@@ -105,6 +141,7 @@ function pbWebGl()
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
 	this.batchImageShaderProgram = null;
+	this.rawBatchImageShaderProgram = null;
 	this.bgVertexBuffer = null;
 	this.bgColorBuffer = null;
 	this.currentProgram = null;
@@ -147,6 +184,7 @@ pbWebGl.prototype.initGL = function( canvas )
 		this.imageShaderProgram = this.initShaders( this.gl, imageShaderSources );
 
 		this.batchImageShaderProgram = this.initShaders( this.gl, batchImageShaderSources );
+		this.rawBatchImageShaderProgram = this.initShaders( this.gl, rawBatchImageShaderSources );
 
 		// enable the depth buffer so we can order our sprites
 		this.gl.enable(this.gl.DEPTH_TEST);
@@ -266,6 +304,9 @@ pbWebGl.prototype.clearProgram = function()
 		case this.batchImageShaderProgram:
 			this.clearBatchImageProgram();
 			break;
+		case this.rawBatchImageShaderProgram:
+			this.clearRawBatchImageProgram();
+			break;
 	}
 };
 
@@ -378,6 +419,53 @@ pbWebGl.prototype.clearBatchImageProgram = function()
 	gl.disableVertexAttribArray( program.aPosition );
 	program.aTransform = gl.getAttribLocation( program, "aTransform" );
 	gl.disableVertexAttribArray( program.aTransform );
+};
+
+
+pbWebGl.prototype.setRawBatchImageProgram = function()
+{
+	console.log( "pbWebGl.setRawBatchImageProgram" );
+
+	this.clearProgram();
+	
+	var program = this.rawBatchImageShaderProgram;
+	var gl = this.gl;
+
+	gl.useProgram( program );
+
+	program.aPosition = gl.getAttribLocation( program, "aPosition" );
+	gl.enableVertexAttribArray( program.aPosition );
+	program.aModelMatrix0 = gl.getAttribLocation( program, "aModelMatrix0" );
+	gl.enableVertexAttribArray( program.aModelMatrix0 );
+	program.aModelMatrix1 = gl.getAttribLocation( program, "aModelMatrix1" );
+	gl.enableVertexAttribArray( program.aModelMatrix1 );
+	program.aModelMatrix2 = gl.getAttribLocation( program, "aModelMatrix2" );
+	gl.enableVertexAttribArray( program.aModelMatrix2 );
+
+	program.samplerUniform = gl.getUniformLocation( program, "uImageSampler" );
+	program.projectionUniform = gl.getUniformLocation( program, "uProjectionMatrix" );
+	program.zUniform = gl.getUniformLocation( program, "uZ" );
+
+	this.currentTexture = null;
+
+	return program;
+};
+
+pbWebGl.prototype.clearRawBatchImageProgram = function()
+{
+	console.log( "pbWebGl.clearRawBatchImageProgram" );
+
+	var program = this.rawBatchImageShaderProgram;
+	var gl = this.gl;
+
+	program.aPosition = gl.getAttribLocation( program, "aPosition" );
+	gl.disableVertexAttribArray( program.aPosition );
+	program.aModelMatrix0 = gl.getAttribLocation( program, "aModelMatrix0" );
+	gl.disableVertexAttribArray( program.aModelMatrix0 );
+	program.aModelMatrix1 = gl.getAttribLocation( program, "aModelMatrix1" );
+	gl.disableVertexAttribArray( program.aModelMatrix1 );
+	program.aModelMatrix2 = gl.getAttribLocation( program, "aModelMatrix2" );
+	gl.disableVertexAttribArray( program.aModelMatrix2 );
 };
 
 
@@ -763,6 +851,136 @@ pbWebGl.prototype.batchDrawImages = function( list, _surface )
 	gl.vertexAttribPointer( this.currentProgram.aTranslate, 3, gl.FLOAT, false, 11 * 4, 8 * 4 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points
+};
+
+
+// list objects: { renderer: this.renderer, transform: _transform, z_order: _z_order, surface: this.surface, cellFrame: this.cellFrame }
+pbWebGl.prototype.rawBatchDrawImages = function( list )
+{
+	var gl = this.gl;
+	var surface = list[0].surface;
+
+	if ( this.currentProgram !== this.rawBatchImageShaderProgram )
+		this.currentProgram = this.setRawBatchImageProgram();
+
+	if ( !this.currentTexture || this.currentTexture.image !== surface.image )
+	{
+		// prepare the texture
+		this.currentTexture = this.handleTexture( surface.image );
+		gl.activeTexture( gl.TEXTURE0 );
+		gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
+		gl.uniform1i( this.currentProgram.samplerUniform, 0 );
+
+		// create a buffer to transfer all the vertex position data through
+		this.positionBuffer = this.gl.createBuffer();
+	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+
+		// set up the projection matrix in the vertex shader
+		gl.uniformMatrix3fv( this.currentProgram.projectionUniform, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+	}
+
+	// half width, half height (of source frame)
+	var wide = surface.cellWide * 0.5;
+	var high = surface.cellHigh * 0.5;
+
+	// TODO: generate warning if length is capped
+	var len = Math.min(list.length, MAX_SPRITES);
+
+	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
+    var sa = this.drawingArray.subarray(0, len * (44 + 22) - 22);
+
+	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
+	for ( var i = -1, c = 0; ++i < len; c += 44 )
+	{
+		var obj = list[i];
+
+		// set up texture reference coordinates based on the image frame number
+		var cell = Math.floor(obj.cellFrame);
+		var cx = cell % surface.cellsWide;
+		var cy = Math.floor(cell / surface.cellsWide);
+		var rect = surface.cellTextureBounds[cx][cy];
+		var tex_x = rect.x;
+		var tex_y = rect.y;
+		var tex_r = rect.x + rect.width;
+		var tex_b = rect.y + rect.height;
+
+		if ( i > 0)
+		{
+			// degenerate triangle: repeat the last vertex and the next vertex
+			// 
+			// screen destination position
+			sa[ c     ] = sa[ c - 44 + 33 ];
+			sa[ c + 1 ] = sa[ c - 44 + 34 ];
+			sa[ c + 11] = -wide;
+			sa[ c + 12] =  high;
+
+			// last transform matrix
+			sa[ c + 4 ] = sa[ c + 4  - 44 ];
+			sa[ c + 5 ] = sa[ c + 5  - 44 ];
+			sa[ c + 6 ] = sa[ c + 6  - 44 ];
+			sa[ c + 7 ] = sa[ c + 7  - 44 ];
+			sa[ c + 8 ] = sa[ c + 8  - 44 ];
+			sa[ c + 9 ] = sa[ c + 9  - 44 ];
+			sa[ c + 10] = sa[ c + 10 - 44 ];
+
+			c += 22;
+		}
+
+		// screen destination position
+		// l, b,		0,1
+		// l, t,		11,12
+		// r, b,		22,23
+		// r, t,		33,34
+		sa[ c     ] = sa[ c + 11] = -wide;		// l
+		sa[ c + 1 ] = sa[ c + 23] =  high;		// b
+		sa[ c + 22] = sa[ c + 33] =  wide;		// r
+		sa[ c + 12] = sa[ c + 34] = -high;		// t
+
+		// texture source position
+		// l, b,		2,3
+		// l, t,		13,14
+		// r, b,		24,25
+		// r, t,		35,36
+		sa[ c + 2 ] = sa[ c + 13] = tex_x;		// l
+		sa[ c + 3 ] = sa[ c + 25] = tex_b;		// b
+		sa[ c + 24] = sa[ c + 35] = tex_r;		// r
+		sa[ c + 14] = sa[ c + 36] = tex_y;		// t
+
+
+		if ( i > 0 )
+		{
+			// next transform matrix for degenerate triangle preceding this entry
+
+			// model matrix and z_order
+			sa[ c - 22 + 15 ] = sa[ c + 4 ] = sa[ c + 15] = sa[ c + 26] = sa[ c + 37] = obj.transform[0];
+			sa[ c - 22 + 16 ] = sa[ c + 5 ] = sa[ c + 16] = sa[ c + 27] = sa[ c + 38] = obj.transform[1];
+			sa[ c - 22 + 17 ] = sa[ c + 6 ] = sa[ c + 17] = sa[ c + 28] = sa[ c + 39] = obj.transform[3];
+			sa[ c - 22 + 18 ] = sa[ c + 7 ] = sa[ c + 18] = sa[ c + 29] = sa[ c + 40] = obj.transform[4];
+			sa[ c - 22 + 19 ] = sa[ c + 8 ] = sa[ c + 19] = sa[ c + 30] = sa[ c + 41] = obj.transform[6];
+			sa[ c - 22 + 20 ] = sa[ c + 9 ] = sa[ c + 20] = sa[ c + 31] = sa[ c + 42] = obj.transform[7];
+			sa[ c - 22 + 21 ] = sa[ c + 10] = sa[ c + 21] = sa[ c + 32] = sa[ c + 43] = obj.z_order;
+		}
+		else
+		{
+			// model matrix and z_order (no degenerate triangle preceeds the first triangle in the strip)
+			sa[ c + 4 ] = sa[ c + 15] = sa[ c + 26] = sa[ c + 37] = obj.transform[0];
+			sa[ c + 5 ] = sa[ c + 16] = sa[ c + 27] = sa[ c + 38] = obj.transform[1];
+			sa[ c + 6 ] = sa[ c + 17] = sa[ c + 28] = sa[ c + 39] = obj.transform[3];
+			sa[ c + 7 ] = sa[ c + 18] = sa[ c + 29] = sa[ c + 40] = obj.transform[4];
+			sa[ c + 8 ] = sa[ c + 19] = sa[ c + 30] = sa[ c + 41] = obj.transform[6];
+			sa[ c + 9 ] = sa[ c + 20] = sa[ c + 31] = sa[ c + 42] = obj.transform[7];
+			sa[ c + 10] = sa[ c + 21] = sa[ c + 32] = sa[ c + 43] = obj.z_order;
+		}
+	}
+
+	// point the attributes at the buffer (stride and offset are in bytes, there are 4 bytes per gl.FLOAT)
+    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
+	gl.vertexAttribPointer( this.currentProgram.aPosition,     4, gl.FLOAT, false, 11 * 4,  0 * 4 );
+	gl.vertexAttribPointer( this.currentProgram.aModelMatrix0, 2, gl.FLOAT, false, 11 * 4,  4 * 4 );
+	gl.vertexAttribPointer( this.currentProgram.aModelMatrix1, 2, gl.FLOAT, false, 11 * 4,  6 * 4 );
+	gl.vertexAttribPointer( this.currentProgram.aModelMatrix2, 3, gl.FLOAT, false, 11 * 4,  8 * 4 );
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points, except for the last one
 };
 
 

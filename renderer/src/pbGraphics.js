@@ -112,6 +112,19 @@ pbGraphics.prototype.batchDrawImages = function(list, _surface)
 };
 
 
+pbGraphics.prototype.rawBatchDrawImages = function(list)
+{
+	switch(renderer)
+	{
+		case "canvas":
+			break;
+		case "webgl":
+			webGl.rawBatchDrawImages(list);
+			break;
+	}
+};
+
+
 pbGraphics.prototype.colorNumberToString = function(colorValue)
 {
 	return '#' + ('00000' + (colorValue | 0).toString(16)).substr(-6);

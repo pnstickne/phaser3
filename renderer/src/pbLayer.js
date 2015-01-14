@@ -83,18 +83,29 @@ pbLayer.prototype.update = function(_dictionary)
 	this.__super__.prototype.update.call(this, this.drawDictionary);
 
 	// iterate the drawDictionary and draw everything in this layer
-	this.drawDictionary.iterateAll(this.draw, this);
+	//this.drawDictionary.iterateAll(this.draw, this);
+
+	// iterate the drawDictionary to obtain all values for each key
+	// draw the queued objects in the callback
+	this.drawDictionary.iterateKeys(this.draw, this);
 
 	return true;
 };
 
 
 
-pbLayer.prototype.draw = function(_obj)
+pbLayer.prototype.draw = function(_list)
 {
-	_obj.renderer.graphics.drawImageWithTransform( _obj.transform, _obj.z_order, _obj.surface, _obj.cellFrame );	
+	var l = _list.length;
+	var obj = _list[0];
+	
+	if (l == 1)
+	{
+		obj.renderer.graphics.drawImageWithTransform( obj.transform, obj.z_order, obj.surface, obj.cellFrame );	
+	}
+	else
+	{
+		obj.renderer.graphics.rawBatchDrawImages( _list );
+	}
 };
 
-// sprite batching...
-// if (!this.useBatch)
-// 	this.renderer.graphics.drawImage( list[ i ].x, list[ i ].y, list[ i ].z, list[ i ].img, list[ i ].cellFrame, list[ i ].angle, list[i].scale );
