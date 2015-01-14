@@ -174,6 +174,8 @@ pbSoldierDemo.prototype.update = function()
 {
 	frameCount++;
 
+//TODO: add skewing test code via pbImage.setCorners
+
 	// marching sprites
 	var list = this.spriteList;
 	if (list)

@@ -846,7 +846,7 @@ pbWebGl.prototype.batchDrawImages = function( list, _surface )
 };
 
 
-// list objects: { renderer: this.renderer, transform: _transform, z_order: _z_order, surface: this.surface, cellFrame: this.cellFrame }
+// list objects: { renderer: this.renderer, transform: pbMatrix3, corners: Array, z_order: Number, surface: pbSurface, cellFrame: Number }
 pbWebGl.prototype.rawBatchDrawImages = function( list )
 {
 	var gl = this.gl;
@@ -867,11 +867,6 @@ pbWebGl.prototype.rawBatchDrawImages = function( list )
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
     var sa = this.drawingArray.subarray(0, len * (44 + 22) - 22);
 
-    // TODO: hardwired offset multipliers for each corner position (eg: lt = left, top)
-    var ltx = 3, lty = 1;
-    var lbx = 1, lby = 1;
-    var rtx = 0, rty = 1;
-    var rbx = 1, rby = 1;
 
 	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
 	for ( var i = -1, c = 0; ++i < len; c += 44 )
@@ -895,8 +890,6 @@ pbWebGl.prototype.rawBatchDrawImages = function( list )
 			// screen destination position
 			sa[ c     ] = sa[ c - 44 + 33 ];
 			sa[ c + 1 ] = sa[ c - 44 + 34 ];
-			sa[ c + 11] = -wide * lbx;
-			sa[ c + 12] =  high * lby;
 
 			// last transform matrix
 			sa[ c + 4 ] = sa[ c + 4  - 44 ];
@@ -915,10 +908,21 @@ pbWebGl.prototype.rawBatchDrawImages = function( list )
 		// l, t,		11,12
 		// r, b,		22,23
 		// r, t,		33,34
-		sa[ c     ] = -wide * lbx; sa[ c + 11] = -wide * ltx;		// l
-		sa[ c + 1 ] = high * lby; sa[ c + 23] =  high * rby;		// b
-		sa[ c + 22] = wide * rbx; sa[ c + 33] =  wide * rtx;		// r
-		sa[ c + 12] = -high * lty; sa[ c + 34] = -high * rty;		// t
+		if (obj.corners)
+		{
+			// object has corner offets (skewing/perspective etc)
+			sa[ c     ] = obj.corners.lbx * -wide; sa[ c + 1 ] = obj.corners.lby *  high;
+			sa[ c + 11] = obj.corners.ltx * -wide; sa[ c + 12] = obj.corners.lty * -high;
+			sa[ c + 22] = obj.corners.rbx *  wide; sa[ c + 23] = obj.corners.rby *  high;
+			sa[ c + 33] = obj.corners.rtx *  wide; sa[ c + 34] = obj.corners.rty * -high;
+		}
+		else
+		{
+			sa[ c     ] = -wide; sa[ c + 1 ] =  high;
+			sa[ c + 11] = -wide; sa[ c + 12] = -high;
+			sa[ c + 22] =  wide; sa[ c + 23] =  high;
+			sa[ c + 33] =  wide; sa[ c + 34] = -high;
+		}
 
 		// texture source position
 		// l, b,		2,3
@@ -934,6 +938,10 @@ pbWebGl.prototype.rawBatchDrawImages = function( list )
 		if ( i > 0 )
 		{
 			// next transform matrix for degenerate triangle preceding this entry
+
+			// destination corner (left, bottom)
+			sa[ c - 22 + 11] = sa[ c     ];
+			sa[ c - 22 + 12] = sa[ c + 1 ];
 
 			// model matrix and z_order
 			sa[ c - 22 + 15 ] = sa[ c + 4 ] = sa[ c + 15] = sa[ c + 26] = sa[ c + 37] = obj.transform[0];
