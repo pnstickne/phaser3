@@ -6,9 +6,6 @@
 
 
 
-var frameCount = 0;
-
-
 // created while the data is loading (preloader)
 function pbSoldierDemo( docId )
 {
@@ -56,7 +53,7 @@ pbSoldierDemo.prototype.create = function()
 	console.log("pbSoldierDemo.create");
 
 	this.targetx = 0;
-	this.targety = 460;
+	this.targety = 600 - 20
 
 	this.spriteList = [];
 };
@@ -125,7 +122,7 @@ pbSoldierDemo.prototype.addSprites = function(num)
 
 		// unique sprite holder per soldier (holds transform)
 		var spr = new pbSprite();
-		spr.create(img, x, y, 1.0, 0, 96 / 480, 96 / 480);
+		spr.create(img, x, y, 1.0, 0, 96 / 600, 96 / 600);
 		rootLayer.addChild(spr);
 
 		// TODO: add pbLayer system to manage layers of pbSprites
@@ -140,7 +137,7 @@ pbSoldierDemo.prototype.addSprites = function(num)
 		} );
 
 		// line up in ranks getting smaller and smaller
-		var finalScale = (this.targety + 96) / 480;
+		var finalScale = (this.targety + 96) / 600;
 		this.targetx += img.surface.cellWide * 0.65 * finalScale;
 		if (this.targetx >= 800 + img.surface.image.width * 0.5 * finalScale)
 		{
@@ -172,10 +169,6 @@ pbSoldierDemo.prototype.removeSprites = function(num)
 
 pbSoldierDemo.prototype.update = function()
 {
-	frameCount++;
-
-//TODO: add skewing test code via pbImage.setCorners
-
 	// marching sprites
 	var list = this.spriteList;
 	if (list)
@@ -197,8 +190,8 @@ pbSoldierDemo.prototype.update = function()
 			{
 				spr.x += dx / dist;
 				spr.y += dy / dist;
-				spr.z = 1 - spr.y / 480;
-				spr.scaleX = spr.scaleY = (spr.y + 96) / 480;
+				spr.z = 1 - spr.y / 600;
+				spr.scaleX = spr.scaleY = (spr.y + 96) / 600;
 			}
 		}
 	}
