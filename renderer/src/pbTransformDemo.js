@@ -6,9 +6,6 @@
 
 
 
-var frameCount = 0;
-
-
 // created while the data is loading (preloader)
 function pbTransformDemo( docId )
 {
@@ -17,15 +14,6 @@ function pbTransformDemo( docId )
 	var _this = this;
 
 	this.docId = docId;
-
-	// // dat.GUI controlled variables and callbacks
-	// this.useBatch = true;
-	// this.numSprites = 0;
-	// var gui = new dat.GUI();
-	// var numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
-	// numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
-	// var btcCtrl = gui.add(this, "useBatch");
-	// btcCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
@@ -46,10 +34,6 @@ pbTransformDemo.prototype.allLoaded = function()
 pbTransformDemo.prototype.create = function()
 {
 	console.log("pbTransformDemo.create");
-
-	this.targetx = 0;
-	this.targety = 460;
-	this.depth = 1;
 
 	this.addSprites();
 };
@@ -124,13 +108,6 @@ pbTransformDemo.prototype.addSprites = function()
 
 pbTransformDemo.prototype.update = function()
 {
-	frameCount++;
-
-	// zoom the camera (rootLayer) in and out
-	// this.cameraZoom += this.cameraDirZ;
-	// if (this.cameraZoom < 0.5 || this.cameraZoom > 2.0) this.cameraDirZ = -this.cameraDirZ;
-	// rootLayer.scaleX = rootLayer.scaleY = this.cameraZoom;
-
 	// make the first three depths rotate at different speeds
 	this.childchild.angleInRadians += 0.04;
 	this.child.angleInRadians += 0.02;
