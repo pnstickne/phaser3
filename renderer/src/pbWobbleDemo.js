@@ -1,7 +1,15 @@
 /**
  *
  * Corner point displacement demo for the new Phaser 3 renderer.
+ * Displays a full-screen image wobbling.
  *
+ * Chop a full-screen texture into tiles, lay them out in a grid to reconstruct the original image.
+ * Randomly pick a corner and apply velocity to the grid position variable.
+ * Accelerate the grid positions back towards their 'home' positions, with a damping factor.
+ * Calculate the multiplier value required for the corner's pixel offset from its home position, and apply it via pbImage.setCorners.
+ *
+ * The acceleration/damping makes the actual position of the corner 'orbit' the home position with a gradual decay.
+ * 
  */
 
 
