@@ -110,9 +110,30 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 			var invader = new pbSprite();
 			invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
 			rootLayer.addChild(invader);
+			invader.row = y;
 			this.invaders.push(invader);
 		}
-	this.invaderDirX = 1;
+	this.moveY = 4;
+	this.invaderDirX = 8;
+	this.flipDir = false;
+
+	// player bullets
+	image = this.loader.getImage( this.bulletImg );
+	this.bulletSurface = new pbSurface();
+	this.bulletSurface.create(0, 0, 1, 1, image);
+	this.bulletPool = [];		// pool for bullets which aren't firing
+	this.bullets = [];			// list of bullets which are firing
+	for(var i = 0; i < 100; i++)
+	{
+		var img = new pbImage();
+		img.create(this.renderer, this.bulletSurface, 0);
+		var bullet = new pbSprite();
+		bullet.create(img, 0, 0, 0, 0, 1.0, 1.0);
+		// don't add it to the rootLayer until it's fired
+		this.bulletPool.push(bullet);
+	}
+
+
 };
 
 
@@ -127,19 +148,71 @@ pbAutoInvaderDemo.prototype.update = function()
 		|| this.player.x > this.renderer.width - this.player.image.surface.cellWide * 0.5)
 		this.playerDirX = -this.playerDirX;
 
+	// player shooting new bullet
+	if (Math.random() < 0.1)
+		if (this.bulletPool.length > 0)
+			this.playerShoot();
+
+	// update active player bullets
+	this.playerBulletMove();
+
 	// update invaders
-	var dirflipped = false;
 	for(var i = 0, l = this.invaders.length; i < l; i++)
 	{
-		// movement
-		this.invaders[i].x += this.invaderDirX;
-		if (this.invaders[i].x < this.invaders[i].image.surface.cellWide * 0.5
-			|| this.invaders[i].x > this.renderer.width - this.invaders[i].image.surface.cellWide * 0.5)
-			dirflipped = true;
+		if (this.moveY == this.invaders[i].row)
+		{
+			// movement
+			this.invaders[i].x += this.invaderDirX;
+			if (this.invaders[i].x < this.invaders[i].image.surface.cellWide * 0.5
+				|| this.invaders[i].x > this.renderer.width - this.invaders[i].image.surface.cellWide * 0.5)
+				this.flipDir = true;
+		}
+
 		// animation
 		this.invaders[i].image.cellFrame += 0.2;
 		if (this.invaders[i].image.cellFrame >= 4) this.invaders[i].image.cellFrame = 0;
 	}
-	if (dirflipped) this.invaderDirX = -this.invaderDirX;
+
+	// ('whole row at once' movement https://www.youtube.com/watch?v=437Ld_rKM2s#t=30)
+	this.moveY -= 0.25;
+	if (this.moveY < 0)
+	{
+		this.moveY = 4;
+		if (this.flipDir)
+			this.invaderDirX = -this.invaderDirX;
+		this.flipDir = false;
+	}
 };
+
+
+pbAutoInvaderDemo.prototype.playerShoot = function()
+{
+	var b = this.bulletPool.pop();
+	b.x = this.player.x;
+	b.y = this.player.y;
+	rootLayer.addChild(b);
+
+	this.bullets.push(b);
+};
+
+
+pbAutoInvaderDemo.prototype.playerBulletMove = function()
+{
+	for(var i = this.bullets.length - 1; i >= 0; --i)
+	{
+		var b = this.bullets[i];
+		b.y -= 8;
+
+		// TODO: check for collisions
+
+		// off the top of the screen?
+		if (b.y < -b.image.surface.cellHigh)
+		{
+			// kill the bullet and add it back to the pool
+			rootLayer.removeChild(b);
+			this.bulletPool.push(b);
+			this.bullets.splice(i, 1);
+		}
+	}
+}
 
