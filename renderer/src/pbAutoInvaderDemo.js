@@ -139,7 +139,20 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	// record the nearest bomb to the player's position (so he can try to dodge)
 	this.nearest = null;
 
-
+	// explosions
+	image = this.loader.getImage( this.explosionImg );
+	this.explosionSurface = new pbSurface();
+	this.explosionPool = [];
+	this.explosions = [];
+	this.explosionSurface.create(128, 128, 16, 1, image);
+	for(var i = 0; i < 100; i++)
+	{
+		var img = new pbImage();
+		img.create(this.renderer, this.explosionSurface, 0);
+		var explosion = new pbSprite();
+		explosion.create(img, 0, 0, 0, 0, 0.5, 0.5);
+		this.explosionPool.push(explosion);
+	}
 };
 
 
@@ -245,6 +258,10 @@ pbAutoInvaderDemo.prototype.update = function()
 	// update active munitions
 	this.playerBulletMove();
 	this.invaderBombMove();
+
+	// update effects
+	this.updateExplosions();
+
 };
 
 
@@ -291,8 +308,8 @@ pbAutoInvaderDemo.prototype.invaderCollide = function(_x, _y, _explode)
 			{
 				if (_explode)
 				{
+					this.addExplosion(invader.x, invader.y);
 					invader.die = true;
-					// TODO: add an explosion here
 				}
 				return true;
 			}
@@ -330,7 +347,7 @@ pbAutoInvaderDemo.prototype.invaderBombMove = function()
 			var h2 = this.player.image.surface.cellHigh * 0.5;
 			if (b.y > this.player.y - h2 && b.y < this.player.y + h2)
 			{
-				// TODO: add explosion
+				this.addExplosion(this.player.x, this.player.y);
 				this.player.die = true;
 				hit = true;
 			}
@@ -355,3 +372,34 @@ pbAutoInvaderDemo.prototype.invaderBombMove = function()
 		}
 	}
 };
+
+
+pbAutoInvaderDemo.prototype.addExplosion = function(_x, _y)
+{
+	if (this.explosionPool.length > 0)
+	{
+		var explosion = this.explosionPool.pop();
+		explosion.x = _x;
+		explosion.y = _y;
+		explosion.image.cellFrame = 0;
+		rootLayer.addChild(explosion);
+		this.explosions.push(explosion);
+	}
+};
+
+
+pbAutoInvaderDemo.prototype.updateExplosions = function()
+{
+	for(var i = this.explosions.length - 1; i >= 0; --i)
+	{
+		var explosion = this.explosions[i];
+		explosion.image.cellFrame += 0.2;
+		if (explosion.image.cellFrame >= 16)
+		{
+			rootLayer.removeChild(explosion);
+			this.explosions.splice(i, 1);
+			this.explosionPool.push(explosion);
+		}
+	}
+};
+
