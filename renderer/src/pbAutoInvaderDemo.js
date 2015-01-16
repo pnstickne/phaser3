@@ -101,21 +101,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	image = this.loader.getImage( this.invaderImg );
 	this.invaderSurface = new pbSurface();
 	this.invaderSurface.create(32, 32, 4, 1, image);
-	this.invaders = [];
-	for(var y = 0; y < 5; y++)
-		for(var x = 0; x < 12; x++)
-		{
-			var img = new pbImage();
-			img.create(this.renderer, this.invaderSurface, Math.floor(Math.random() * 3));
-			var invader = new pbSprite();
-			invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
-			rootLayer.addChild(invader);
-			invader.row = y;
-			this.invaders.push(invader);
-		}
-	this.moveY = 4;
-	this.invaderDirX = 8;
-	this.flipDir = false;
+	this.addInvaders();
 
 	// player bullets
 	image = this.loader.getImage( this.bulletImg );
@@ -126,7 +112,8 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	for(var i = 0; i < 100; i++)
 	{
 		var img = new pbImage();
-		img.create(this.renderer, this.bulletSurface, 0);
+		// anchor point at front of bullet for easy collisions...
+		img.create(this.renderer, this.bulletSurface, 0, 0.5, 0.0);
 		var bullet = new pbSprite();
 		bullet.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		// don't add it to the rootLayer until it's fired
@@ -134,6 +121,27 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	}
 
 
+};
+
+
+pbAutoInvaderDemo.prototype.addInvaders = function()
+{
+	this.invaders = [];
+	for(var y = 0; y < 5; y++)
+		for(var x = 0; x < 12; x++)
+		{
+			var img = new pbImage();
+			img.create(this.renderer, this.invaderSurface, Math.floor(Math.random() * 3));
+			var invader = new pbSprite();
+			invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
+			rootLayer.addChild(invader);
+			invader.row = y;
+			invader.die = false;
+			this.invaders.push(invader);
+		}
+	this.moveY = 4;
+	this.invaderDirX = 8;
+	this.flipDir = false;
 };
 
 
@@ -157,20 +165,32 @@ pbAutoInvaderDemo.prototype.update = function()
 	this.playerBulletMove();
 
 	// update invaders
-	for(var i = 0, l = this.invaders.length; i < l; i++)
+	if (this.invaders.length == 0)
+		this.addInvaders();
+
+	for(var i = this.invaders.length - 1; i >= 0; --i)
 	{
-		if (this.moveY == this.invaders[i].row)
+		var invader = this.invaders[i];
+
+		if (this.moveY == invader.row)
 		{
 			// movement
-			this.invaders[i].x += this.invaderDirX;
-			if (this.invaders[i].x < this.invaders[i].image.surface.cellWide * 0.5
-				|| this.invaders[i].x > this.renderer.width - this.invaders[i].image.surface.cellWide * 0.5)
+			invader.x += this.invaderDirX;
+			if (invader.x < invader.image.surface.cellWide * 0.5
+				|| invader.x > this.renderer.width - invader.image.surface.cellWide * 0.5)
 				this.flipDir = true;
 		}
 
 		// animation
-		this.invaders[i].image.cellFrame += 0.2;
-		if (this.invaders[i].image.cellFrame >= 4) this.invaders[i].image.cellFrame = 0;
+		invader.image.cellFrame += 0.2;
+		if (invader.image.cellFrame >= 4) invader.image.cellFrame = 0;
+
+		if (invader.die)
+		{
+			// TODO: death effect for invaders
+			rootLayer.removeChild(invader);
+			this.invaders.splice(i, 1);
+		}
 	}
 
 	// ('whole row at once' movement https://www.youtube.com/watch?v=437Ld_rKM2s#t=30)
@@ -203,10 +223,8 @@ pbAutoInvaderDemo.prototype.playerBulletMove = function()
 		var b = this.bullets[i];
 		b.y -= 8;
 
-		// TODO: check for collisions
-
-		// off the top of the screen?
-		if (b.y < -b.image.surface.cellHigh)
+		// hit alien or off the top of the screen?
+		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.image.surface.cellHigh)
 		{
 			// kill the bullet and add it back to the pool
 			rootLayer.removeChild(b);
@@ -214,5 +232,29 @@ pbAutoInvaderDemo.prototype.playerBulletMove = function()
 			this.bullets.splice(i, 1);
 		}
 	}
+};
+
+
+pbAutoInvaderDemo.prototype.invaderCollide = function(_x, _y, _explode)
+{
+	for(var i = 0, l = this.invaders.length; i < l; i++)
+	{
+		var invader = this.invaders[i];
+		var w2 = invader.image.surface.cellWide * 0.5;
+		if (_x > invader.x - w2 && _x < invader.x + w2)
+		{
+			var h2 = invader.image.surface.cellHigh * 0.5;
+			if (_y > invader.y - h2 && _y < invader.y + h2)
+			{
+				if (_explode)
+				{
+					invader.die = true;
+					// TODO: add an explosion here
+				}
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
