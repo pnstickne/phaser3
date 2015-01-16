@@ -314,7 +314,7 @@ pbWebGl.prototype.clearProgram = function()
 
 pbWebGl.prototype.setGraphicsProgram = function()
 {
-	console.log( "pbWebGl.setGraphicsProgram" );
+	// console.log( "pbWebGl.setGraphicsProgram" );
 
 	this.clearProgram();
 	
@@ -335,7 +335,7 @@ pbWebGl.prototype.setGraphicsProgram = function()
 
 pbWebGl.prototype.clearGraphicsProgram = function()
 {
-	console.log( "pbWebGl.clearGraphicsProgram" );
+	// console.log( "pbWebGl.clearGraphicsProgram" );
 
 	var program = this.graphicsShaderProgram;
 	var gl = this.gl;
@@ -349,7 +349,7 @@ pbWebGl.prototype.clearGraphicsProgram = function()
 
 pbWebGl.prototype.setImageProgram = function()
 {
-	console.log( "pbWebGl.setImageProgram" );
+	// console.log( "pbWebGl.setImageProgram" );
 
 	this.clearProgram();
 	
@@ -373,7 +373,7 @@ pbWebGl.prototype.setImageProgram = function()
 
 pbWebGl.prototype.clearImageProgram = function()
 {
-	console.log( "pbWebGl.clearImageProgram" );
+	// console.log( "pbWebGl.clearImageProgram" );
 
 	var program = this.imageShaderProgram;
 	var gl = this.gl;
@@ -385,7 +385,7 @@ pbWebGl.prototype.clearImageProgram = function()
 
 pbWebGl.prototype.setBatchImageProgram = function()
 {
-	console.log( "pbWebGl.setBatchImageProgram" );
+	// console.log( "pbWebGl.setBatchImageProgram" );
 
 	this.clearProgram();
 	
@@ -411,7 +411,7 @@ pbWebGl.prototype.setBatchImageProgram = function()
 
 pbWebGl.prototype.clearBatchImageProgram = function()
 {
-	console.log( "pbWebGl.clearBatchImageProgram" );
+	// console.log( "pbWebGl.clearBatchImageProgram" );
 
 	var program = this.batchImageShaderProgram;
 	var gl = this.gl;
@@ -425,7 +425,7 @@ pbWebGl.prototype.clearBatchImageProgram = function()
 
 pbWebGl.prototype.setRawBatchImageProgram = function()
 {
-	console.log( "pbWebGl.setRawBatchImageProgram" );
+	// console.log( "pbWebGl.setRawBatchImageProgram" );
 
 	this.clearProgram();
 	
@@ -454,7 +454,7 @@ pbWebGl.prototype.setRawBatchImageProgram = function()
 
 pbWebGl.prototype.clearRawBatchImageProgram = function()
 {
-	console.log( "pbWebGl.clearRawBatchImageProgram" );
+	// console.log( "pbWebGl.clearRawBatchImageProgram" );
 
 	var program = this.rawBatchImageShaderProgram;
 	var gl = this.gl;
@@ -472,7 +472,7 @@ pbWebGl.prototype.clearRawBatchImageProgram = function()
 
 pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 {
-	console.log( "pbWebGl.fillRect" );
+	// console.log( "pbWebGl.fillRect" );
 
 	var program = this.graphicsShaderProgram;
 	var gl = this.gl;
@@ -577,7 +577,7 @@ pbWebGl.prototype.handleTexture = function( _image, _tiled )
     gl.activeTexture( gl.TEXTURE0 );
 
    	// TODO: the rest of this stuff doesn't belong in this function...
-   	gl.uniform1i( this.imageShaderProgram.samplerUniform, 0 );
+   	gl.uniform1i( this.currentProgram.samplerUniform, 0 );
 
 	// create a buffer to transfer all the vertex position data through
 	this.positionBuffer = this.gl.createBuffer();
