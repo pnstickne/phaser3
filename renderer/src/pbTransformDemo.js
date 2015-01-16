@@ -1,6 +1,6 @@
 /**
  *
- * The soldier marching (pseudo-3d) demo for the new Phaser 3 renderer.
+ * The transform hierarchy demo for the new Phaser 3 renderer.
  *
  */
 
@@ -64,9 +64,6 @@ pbTransformDemo.prototype.addSprites = function()
 {
 	console.log("pbTransformDemo.addSprites");
 
-	this.cameraZoom = 1.0;
-	this.cameraDirZ = 0.01;
-	
 	// create animation data and set destination for movement
 	var image = this.loader.getImage( this.spriteImg );
 	this.surface = new pbSurface();

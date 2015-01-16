@@ -25,6 +25,7 @@ function pbSprite()
 pbSprite.prototype.create = function(_image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
 {
 	if (_image === undefined) _image = null;
+
 	this.image = _image;
 
 	this.parent = null;
@@ -65,9 +66,12 @@ pbSprite.prototype.update = function(_drawDictionary)
 	if (!this.alive)
 		return true;
 
+	var ax = this.x + this.width * this.anchorX;
+	var ay = this.y + this.height * this.anchorY;
+
 	// build the transform matrix from parent and my own transform member variables
 	if (!this.parent || !this.parent.transform)
-		pbMatrix3.setTransform(this.transform, this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY);
+		pbMatrix3.setTransform(this.transform, ax, ay, this.angleInRadians, this.scaleX, this.scaleY);
 	else
 		pbMatrix3.setFastMultiply(this.transform, pbMatrix3.makeTransform(this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY), this.parent.transform);
 	

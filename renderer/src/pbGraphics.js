@@ -89,14 +89,14 @@ pbGraphics.prototype.drawImage = function(x, y, z, _surface, cell, angle, scale)
 };
 
 
-pbGraphics.prototype.drawImageWithTransform = function(_transform, _z_order, _surface, _cellFrame)
+pbGraphics.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
 {
 	switch(renderer)
 	{
 		case "canvas":
 			break;
 		case "webgl":
-			webGl.drawImageWithTransform(_transform, _z_order, _surface, _cellFrame);
+			webGl.drawImageWithTransform(_image, _transform, _z_order);
 			break;
 	}
 };

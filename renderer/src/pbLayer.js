@@ -101,11 +101,11 @@ pbLayer.prototype.draw = function(_list)
 	
 	if (l == 1)
 	{
-		obj.renderer.graphics.drawImageWithTransform( obj.transform, obj.z_order, obj.surface, obj.cellFrame );	
+		obj.image.renderer.graphics.drawImageWithTransform( obj.image, obj.transform, obj.z_order );
 	}
 	else
 	{
-		obj.renderer.graphics.rawBatchDrawImages( _list );
+		obj.image.renderer.graphics.rawBatchDrawImages( _list );
 	}
 };
 

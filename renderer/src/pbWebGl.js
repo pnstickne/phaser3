@@ -518,20 +518,22 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 };
 
 
-pbWebGl.prototype.handleTexture = function( _image )
+pbWebGl.prototype.handleTexture = function( _image, _tiled )
 {
 	// this _image is already the selected texture
 	if (this.currentTexture && this.currentTexture.image === _image)
 		return;
 
 	var gl = this.gl;
-	var index = this.onGPU.indexOf(_image);
+
 	var texture = null;
 
+	var index = this.onGPU.indexOf(_image);
     if (index != -1)
     {
 		// the _image is already on the GPU
 		texture = this.onGPU[index].gpuTexture;
+	    gl.bindTexture(gl.TEXTURE_2D, texture);
     }
     else
     {
@@ -552,8 +554,16 @@ pbWebGl.prototype.handleTexture = function( _image )
 
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
 	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _image);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	    if (_tiled)
+	    {
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+	    }
+    	else
+    	{
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    	}
 	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 	    gl.generateMipmap(gl.TEXTURE_2D);
@@ -565,9 +575,8 @@ pbWebGl.prototype.handleTexture = function( _image )
 	// activate the texture
     this.currentTexture = texture;
     gl.activeTexture( gl.TEXTURE0 );
-   	gl.bindTexture( gl.TEXTURE_2D, this.currentTexture );
 
-   	// TODO: the rest of this stuff doesn't belong here...
+   	// TODO: the rest of this stuff doesn't belong in this function...
    	gl.uniform1i( this.imageShaderProgram.samplerUniform, 0 );
 
 	// create a buffer to transfer all the vertex position data through
@@ -579,51 +588,59 @@ pbWebGl.prototype.handleTexture = function( _image )
 };
 
 
-pbWebGl.prototype.drawImageWithTransform = function( _transform, _z, _surface, cellFrame )
+pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 {
 	var gl = this.gl;
 
 	if ( this.currentProgram !== this.imageShaderProgram )
 		this.currentProgram = this.setImageProgram();
 
-	this.handleTexture( _surface.image );
+	var surface = _image.surface;
+	this.handleTexture( surface.image, _image.tiling );
 
 	// split off a small part of the big buffer, for a single display object
-	var sa = this.drawingArray.subarray(0, 20);
+	var sa = this.drawingArray.subarray(0, 16);
 
-	// half width, half height (of source frame)
-	var wide = _surface.cellWide * 0.5;
-	var high = _surface.cellHigh * 0.5;
+	var wide, high;
+	if (_image.fullScreen)
+	{
+		wide = _image.renderer.width;
+		high = _image.renderer.height;
+	}
+	else
+	{
+		// half width, half height (of source frame)
+		wide = surface.cellWide;
+		high = surface.cellHigh;
+	}
 
 	// set up the animation frame
-	var cell = Math.floor(cellFrame);
-	var cx = cell % _surface.cellsWide;
-	var cy = Math.floor(cell / _surface.cellsWide);
-	var rect = _surface.cellTextureBounds[cx][cy];
-	var tex_x = rect.x;
-	var tex_y = rect.y;
-	var tex_r = rect.x + rect.width;
-	var tex_b = rect.y + rect.height;
+	var cell = Math.floor(_image.cellFrame);
+	var cx = cell % surface.cellsWide;
+	var cy = Math.floor(cell / surface.cellsWide);
+	var rect = surface.cellTextureBounds[cx][cy];
+	var ax = _image.anchorX;
+	var ay = _image.anchorY;
 
 	// screen destination position
 	// l, b,		0,1
 	// l, t,		4,5
 	// r, b,		8,9
 	// r, t,		12,13
-	sa[ 0 ] = sa[ 4 ] = -wide;
-	sa[ 1 ] = sa[ 9 ] =  high;
-	sa[ 8 ] = sa[ 12] =  wide;
-	sa[ 5 ] = sa[ 13] = -high;
+	sa[ 0 ] = sa[ 4 ] = -wide * ax;
+	sa[ 1 ] = sa[ 9 ] =  high * (1 - ay);
+	sa[ 8 ] = sa[ 12] =  wide * (1 - ax);
+	sa[ 5 ] = sa[ 13] = -high * ay;
 
 	// texture source position
-	// 0, 0,		2,3
-	// 0, 1,		6,7
-	// 1, 0,		10,11
-	// 1, 1,		14,15
-	sa[ 2 ] = sa[ 6 ] = tex_x;
-	sa[ 3 ] = sa[ 11] = tex_b;
-	sa[ 10] = sa[ 14] = tex_r;
-	sa[ 7 ] = sa[ 15] = tex_y;
+	// x, b,		2,3
+	// x, y,		6,7
+	// r, b,		10,11
+	// r, y,		14,15
+	sa[ 2 ] = sa[ 6 ] = rect.x;
+	sa[ 3 ] = sa[ 11] = rect.y + rect.height;
+	sa[ 10] = sa[ 14] = rect.x + rect.width;
+	sa[ 7 ] = sa[ 15] = rect.y;
 
     gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
 
@@ -846,16 +863,16 @@ pbWebGl.prototype.batchDrawImages = function( list, _surface )
 };
 
 
-// list objects: { renderer: this.renderer, transform: pbMatrix3, corners: Array, z_order: Number, surface: pbSurface, cellFrame: Number }
+// list objects: { image: pbImage, transform: pbMatrix3, z_order: Number }
 pbWebGl.prototype.rawBatchDrawImages = function( list )
 {
 	var gl = this.gl;
-	var surface = list[0].surface;
+	var surface = list[0].image.surface;
 
 	if ( this.currentProgram !== this.rawBatchImageShaderProgram )
 		this.currentProgram = this.setRawBatchImageProgram();
 
-	this.handleTexture( surface.image );
+	this.handleTexture( surface.image, list[0].image.tiling );
 
 	// half width, half height (of source frame)
 	var wide = surface.cellWide * 0.5;
@@ -874,7 +891,7 @@ pbWebGl.prototype.rawBatchDrawImages = function( list )
 		var obj = list[i];
 
 		// set up texture reference coordinates based on the image frame number
-		var cell = Math.floor(obj.cellFrame);
+		var cell = Math.floor(obj.image.cellFrame);
 		var cx = cell % surface.cellsWide;
 		var cy = Math.floor(cell / surface.cellsWide);
 		var rect = surface.cellTextureBounds[cx][cy];
@@ -908,13 +925,14 @@ pbWebGl.prototype.rawBatchDrawImages = function( list )
 		// l, t,		11,12
 		// r, b,		22,23
 		// r, t,		33,34
-		if (obj.corners)
+		if (obj.image.corners)
 		{
+			var cnr = obj.image.corners;
 			// object has corner offets (skewing/perspective etc)
-			sa[ c     ] = obj.corners.lbx * -wide; sa[ c + 1 ] = obj.corners.lby *  high;
-			sa[ c + 11] = obj.corners.ltx * -wide; sa[ c + 12] = obj.corners.lty * -high;
-			sa[ c + 22] = obj.corners.rbx *  wide; sa[ c + 23] = obj.corners.rby *  high;
-			sa[ c + 33] = obj.corners.rtx *  wide; sa[ c + 34] = obj.corners.rty * -high;
+			sa[ c     ] = cnr.lbx * -wide; sa[ c + 1 ] = cnr.lby *  high;
+			sa[ c + 11] = cnr.ltx * -wide; sa[ c + 12] = cnr.lty * -high;
+			sa[ c + 22] = cnr.rbx *  wide; sa[ c + 23] = cnr.rby *  high;
+			sa[ c + 33] = cnr.rtx *  wide; sa[ c + 34] = cnr.rty * -high;
 		}
 		else
 		{
