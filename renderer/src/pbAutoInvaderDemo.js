@@ -95,6 +95,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	this.player = new pbSprite();
 	this.player.create(this.playerImage, this.renderer.width * 0.5, this.renderer.height * 0.9, 0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.player);
+	this.player.die = false;
 	this.playerDirX = 2;
 
 	// player bullets
@@ -165,6 +166,14 @@ pbAutoInvaderDemo.prototype.update = function()
 {
 	// scroll the background by adjusting the start point of the texture read y coordinate
 	this.bgSurface.cellTextureBounds[0][0].y -= 1 / this.renderer.height;
+
+	if (this.player.die)
+	{
+		// TODO: life lost
+		this.player.x = this.renderer.width * 0.5;
+		this.playerDirX = 2;
+		this.player.die = false;
+	}
 
 	// update player
 	this.player.x += this.playerDirX;
@@ -300,8 +309,21 @@ pbAutoInvaderDemo.prototype.invaderBombMove = function()
 		var b = this.bombs[i];
 		b.y += 2;
 
+		var hit = false;
+		var w2 = this.player.image.surface.cellWide * 0.5;
+		if (b.x > this.player.x - w2 && b.x < this.player.x + w2)
+		{
+			var h2 = this.player.image.surface.cellHigh * 0.5;
+			if (b.y > this.player.y - h2 && b.y < this.player.y + h2)
+			{
+				// TODO: add explosion
+				this.player.die = true;
+				hit = true;
+			}
+		}
+
 		// hit player or off the bottom of the screen?
-		if (b.y > this.renderer.height + b.image.surface.cellHigh * 0.5)
+		if (hit || b.y > this.renderer.height + b.image.surface.cellHigh * 0.5)
 		{
 			// kill the bullet and add it back to the pool
 			rootLayer.removeChild(b);
