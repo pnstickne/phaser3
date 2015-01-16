@@ -136,6 +136,8 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 		// don't add it to the rootLayer until it's fired
 		this.bombPool.push(bomb);
 	}
+	// record the nearest bomb to the player's position (so he can try to dodge)
+	this.nearest = null;
 
 
 };
@@ -167,6 +169,10 @@ pbAutoInvaderDemo.prototype.update = function()
 	// scroll the background by adjusting the start point of the texture read y coordinate
 	this.bgSurface.cellTextureBounds[0][0].y -= 1 / this.renderer.height;
 
+
+	//
+	// update player
+	//
 	if (this.player.die)
 	{
 		// TODO: life lost
@@ -174,20 +180,25 @@ pbAutoInvaderDemo.prototype.update = function()
 		this.playerDirX = 2;
 		this.player.die = false;
 	}
-
-	// update player
-	this.player.x += this.playerDirX;
+	if (this.nearest)
+	{
+		// dodge the nearest bomb
+		if (this.player.x > this.nearest.x) this.playerDirX = Math.abs(this.playerDirX);
+		else this.playerDirX = -Math.abs(this.playerDirX);
+	}
+	// bounce off edges
 	if (this.player.x < this.player.image.surface.cellWide * 0.5
 		|| this.player.x > this.renderer.width - this.player.image.surface.cellWide * 0.5)
 		this.playerDirX = -this.playerDirX;
-
-	// player shooting new bullet
+	// move
+	this.player.x += this.playerDirX;
+	// fire
 	if (Math.random() < 0.1)
 		if (this.bulletPool.length > 0)
 			this.playerShoot();
 
 	// create new field of invaders if they've all been killed
-	if (this.invaders.length == 0)
+	if (this.invaders.length === 0)
 		this.addInvaders();
 
 	// update invaders
@@ -204,7 +215,7 @@ pbAutoInvaderDemo.prototype.update = function()
 				this.flipDir = true;
 
 			// invader dropping bomb
-			if (Math.random() < 0.1)
+			if (Math.random() < 0.02)
 				if (this.bombPool.length > 0)
 					this.invaderBomb(invader);
 		}
@@ -304,6 +315,9 @@ pbAutoInvaderDemo.prototype.invaderBomb = function(_invader)
 
 pbAutoInvaderDemo.prototype.invaderBombMove = function()
 {
+	this.nearest = null;
+	var nearDist2 = 0xffffffff;
+
 	for(var i = this.bombs.length - 1; i >= 0; --i)
 	{
 		var b = this.bombs[i];
@@ -320,6 +334,15 @@ pbAutoInvaderDemo.prototype.invaderBombMove = function()
 				this.player.die = true;
 				hit = true;
 			}
+		}
+
+		var dx = this.player.x - b.x;
+		var dy = this.player.y - b.y;
+		var d2 = dx * dx + dy * dy;
+		if (d2 < nearDist2 && d2 < 40 * 40)
+		{
+			this.nearest = b;
+			nearDist2 = d2;
 		}
 
 		// hit player or off the bottom of the screen?
