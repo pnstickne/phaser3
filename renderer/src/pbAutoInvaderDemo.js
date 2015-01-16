@@ -5,6 +5,9 @@
  */
 
 
+/* jshint laxbreak: true */	// tell jshint to just shut-up already about my choice of line format
+
+
 
 // created while the data is loading (preloader)
 function pbAutoInvaderDemo( docId )
@@ -97,15 +100,15 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	// aliens
 	image = this.loader.getImage( this.invaderImg );
 	this.invaderSurface = new pbSurface();
-	this.invaderSurface.create(32, 32, 1, 4, image);
-	this.invaderImage = new pbImage();
-	this.invaderImage.create(this.renderer, this.invaderSurface, 0);
+	this.invaderSurface.create(32, 32, 4, 1, image);
 	this.invaders = [];
 	for(var y = 0; y < 5; y++)
 		for(var x = 0; x < 12; x++)
 		{
+			var img = new pbImage();
+			img.create(this.renderer, this.invaderSurface, Math.floor(Math.random() * 3));
 			var invader = new pbSprite();
-			invader.create(this.invaderImage, 20 + x * 48, 100 + y * 48, 0, 0, 1.0, 1.0);
+			invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
 			rootLayer.addChild(invader);
 			this.invaders.push(invader);
 		}
