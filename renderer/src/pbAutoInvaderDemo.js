@@ -76,7 +76,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	this.bgSurface = new pbSurface();
 	this.bgSurface.create(0, 0, 1, 1, image);
 	this.bgImage = new pbImage();
-	this.bgImage.create(this.renderer, this.bgSurface, 0, 0, 0);	//, true, true);
+	this.bgImage.create(this.renderer, this.bgSurface, 0, 0, 0, true, true);
 	this.bg = new pbSprite();
 	this.bg.create(this.bgImage, 0, 0, 1.0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.bg);
@@ -86,6 +86,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 
 pbAutoInvaderDemo.prototype.update = function()
 {
-
+	// scroll the background by adjusting the start point of the texture read y coordinate
+	this.bgSurface.cellTextureBounds[0][0].y -= 1 / this.renderer.height;
 };
 

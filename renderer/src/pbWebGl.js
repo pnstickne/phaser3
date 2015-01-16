@@ -601,9 +601,15 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 	// split off a small part of the big buffer, for a single display object
 	var sa = this.drawingArray.subarray(0, 16);
 
+	// set up the animation frame
+	var cell = Math.floor(_image.cellFrame);
+	var rect = surface.cellTextureBounds[cell % surface.cellsWide][Math.floor(cell / surface.cellsWide)];
+
 	var wide, high;
 	if (_image.fullScreen)
 	{
+		rect.width = _image.renderer.width / surface.cellWide;
+		rect.height = _image.renderer.height / surface.cellHigh;
 		wide = _image.renderer.width;
 		high = _image.renderer.height;
 	}
@@ -614,11 +620,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 		high = surface.cellHigh;
 	}
 
-	// set up the animation frame
-	var cell = Math.floor(_image.cellFrame);
-	var cx = cell % surface.cellsWide;
-	var cy = Math.floor(cell / surface.cellsWide);
-	var rect = surface.cellTextureBounds[cx][cy];
+	// image anchor point
 	var ax = _image.anchorX;
 	var ay = _image.anchorY;
 
