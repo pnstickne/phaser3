@@ -76,7 +76,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	this.bgSurface = new pbSurface();
 	this.bgSurface.create(0, 0, 1, 1, image);
 	this.bgImage = new pbImage();
-	this.bgImage.create(this.renderer, this.bgSurface, 0, 0.5, 0.5);	//, true, true);
+	this.bgImage.create(this.renderer, this.bgSurface, 0, 0, 0);	//, true, true);
 	this.bg = new pbSprite();
 	this.bg.create(this.bgImage, 0, 0, 1.0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.bg);
