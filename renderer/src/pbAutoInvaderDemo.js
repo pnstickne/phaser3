@@ -97,12 +97,6 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	rootLayer.addChild(this.player);
 	this.playerDirX = 2;
 
-	// aliens
-	image = this.loader.getImage( this.invaderImg );
-	this.invaderSurface = new pbSurface();
-	this.invaderSurface.create(32, 32, 4, 1, image);
-	this.addInvaders();
-
 	// player bullets
 	image = this.loader.getImage( this.bulletImg );
 	this.bulletSurface = new pbSurface();
@@ -118,6 +112,28 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 		bullet.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		// don't add it to the rootLayer until it's fired
 		this.bulletPool.push(bullet);
+	}
+
+	// aliens
+	image = this.loader.getImage( this.invaderImg );
+	this.invaderSurface = new pbSurface();
+	this.invaderSurface.create(32, 32, 4, 1, image);
+	this.addInvaders();
+
+	// alien bombs
+	image = this.loader.getImage( this.bombImg );
+	this.bombSurface = new pbSurface();
+	this.bombSurface.create(0, 0, 1, 1, image);
+	this.bombPool = [];			// pool for bombs which aren't firing
+	this.bombs = [];			// list of bombs which are firing
+	for(var i = 0; i < 100; i++)
+	{
+		var img = new pbImage();
+		img.create(this.renderer, this.bombSurface, 0);
+		var bomb = new pbSprite();
+		bomb.create(img, 0, 0, 0, 0, 1.0, 1.0);
+		// don't add it to the rootLayer until it's fired
+		this.bombPool.push(bomb);
 	}
 
 
@@ -161,13 +177,11 @@ pbAutoInvaderDemo.prototype.update = function()
 		if (this.bulletPool.length > 0)
 			this.playerShoot();
 
-	// update active player bullets
-	this.playerBulletMove();
-
-	// update invaders
+	// create new field of invaders if they've all been killed
 	if (this.invaders.length == 0)
 		this.addInvaders();
 
+	// update invaders
 	for(var i = this.invaders.length - 1; i >= 0; --i)
 	{
 		var invader = this.invaders[i];
@@ -179,6 +193,11 @@ pbAutoInvaderDemo.prototype.update = function()
 			if (invader.x < invader.image.surface.cellWide * 0.5
 				|| invader.x > this.renderer.width - invader.image.surface.cellWide * 0.5)
 				this.flipDir = true;
+
+			// invader dropping bomb
+			if (Math.random() < 0.1)
+				if (this.bombPool.length > 0)
+					this.invaderBomb(invader);
 		}
 
 		// animation
@@ -202,6 +221,10 @@ pbAutoInvaderDemo.prototype.update = function()
 			this.invaderDirX = -this.invaderDirX;
 		this.flipDir = false;
 	}
+
+	// update active munitions
+	this.playerBulletMove();
+	this.invaderBombMove();
 };
 
 
@@ -256,5 +279,34 @@ pbAutoInvaderDemo.prototype.invaderCollide = function(_x, _y, _explode)
 		}
 	}
 	return false;
-}
+};
 
+
+pbAutoInvaderDemo.prototype.invaderBomb = function(_invader)
+{
+	var b = this.bombPool.pop();
+	b.x = _invader.x;
+	b.y = _invader.y;
+	rootLayer.addChild(b);
+
+	this.bombs.push(b);
+};
+
+
+pbAutoInvaderDemo.prototype.invaderBombMove = function()
+{
+	for(var i = this.bombs.length - 1; i >= 0; --i)
+	{
+		var b = this.bombs[i];
+		b.y += 2;
+
+		// hit player or off the bottom of the screen?
+		if (b.y > this.renderer.height + b.image.surface.cellHigh * 0.5)
+		{
+			// kill the bullet and add it back to the pool
+			rootLayer.removeChild(b);
+			this.bombPool.push(b);
+			this.bombs.splice(i, 1);
+		}
+	}
+};
