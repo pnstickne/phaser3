@@ -153,6 +153,12 @@ function pbWebGl()
 }
 
 
+// pbWebGl extends from the pbBaseGraphics prototype chain
+pbWebGl.prototype = new pbBaseGraphics();
+// create property to store the class' parent
+pbWebGl.prototype.__super__ = pbBaseGraphics;		// http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
+
+
 pbWebGl.prototype.initGL = function( canvas )
 {
 	// https://www.khronos.org/webgl/wiki/FAQ
@@ -470,6 +476,18 @@ pbWebGl.prototype.clearRawBatchImageProgram = function()
 };
 
 
+pbWebGl.prototype.fillStyle = function(_fillColor, _lineColor)
+{
+	this.fillColorRGBA = _fillColor;
+	this.lineColorValue = _lineColor;
+};
+	this.fillColorString = "#000";			// fill color as a css format color string, # prefixed, rgb(), rgba() or hsl()
+	this.fillColorValue = 0;				// fill color as a Number
+	this.fillColorRGBA = { r: 0, g: 0, b: 0, a: 0 };
+	this.lineColorString = "#000";			// line color as a css format color string, # prefixed, rgb(), rgba() or hsl()
+	this.lineColorValue = 0;				// line color as a Number
+	this.lineColorRGBA = { r: 0, g: 0, b: 0, a: 0 };
+
 pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 {
 	// console.log( "pbWebGl.fillRect" );
@@ -660,7 +678,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 };
 
 
-pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, cellFrame, angle, scale )
+pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle, _scale )
 {
 	var gl = this.gl;
 
@@ -677,7 +695,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, cellFrame, angle, 
 	var high = _surface.cellHigh * 0.5;
 
 	// set up the animation frame
-	var cell = Math.floor(cellFrame);
+	var cell = Math.floor(_cellFrame);
 	var cx = cell % _surface.cellsWide;
 	var cy = Math.floor(cell / _surface.cellsWide);
 	var rect = _surface.cellTextureBounds[cx][cy];
@@ -709,11 +727,11 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, cellFrame, angle, 
     gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
 
 	// TODO: most of these are semi-static, cache them
-	var matrix = pbMatrix3.makeTransform(_x, _y, angle, scale, scale);
+	var matrix = pbMatrix3.makeTransform(_x, _y, _angle, _scale, _scale);
 
 	// var translationMatrix = pbMatrix3.makeTranslation(_x, _y);
-	// var rotationMatrix = pbMatrix3.makeRotation(angle);
-	// var scaleMatrix = pbMatrix3.makeScale(scale, scale);
+	// var rotationMatrix = pbMatrix3.makeRotation(_angle);
+	// var scaleMatrix = pbMatrix3.makeScale(_scale, _scale);
 
 	// var matrix = pbMatrix3.fastMultiply(rotationMatrix, scaleMatrix);
 	// matrix = pbMatrix3.fastMultiply(matrix, translationMatrix);
@@ -732,7 +750,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, cellFrame, angle, 
 };
 
 
-pbWebGl.prototype.batchDrawImages = function( list, _surface )
+pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 {
 	var gl = this.gl;
 
@@ -746,7 +764,7 @@ pbWebGl.prototype.batchDrawImages = function( list, _surface )
 	var high = _surface.cellHigh * 0.5;
 
 	// TODO: generate warning if length is capped
-	var len = Math.min(list.length, MAX_SPRITES);
+	var len = Math.min(_list.length, MAX_SPRITES);
 
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
     var sa = this.drawingArray.subarray(0, len * (44 + 22) - 22);
@@ -755,8 +773,8 @@ pbWebGl.prototype.batchDrawImages = function( list, _surface )
 	for ( var i = -1, c = 0; ++i < len; c += 44 )
 	{
 		// set up texture reference coordinates based on the image frame number
-		var img = list[i].img;
-		var cell = Math.floor(list[i].cell);
+		var img = _list[i].img;
+		var cell = Math.floor(_list[i].cell);
 		var cx = cell % img.cellsWide;
 		var cy = Math.floor(cell / img.cellsWide);
 		var rect = img.cellTextureBounds[cx][cy];
@@ -765,12 +783,12 @@ pbWebGl.prototype.batchDrawImages = function( list, _surface )
 		var tex_r = rect.x + rect.width;
 		var tex_b = rect.y + rect.height;
 
-		var cos = -Math.cos(list[i].angle);
-		var sin = Math.sin(list[i].angle);
-		var scale = list[i].scale;
-		var x = Math.round(list[i].x);
-		var y = Math.round(list[i].y);
-		var z = list[i].z;
+		var cos = -Math.cos(_list[i].angle);
+		var sin = Math.sin(_list[i].angle);
+		var scale = _list[i].scale;
+		var x = Math.round(_list[i].x);
+		var y = Math.round(_list[i].y);
+		var z = _list[i].z;
 
 		if ( i > 0)
 		{
@@ -866,22 +884,22 @@ pbWebGl.prototype.batchDrawImages = function( list, _surface )
 
 
 // list objects: { image: pbImage, transform: pbMatrix3, z_order: Number }
-pbWebGl.prototype.rawBatchDrawImages = function( list )
+pbWebGl.prototype.rawBatchDrawImages = function( _list )
 {
 	var gl = this.gl;
-	var surface = list[0].image.surface;
+	var surface = _list[0].image.surface;
 
 	if ( this.currentProgram !== this.rawBatchImageShaderProgram )
 		this.currentProgram = this.setRawBatchImageProgram();
 
-	this.handleTexture( surface.image, list[0].image.tiling );
+	this.handleTexture( surface.image, _list[0].image.tiling );
 
 	// half width, half height (of source frame)
 	var wide = surface.cellWide * 0.5;
 	var high = surface.cellHigh * 0.5;
 
 	// TODO: generate warning if length is capped
-	var len = Math.min(list.length, MAX_SPRITES);
+	var len = Math.min(_list.length, MAX_SPRITES);
 
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
     var sa = this.drawingArray.subarray(0, len * (44 + 22) - 22);
@@ -890,7 +908,7 @@ pbWebGl.prototype.rawBatchDrawImages = function( list )
 	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
 	for ( var i = -1, c = 0; ++i < len; c += 44 )
 	{
-		var obj = list[i];
+		var obj = _list[i];
 
 		// set up texture reference coordinates based on the image frame number
 		var cell = Math.floor(obj.image.cellFrame);

@@ -1,16 +1,19 @@
 /**
  *
- * pbGraphics - a drawing API to wrap the canvas, webGL, and anything else we end up with
+ * pbBaseGraphics - a drawing API to wrap the canvas, webGL, and anything else we end up with
  *
- *
- * TODO: this is horrible, all these switches... clean it up or eliminate it!
  * 
  */
 
 
 
-function pbGraphics()
+function pbBaseGraphics()
 {
+	this.renderer = null;
+
+	this.width = 0;
+	this.height = 0;
+
 	this.fillColorString = "#000";			// fill color as a css format color string, # prefixed, rgb(), rgba() or hsl()
 	this.fillColorValue = 0;				// fill color as a Number
 	this.fillColorRGBA = { r: 0, g: 0, b: 0, a: 0 };
@@ -20,13 +23,19 @@ function pbGraphics()
 }
 
 
-pbGraphics.prototype.destroy = function()
+pbBaseGraphics.prototype.create = function(_docId, _preferredRenderer)
+{
+	console.log( "pbBaseGraphics.create" );
+};
+
+
+pbBaseGraphics.prototype.destroy = function()
 {
 	this.reset();
 };
 
 
-pbGraphics.prototype.fillStyle = function(color)
+pbBaseGraphics.prototype.fillStyle = function(color)
 {
 	if (typeof color === "number")
 	{
@@ -43,7 +52,7 @@ pbGraphics.prototype.fillStyle = function(color)
 };
 
 
-pbGraphics.prototype.fillRect = function(param0, y, width, height)
+pbBaseGraphics.prototype.fillRect = function(param0, y, width, height)
 {
 	var x;
 
@@ -64,83 +73,24 @@ pbGraphics.prototype.fillRect = function(param0, y, width, height)
 		return;
 	}
 
-	switch(renderer)
-	{
-		case "canvas":
-			ctx.fillRect(x, y, width, height);
-			break;
-		case "webgl":
-			webGl.fillRect(x, y, width, height, this.fillColorRGBA, this.lineColorValue);
-			break;
-	}
+	this.renderer.fillRect(x, y, width, height);
+	//webGl.fillRect(x, y, width, height, this.fillColorRGBA, this.lineColorValue);
 };
 
 
-pbGraphics.prototype.drawImage = function(x, y, z, _surface, cell, angle, scale)
-{
-	switch(renderer)
-	{
-		case "canvas":
-			break;
-		case "webgl":
-			webGl.drawImage(x, y, z, _surface, cell, angle, scale);
-			break;
-	}
-};
-
-
-pbGraphics.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
-{
-	switch(renderer)
-	{
-		case "canvas":
-			break;
-		case "webgl":
-			webGl.drawImageWithTransform(_image, _transform, _z_order);
-			break;
-	}
-};
-
-
-pbGraphics.prototype.batchDrawImages = function(list, _surface)
-{
-	switch(renderer)
-	{
-		case "canvas":
-			break;
-		case "webgl":
-			webGl.batchDrawImages(list, _surface);
-			break;
-	}
-};
-
-
-pbGraphics.prototype.rawBatchDrawImages = function(list)
-{
-	switch(renderer)
-	{
-		case "canvas":
-			break;
-		case "webgl":
-			webGl.rawBatchDrawImages(list);
-			break;
-	}
-};
-
-
-pbGraphics.prototype.colorNumberToString = function(colorValue)
+pbBaseGraphics.prototype.colorNumberToString = function(colorValue)
 {
 	return '#' + ('00000' + (colorValue | 0).toString(16)).substr(-6);
 };
 
 
-pbGraphics.prototype.colorStringToNumber = function(colorString)
+pbBaseGraphics.prototype.colorStringToNumber = function(colorString)
 {
 	return window.parseInt(colorString.slice(1), 16);
 };
 
 
-pbGraphics.prototype.colorStringToRGBA = function(hex)
+pbBaseGraphics.prototype.colorStringToRGBA = function(hex)
 {
 	if (hex.charAt(0) === '#') hex = hex.slice(1);
 	if (hex.length === 3)	// shorthand form (#F26)
@@ -167,15 +117,43 @@ pbGraphics.prototype.colorStringToRGBA = function(hex)
 };
 
 
-pbGraphics.prototype.reset = function()
+/**
+ * The graphics drawing interface dummy functions, these must all be overridden.
+ */
+
+
+pbBaseGraphics.prototype.preRender = function()
 {
-	switch(renderer)
-	{
-		case "canvas":
-			break;
-		case "webgl":
-			webGl.reset();
-			break;
-	}
+	alert("ERROR: the selected graphic mode does not extend preRender from pbBaseGraphics!")
+};
+
+
+pbBaseGraphics.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, _angle, _scale)
+{
+	alert("ERROR: the selected graphic mode does not extend drawImage from pbBaseGraphics!")
+};
+
+
+pbBaseGraphics.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
+{
+	alert("ERROR: the selected graphic mode does not extend drawImageWithTransform from pbBaseGraphics!")
+};
+
+
+pbBaseGraphics.prototype.batchDrawImages = function(_list, _surface)
+{
+	alert("ERROR: the selected graphic mode does not extend batchDrawImages from pbBaseGraphics!")
+};
+
+
+pbBaseGraphics.prototype.rawBatchDrawImages = function(_list)
+{
+	alert("ERROR: the selected graphic mode does not extend rawBatchDrawImages from pbBaseGraphics!")
+};
+
+
+pbBaseGraphics.prototype.reset = function()
+{
+	alert("ERROR: the selected graphic mode does not extend reset from pbBaseGraphics!")
 };
 

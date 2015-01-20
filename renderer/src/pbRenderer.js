@@ -1,6 +1,6 @@
 /**
  *
- * pbRenderer - initialise the rendering system, provide access to drawing sub-systems
+ * pbRenderer - initialise the rendering system, callback when ready, and provide the main update tick callback
  * 
  */
 
@@ -8,12 +8,11 @@
 var canvas = null;
 var ctx = null;
 var webGl = null;
-var renderer = "canvas";
 var rootLayer = null;
 
 
-// TODO: split RAF timer out of here and into it's own object, including updateCallback etc
- 
+// TODO: split RAF timer out of here and into it's own object, including updateCallback etc???
+
 function pbRenderer(_docId, _bootCallback, _updateCallback, _context)
 {
 	console.log("pbRenderer c'tor entry");
@@ -25,15 +24,17 @@ function pbRenderer(_docId, _bootCallback, _updateCallback, _context)
 	this.context = _context;
 
 	// globals
+ 	canvas = null;
+ 	ctx = null;
  	webGl = null;
+ 	rootLayer = null;
 
 	// members
 	this.isBooted = false;
 	this.rootTimer = null;
 	this.frameCount = 0;
 
-	// drawing sub-systems
- 
+	// drawing system
 	this.graphics = null;
 
 	// boot callback
@@ -72,7 +73,11 @@ pbRenderer.prototype.destroy = function()
 	this.updateCallback = null;
 	this.bootCallback = null;
 	this.context = null;
+
+	canvas = null;
+	ctx = null;
 	webGl = null;
+	rootLayer = null;
 };
 
 
@@ -99,15 +104,12 @@ pbRenderer.prototype.boot = function()
     // only boot once
     this.isBooted = true;
 
-    // get the canvas and context globals
-	this.setCanvas();
+	// create the drawing system interface
+	this.createGraphics();
 
 	// create the rootLayer container for all graphics
 	rootLayer = new pbLayer();
 	rootLayer.create(null, 0, 0, 0, 0, 1, 1);
-
-	// create the drawing sub-systems
-    this.graphics = new pbGraphics();
 
     // call the boot callback now the renderer is ready
     this.bootCallback.call(this.context);
@@ -118,29 +120,41 @@ pbRenderer.prototype.boot = function()
 };
 
 
-pbRenderer.prototype.setCanvas = function()
+/**
+ * createGraphics - set the graphics mode (any extension of pbBaseGraphics)
+ *
+ * @param  {String} _preferredRenderer - 'webgl', 'canvas' or undefined.  undefined will try webGl and fall-back to canvas if it fails.
+ *
+ * TODO: expand for other graphics mode, ie. DOM sprites: http://buildnewgames.com/dom-sprites/
+ */
+pbRenderer.prototype.createGraphics = function(_preferredRenderer)
 {
-	console.log( "pbRenderer.setCanvas" );
-	// default renderer mode is 'canvas'
-	renderer = "canvas";
-
 	// set the global canvas variable
 	canvas = document.getElementById(this.docId);
 
 	this.width = canvas.width;
 	this.height = canvas.height;
 	
-	// try to get a webGL context, revert to canvas '2d' only if webGl is not available
-	webGl = new pbWebGl();
-	ctx = webGl.initGL(canvas);
-	if (!ctx)
+	if (_preferredRenderer === undefined || _preferredRenderer == 'webgl')
 	{
-	 	ctx = canvas.getContext("2d");
-		webGl = null;
+		// try to get a webGL context
+		this.graphics = new pbWebGl();
+		ctx = this.graphics.initGL(canvas);
 	}
 	else
 	{
-	 	renderer = "webgl";
+		ctx = null;
+	}
+
+	if (ctx)
+	{
+		// webGl available and active
+	}
+	else
+	{
+		// revert to canvas '2d' if webGl is not available or it was requested in _preferredRenderer
+	 	ctx = canvas.getContext("2d");
+		this.graphics = new pbCanvas();
 	}
 };
 
@@ -151,8 +165,7 @@ pbRenderer.prototype.update = function()
 
 	this.frameCount++;
 
-	if (renderer === "webgl")
-	  	webGl.preRender();
+	this.graphics.preRender();
 
 	// update all object transforms then draw them
 	if (rootLayer)
@@ -165,7 +178,5 @@ pbRenderer.prototype.update = function()
 	
 	stats.end();
 };
-
-
 
 
