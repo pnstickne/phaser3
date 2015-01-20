@@ -126,8 +126,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	for(var i = 0; i < 100; i++)
 	{
 		var img = new pbImage();
-		// anchor point at front of rocket for easy collisions...
-		img.create(this.renderer, this.rocketSurface, 0, 0.5, 0.0);
+		img.create(this.renderer, this.rocketSurface, 0, 0.5, 0.5);
 		var rocket = new pbSprite();
 		rocket.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		// don't add it to the rootLayer until it's fired
@@ -349,19 +348,19 @@ pbAutoInvaderDemo.prototype.playerShootRocket = function()
 	{
 		var b = this.rocketPool.pop();
 		b.target = target;
-		if (b.x < this.player.x)
+		if (target.x < this.player.x)
 		{
 			b.x = this.player.x - 8;
-			b.angleInRadians = 1.5 * Math.PI - 0.2;
+			b.angleInRadians = Math.PI + 0.8;
 		}
 		else
 		{
 			b.x = this.player.x + 8;
-			b.angleInRadians = 1.5 * Math.PI + 0.2;
+			b.angleInRadians = Math.PI - 0.8;
 		}
 		b.image.cellFrame = 0;
 		b.y = this.player.y;
-		b.velocity = 0;
+		b.velocity = 2;
 		rootLayer.addChild(b);
 
 		this.rockets.push(b);
@@ -379,7 +378,7 @@ pbAutoInvaderDemo.prototype.playerRocketMove = function()
 		b.y += b.velocity * Math.cos(b.angleInRadians);
 		b.velocity += 0.1;
 
-		if (Math.random() < 0.5)
+		if (Math.random() < 0.1 + b.velocity * 0.1)
 		{
 			this.addSmoke(b.x, b.y);
 		}
