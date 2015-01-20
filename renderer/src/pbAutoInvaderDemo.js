@@ -246,7 +246,7 @@ pbAutoInvaderDemo.prototype.update = function()
 	// fire player rocket
 	if (Math.random() < 0.02)
 		if (this.rocketPool.length > 0)
-			this.playerShootRocket( (Math.random() < 0.5) );
+			this.playerShootRocket();
 
 	// create new field of invaders if they've all been killed
 	if (this.invaders.length === 0)
@@ -315,40 +315,6 @@ pbAutoInvaderDemo.prototype.playerShoot = function()
 };
 
 
-pbAutoInvaderDemo.prototype.playerShootRocket = function(_left)
-{
-	var target = this.pickTarget();
-	if (target)
-	{
-		var b = this.rocketPool.pop();
-		b.target = target;
-		if (_left)
-		{
-			b.x = this.player.x - 8;
-			b.angle = 1.5 * Math.PI - 0.1;
-		}
-		else
-		{
-			b.x = this.player.x + 8;
-			b.angle = 1.5 * Math.PI + 0.1;
-		}
-		b.y = this.player.y;
-		b.velocity = 1;
-		rootLayer.addChild(b);
-
-		this.rockets.push(b);
-	}
-};
-
-
-pbAutoInvaderDemo.prototype.pickTarget = function()
-{
-	if (this.invaders.length === 0) return null;
-	var i = Math.floor(this.invaders.length * Math.random());
-	return this.invaders[i];
-};
-
-
 pbAutoInvaderDemo.prototype.playerBulletMove = function()
 {
 	for(var i = this.bullets.length - 1; i >= 0; --i)
@@ -368,26 +334,54 @@ pbAutoInvaderDemo.prototype.playerBulletMove = function()
 };
 
 
+pbAutoInvaderDemo.prototype.pickTarget = function()
+{
+	if (this.invaders.length === 0) return null;
+	var i = Math.floor(this.invaders.length * Math.random());
+	return this.invaders[i];
+};
+
+
+pbAutoInvaderDemo.prototype.playerShootRocket = function()
+{
+	var target = this.pickTarget();
+	if (target)
+	{
+		var b = this.rocketPool.pop();
+		b.target = target;
+		if (b.x < this.player.x)
+		{
+			b.x = this.player.x - 8;
+			b.angleInRadians = 1.5 * Math.PI - 0.2;
+		}
+		else
+		{
+			b.x = this.player.x + 8;
+			b.angleInRadians = 1.5 * Math.PI + 0.2;
+		}
+		b.image.cellFrame = 0;
+		b.y = this.player.y;
+		b.velocity = 0;
+		rootLayer.addChild(b);
+
+		this.rockets.push(b);
+	}
+};
+
+
 pbAutoInvaderDemo.prototype.playerRocketMove = function()
 {
 	for(var i = this.rockets.length - 1; i >= 0; --i)
 	{
 		var b = this.rockets[i];
-		var cos = Math.cos(b.angle);
-		var sin = Math.sin(b.angle);
-		b.x += b.velocity * cos;
-		b.y += b.velocity * sin;
-		b.velocity += 0.1;
 
-		if (b.angle < 0) b.angle += Math.PI * 2.0;
-		if (b.angle >= Math.PI * 2.0) b.angle -= Math.PI * 2.0;
-		b.image.cellFrame = Math.floor((b.angle - Math.PI * 0.5) / (Math.PI * 0.5) * 2 + 0.5);
-		if (b.image.cellFrame < 0) b.image.cellFrame += 8;
+		b.x += b.velocity * Math.sin(b.angleInRadians);
+		b.y += b.velocity * Math.cos(b.angleInRadians);
+		b.velocity += 0.1;
 
 		if (Math.random() < 0.5)
 		{
-			var angle = ((b.image.cellFrame + 6) % 8) / 8.0 * Math.PI * 2.0;
-			this.addSmoke(b.x + 16 * Math.cos(angle), b.y + 16 * Math.sin(angle));
+			this.addSmoke(b.x, b.y);
 		}
 
 		if (b.target)
@@ -401,9 +395,10 @@ pbAutoInvaderDemo.prototype.playerRocketMove = function()
 			{
 				var dx = b.target.x - b.x;
 				var dy = b.target.y - b.y;
-				var a = Math.atan2(dy, dx);		// desired angle
-				var d = a - b.angle;
-				b.angle = a;	//+= Math.min(0.1, Math.max(-0.1, d));
+				var desired = Math.atan2(dx, dy);
+				if (desired < 0) desired += Math.PI * 2.0;
+				if (desired >= Math.PI * 2.0) desired -= Math.PI * 2.0;
+				b.angleInRadians = turnToFace(b.angleInRadians, desired, Math.PI * 2.0, 0.04);
 			}
 		}
 
@@ -557,5 +552,27 @@ pbAutoInvaderDemo.prototype.updateSmokes = function()
 		}
 	}
 };
+
+
+function turnToFace(_current, _desired, _total, _amount)
+{
+	var t;
+	var d = _desired - _current;
+	if (Math.abs(d) <= _total * 0.5)
+		t = _current + sgn0(d) * _amount;
+	else
+		t = _current - sgn0(d) * _amount;
+	if (t >= _total) return t - _total;
+	if (t < 0) return t + _total;
+	return t;
+}
+
+
+function sgn0(_value)
+{
+	if (_value < 0) return -1;
+	if (_value > 0) return 1;
+	return 0;
+}
 
 
