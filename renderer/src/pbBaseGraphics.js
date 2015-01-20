@@ -9,8 +9,6 @@
 
 function pbBaseGraphics()
 {
-	this.renderer = null;
-
 	this.width = 0;
 	this.height = 0;
 
@@ -52,7 +50,7 @@ pbBaseGraphics.prototype.fillStyle = function(color)
 };
 
 
-pbBaseGraphics.prototype.fillRect = function(param0, y, width, height)
+pbBaseGraphics.prototype.baseFillRect = function(param0, y, width, height)
 {
 	var x;
 
@@ -73,8 +71,7 @@ pbBaseGraphics.prototype.fillRect = function(param0, y, width, height)
 		return;
 	}
 
-	this.renderer.fillRect(x, y, width, height);
-	//webGl.fillRect(x, y, width, height, this.fillColorRGBA, this.lineColorValue);
+	this.fillRect(x, y, width, height);
 };
 
 

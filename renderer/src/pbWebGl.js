@@ -915,6 +915,8 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 		var cx = cell % surface.cellsWide;
 		var cy = Math.floor(cell / surface.cellsWide);
 		var rect = surface.cellTextureBounds[cx][cy];
+		if (!rect)
+			console.log("ERROR: invalid cellFrame", cx, cy);
 		var tex_x = rect.x;
 		var tex_y = rect.y;
 		var tex_r = rect.x + rect.width;

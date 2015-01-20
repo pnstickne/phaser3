@@ -26,6 +26,8 @@ function pbAutoInvaderDemo( docId )
 	this.starsImg = this.loader.loadImage( "../img/invader/starfield.png" );
 	this.bulletImg = this.loader.loadImage( "../img/invader/bullet.png" );
 	this.bombImg = this.loader.loadImage( "../img/invader/enemy-bullet.png" );
+	this.rocketImg = this.loader.loadImage( "../img/invader/rockets32x32x8.png" );
+	this.smokeImg = this.loader.loadImage( "../img/invader/smoke64x64x8.png" );
 	this.explosionImg = this.loader.loadImage( "../img/invader/explode.png" );
 
 	console.log( "pbAutoInvaderDemo c'tor exit" );
@@ -115,6 +117,23 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 		this.bulletPool.push(bullet);
 	}
 
+	// player rockets
+	image = this.loader.getImage( this.rocketImg );
+	this.rocketSurface = new pbSurface();
+	this.rocketSurface.create(32, 32, 8, 1, image);
+	this.rocketPool = [];		// pool for rockets which aren't firing
+	this.rockets = [];			// list of rockets which are firing
+	for(var i = 0; i < 100; i++)
+	{
+		var img = new pbImage();
+		// anchor point at front of rocket for easy collisions...
+		img.create(this.renderer, this.rocketSurface, 0, 0.5, 0.0);
+		var rocket = new pbSprite();
+		rocket.create(img, 0, 0, 0, 0, 1.0, 1.0);
+		// don't add it to the rootLayer until it's fired
+		this.rocketPool.push(rocket);
+	}
+
 	// aliens
 	image = this.loader.getImage( this.invaderImg );
 	this.invaderSurface = new pbSurface();
@@ -152,6 +171,21 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 		var explosion = new pbSprite();
 		explosion.create(img, 0, 0, 0, 0, 0.5, 0.5);
 		this.explosionPool.push(explosion);
+	}
+
+	// smoke puffs
+	image = this.loader.getImage( this.smokeImg );
+	this.smokeSurface = new pbSurface();
+	this.smokePool = [];
+	this.smokes = [];
+	this.smokeSurface.create(64, 64, 8, 1, image);
+	for(var i = 0; i < 200; i++)
+	{
+		var img = new pbImage();
+		img.create(this.renderer, this.smokeSurface, 0);
+		var smoke = new pbSprite();
+		smoke.create(img, 0, 0, 0, 0, 1.0, 1.0);
+		this.smokePool.push(smoke);
 	}
 };
 
@@ -205,10 +239,14 @@ pbAutoInvaderDemo.prototype.update = function()
 		this.playerDirX = -this.playerDirX;
 	// move
 	this.player.x += this.playerDirX;
-	// fire
+	// fire player bullet
 	if (Math.random() < 0.1)
 		if (this.bulletPool.length > 0)
 			this.playerShoot();
+	// fire player rocket
+	if (Math.random() < 0.02)
+		if (this.rocketPool.length > 0)
+			this.playerShootRocket( (Math.random() < 0.5) );
 
 	// create new field of invaders if they've all been killed
 	if (this.invaders.length === 0)
@@ -257,11 +295,12 @@ pbAutoInvaderDemo.prototype.update = function()
 
 	// update active munitions
 	this.playerBulletMove();
+	this.playerRocketMove();
 	this.invaderBombMove();
 
 	// update effects
 	this.updateExplosions();
-
+	this.updateSmokes();
 };
 
 
@@ -273,6 +312,40 @@ pbAutoInvaderDemo.prototype.playerShoot = function()
 	rootLayer.addChild(b);
 
 	this.bullets.push(b);
+};
+
+
+pbAutoInvaderDemo.prototype.playerShootRocket = function(_left)
+{
+	var target = this.pickTarget();
+	if (target)
+	{
+		var b = this.rocketPool.pop();
+		b.target = target;
+		if (_left)
+		{
+			b.x = this.player.x - 8;
+			b.angle = 1.5 * Math.PI - 0.1;
+		}
+		else
+		{
+			b.x = this.player.x + 8;
+			b.angle = 1.5 * Math.PI + 0.1;
+		}
+		b.y = this.player.y;
+		b.velocity = 1;
+		rootLayer.addChild(b);
+
+		this.rockets.push(b);
+	}
+};
+
+
+pbAutoInvaderDemo.prototype.pickTarget = function()
+{
+	if (this.invaders.length === 0) return null;
+	var i = Math.floor(this.invaders.length * Math.random());
+	return this.invaders[i];
 };
 
 
@@ -290,6 +363,58 @@ pbAutoInvaderDemo.prototype.playerBulletMove = function()
 			rootLayer.removeChild(b);
 			this.bulletPool.push(b);
 			this.bullets.splice(i, 1);
+		}
+	}
+};
+
+
+pbAutoInvaderDemo.prototype.playerRocketMove = function()
+{
+	for(var i = this.rockets.length - 1; i >= 0; --i)
+	{
+		var b = this.rockets[i];
+		var cos = Math.cos(b.angle);
+		var sin = Math.sin(b.angle);
+		b.x += b.velocity * cos;
+		b.y += b.velocity * sin;
+		b.velocity += 0.1;
+
+		if (b.angle < 0) b.angle += Math.PI * 2.0;
+		if (b.angle >= Math.PI * 2.0) b.angle -= Math.PI * 2.0;
+		b.image.cellFrame = Math.floor((b.angle - Math.PI * 0.5) / (Math.PI * 0.5) * 2 + 0.5);
+		if (b.image.cellFrame < 0) b.image.cellFrame += 8;
+
+		if (Math.random() < 0.5)
+		{
+			var angle = ((b.image.cellFrame + 6) % 8) / 8.0 * Math.PI * 2.0;
+			this.addSmoke(b.x + 16 * Math.cos(angle), b.y + 16 * Math.sin(angle));
+		}
+
+		if (b.target)
+		{
+			if (b.target.die)
+			{
+				this.addExplosion(b.x, b.y);
+				b.y = -100;
+			}
+			else
+			{
+				var dx = b.target.x - b.x;
+				var dy = b.target.y - b.y;
+				var a = Math.atan2(dy, dx);		// desired angle
+				var d = a - b.angle;
+				b.angle = a;	//+= Math.min(0.1, Math.max(-0.1, d));
+			}
+		}
+
+
+		// hit alien or off the top of the screen?
+		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.image.surface.cellHigh)
+		{
+			// kill the bullet and add it back to the pool
+			rootLayer.removeChild(b);
+			this.rocketPool.push(b);
+			this.rockets.splice(i, 1);
 		}
 	}
 };
@@ -402,4 +527,35 @@ pbAutoInvaderDemo.prototype.updateExplosions = function()
 		}
 	}
 };
+
+
+pbAutoInvaderDemo.prototype.addSmoke = function(_x, _y)
+{
+	if (this.smokePool.length > 0)
+	{
+		var smoke = this.smokePool.pop();
+		smoke.x = _x;
+		smoke.y = _y;
+		smoke.image.cellFrame = 0;
+		rootLayer.addChild(smoke);
+		this.smokes.push(smoke);
+	}
+};
+
+
+pbAutoInvaderDemo.prototype.updateSmokes = function()
+{
+	for(var i = this.smokes.length - 1; i >= 0; --i)
+	{
+		var smoke = this.smokes[i];
+		smoke.image.cellFrame += 0.2;
+		if (smoke.image.cellFrame >= 8)
+		{
+			rootLayer.removeChild(smoke);
+			this.smokes.splice(i, 1);
+			this.smokePool.push(smoke);
+		}
+	}
+};
+
 
