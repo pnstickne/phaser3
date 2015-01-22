@@ -22,6 +22,19 @@ function pbSprite()
 }
 
 
+/**
+ * [create description]
+ *
+ * @param  {[type]} _image          [description]
+ * @param  {[type]} _x              [description]
+ * @param  {[type]} _y              [description]
+ * @param  {Number [0..1]} _z - depth to draw this image at, 0 is in front, 1 is at the back
+ * @param  {[type]} _angleInRadians [description]
+ * @param  {[type]} _scaleX         [description]
+ * @param  {[type]} _scaleY         [description]
+ *
+ * @return {[type]}                 [description]
+ */
 pbSprite.prototype.create = function(_image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
 {
 	if (_image === undefined) _image = null;
@@ -39,6 +52,7 @@ pbSprite.prototype.create = function(_image, _x, _y, _z, _angleInRadians, _scale
 	this.scaleX = _scaleX;
 	this.scaleY = _scaleY;
 
+	// try to apply anchor offset prior to rotation so things rotate around anchor instead of their 0,0 (centre for pbSprite, top-left corner for pbLayer)
 	// if (_image)
 	// {
 	// 	// TODO: merge these combinations into a specialised pbMatrix3 function when we've got them working correctly
