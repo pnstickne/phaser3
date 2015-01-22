@@ -103,7 +103,7 @@ pbTextSpriteDemo.prototype.addSprites = function()
 		spr = new pbSprite();
 		x = 8 + (i * 16) % this.renderer.width;
 		y = 8 + Math.floor(((i * 16) / this.renderer.width)) * 16;
-		spr.create(img, x, y, 1.0, 0, 1.0, 1.0);
+		spr.create(img, x, y, 0.2, 0, 1.0, 1.0);
 
 		this.greenLayer.addChild(spr);
 		this.greenLetters.push(spr);
@@ -120,7 +120,7 @@ pbTextSpriteDemo.prototype.addSprites = function()
 		spr = new pbSprite();
 		x = 8 + (i * 16) % this.renderer.width;
 		y = 8 + Math.floor(((i * 16) / this.renderer.width)) * 16;
-		spr.create(img, x, y, 1.0, 0, 1.0, 1.0);
+		spr.create(img, x, y, 0.1, 0, 1.0, 1.0);
 
 		this.redLayer.addChild(spr);
 		this.redLetters.push(spr);
@@ -137,7 +137,7 @@ pbTextSpriteDemo.prototype.addSprites = function()
 		spr = new pbSprite();
 		x = 8 + (i * 16) % this.renderer.width;
 		y = 8 + Math.floor(((i * 16) / this.renderer.width)) * 16;
-		spr.create(img, x, y, 1.0, 0, 1.0, 1.0);
+		spr.create(img, x, y, 0.0, 0, 1.0, 1.0);
 
 		this.redLayer.addChild(spr);
 		this.yellowLetters.push(spr);

@@ -8,6 +8,8 @@
  * TODO: Layers will inherit from pbSprite to acquire the nested hierarchy and transform inheritance already implemented there.
  * Layers will not have a surface though, so they use pbSprite purely as a logical construct and not as a display object.
  * TODO: Check if 'layers' are even necessary as a unique object, pbSprite might already contain the full requisite functionality!
+ *
+ * TODO: given rootLayer -> layer1 -> layer2 -> layer3, rotating all layers except layer3 works as expected... what's wrong with layer3?!
  * 
  */
 
