@@ -55,19 +55,18 @@ pbLayer.prototype.destroy = function()
 };
 
 
-pbLayer.prototype.add = function()
-{
-	var sprite = new pbSprite();
-
-	this.list.push(sprite);
-};
-
-
 pbLayer.prototype.update = function(_dictionary)
 {
 	// TODO: check this dictionary implementation works correctly with nested layers, nested sprites, and combinations of both
 	// prepare the dictionary
 	this.drawDictionary.clear();
+
+	// call the pbSprite update for this pbLayer to access the child hierarchy
+	this.__super__.prototype.update.call(this, this.drawDictionary);
+
+	// iterate the drawDictionary to obtain all values for each key
+	// draw the queued objects in the callback
+	this.drawDictionary.iterateKeys(this.draw, this);
 
 	// call update for all members of this layer
 	// (pbImage adds drawing data to the drawDictionary)
@@ -81,16 +80,8 @@ pbLayer.prototype.update = function(_dictionary)
 		}
 	}
 
-	// call the pbSprite update for this pbLayer to access the child hierarchy
-	this.__super__.prototype.update.call(this, this.drawDictionary);
-
-	// iterate the drawDictionary to obtain all values for each key
-	// draw the queued objects in the callback
-	this.drawDictionary.iterateKeys(this.draw, this);
-
 	return true;
 };
-
 
 
 pbLayer.prototype.draw = function(_list)
@@ -105,6 +96,26 @@ pbLayer.prototype.draw = function(_list)
 	else
 	{
 		obj.image.renderer.graphics.rawBatchDrawImages( _list );
+	}
+};
+
+
+/**
+ * override the pbSprite addChild function to handle case where a pbLayer is added to a pbLayer
+ * in that case it should go into list instead of children in order to provide the correct order of processing
+ *
+ * @param {[type]} _child [description]
+ */
+pbLayer.prototype.addChild = function( _child )
+{
+	if (_child instanceof pbLayer)
+	{
+		this.list.push( _child );
+	}
+	else
+	{
+		// call the super.addChild function
+		this.__super__.prototype.addChild.call( this, _child );
 	}
 };
 
