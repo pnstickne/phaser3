@@ -30,7 +30,7 @@ pbLoader.prototype.loadImage = function(filename)
 	var _this = this;
 	
 	this.images[index] = new Image();
-	this.images[index].onload = function(img) { _this.loaded.call(_this, img); };
+	this.images[index].onload = function(evt) { _this.loaded.call(_this, evt); };
 	this.images[index].src = filename;
 	this.queue.push(this.images[index]);
 
