@@ -78,7 +78,7 @@ pbTransformDemo.prototype.addSprites = function()
 	rootLayer.addChild(this.spr);
 
 	this.child = new pbSprite();
-	this.child.create(img, 0, -100, 1.0, 0, 0.75, 0.75);
+	this.child.create(img, 0, -75, 1.0, 0, 0.75, 0.75);
 	this.spr.addChild(this.child);
 
 	this.childchild = new pbSprite();
