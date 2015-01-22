@@ -82,9 +82,6 @@ pbLayer.prototype.update = function(_dictionary)
 	// call the pbSprite update for this pbLayer to access the child hierarchy
 	this.__super__.prototype.update.call(this, this.drawDictionary);
 
-	// iterate the drawDictionary and draw everything in this layer
-	//this.drawDictionary.iterateAll(this.draw, this);
-
 	// iterate the drawDictionary to obtain all values for each key
 	// draw the queued objects in the callback
 	this.drawDictionary.iterateKeys(this.draw, this);

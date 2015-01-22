@@ -39,7 +39,16 @@ pbSprite.prototype.create = function(_image, _x, _y, _z, _angleInRadians, _scale
 	this.scaleX = _scaleX;
 	this.scaleY = _scaleY;
 
-	this.transform = pbMatrix3.makeTransform(_x, _y, _angleInRadians, _scaleX, _scaleY);
+	// if (_image)
+	// {
+	// 	// TODO: merge these combinations into a specialised pbMatrix3 function when we've got them working correctly
+	// 	var anchorTransform = pbMatrix3.makeTranslation(this.image.anchorX * this.image.surface.cellWide, this.image.anchorY * this.image.surface.cellHigh);
+	// 	this.transform = pbMatrix3.fastMultiply(anchorTransform, pbMatrix3.makeTransform(_x, _y, _angleInRadians, _scaleX, _scaleY));
+	// }
+	// else
+	{
+		this.transform = pbMatrix3.makeTransform(_x, _y, _angleInRadians, _scaleX, _scaleY);
+	}
 };
 
 
