@@ -17,7 +17,8 @@ function pbAutoInvaderDemo( docId )
 	var _this = this;
 
 	this.docId = docId;
-
+	this.layer = null;
+	
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 	this.playerImg = this.loader.loadImage( "../img/invader/player.png" );
@@ -43,9 +44,18 @@ pbAutoInvaderDemo.prototype.allLoaded = function()
 };
 
 
-pbAutoInvaderDemo.prototype.create = function()
+pbAutoInvaderDemo.prototype.create = function(_rootLayer)
 {
 	console.log("pbAutoInvaderDemo.create");
+
+	if (_rootLayer === undefined || _rootLayer === null)
+	{
+		this.layer = rootLayer;
+	}
+	else
+	{
+		this.layer = _rootLayer;
+	}
 
 	this.addSprites();
 };
@@ -60,6 +70,8 @@ pbAutoInvaderDemo.prototype.destroy = function()
 
 	this.renderer.destroy();
 	this.renderer = null;
+
+	this.layer = null;
 };
 
 
@@ -86,7 +98,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	this.bgImage.create(this.renderer, this.bgSurface, 0, 0, 0, true, true);
 	this.bg = new pbSprite();
 	this.bg.create(this.bgImage, 0, 0, 1, 0, 1.0, 1.0);
-	rootLayer.addChild(this.bg);
+	this.layer.addChild(this.bg);
 
 	// player
 	image = this.loader.getImage( this.playerImg );
@@ -96,7 +108,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	this.playerImage.create(this.renderer, this.playerSurface, 0);
 	this.player = new pbSprite();
 	this.player.create(this.playerImage, this.renderer.width * 0.5, this.renderer.height * 0.9, 0, 0, 1.0, 1.0);
-	rootLayer.addChild(this.player);
+	this.layer.addChild(this.player);
 	this.player.die = false;
 	this.playerDirX = 2;
 
@@ -113,7 +125,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 		img.create(this.renderer, this.bulletSurface, 0, 0.5, 0.0);
 		var bullet = new pbSprite();
 		bullet.create(img, 0, 0, 0, 0, 1.0, 1.0);
-		// don't add it to the rootLayer until it's fired
+		// don't add it to the layer until it's fired
 		this.bulletPool.push(bullet);
 	}
 
@@ -129,7 +141,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 		img.create(this.renderer, this.rocketSurface, 0, 0.5, 0.5);
 		var rocket = new pbSprite();
 		rocket.create(img, 0, 0, 0, 0, 1.0, 1.0);
-		// don't add it to the rootLayer until it's fired
+		// don't add it to the layer until it's fired
 		this.rocketPool.push(rocket);
 	}
 
@@ -151,7 +163,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 		img.create(this.renderer, this.bombSurface, 0);
 		var bomb = new pbSprite();
 		bomb.create(img, 0, 0, 0, 0, 1.0, 1.0);
-		// don't add it to the rootLayer until it's fired
+		// don't add it to the layer until it's fired
 		this.bombPool.push(bomb);
 	}
 	// record the nearest bomb to the player's position (so he can try to dodge)
@@ -199,7 +211,7 @@ pbAutoInvaderDemo.prototype.addInvaders = function()
 			img.create(this.renderer, this.invaderSurface, Math.floor(Math.random() * 3));
 			var invader = new pbSprite();
 			invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
-			rootLayer.addChild(invader);
+			this.layer.addChild(invader);
 			invader.row = y;
 			invader.die = false;
 			this.invaders.push(invader);
@@ -277,7 +289,7 @@ pbAutoInvaderDemo.prototype.update = function()
 		if (invader.die)
 		{
 			// TODO: death effect for invaders
-			rootLayer.removeChild(invader);
+			this.layer.removeChild(invader);
 			this.invaders.splice(i, 1);
 		}
 	}
@@ -308,7 +320,7 @@ pbAutoInvaderDemo.prototype.playerShoot = function()
 	var b = this.bulletPool.pop();
 	b.x = this.player.x;
 	b.y = this.player.y;
-	rootLayer.addChild(b);
+	this.layer.addChild(b);
 
 	this.bullets.push(b);
 };
@@ -325,7 +337,7 @@ pbAutoInvaderDemo.prototype.playerBulletMove = function()
 		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.image.surface.cellHigh)
 		{
 			// kill the bullet and add it back to the pool
-			rootLayer.removeChild(b);
+			this.layer.removeChild(b);
 			this.bulletPool.push(b);
 			this.bullets.splice(i, 1);
 		}
@@ -361,7 +373,7 @@ pbAutoInvaderDemo.prototype.playerShootRocket = function()
 		b.image.cellFrame = 0;
 		b.y = this.player.y;
 		b.velocity = 2;
-		rootLayer.addChild(b);
+		this.layer.addChild(b);
 
 		this.rockets.push(b);
 	}
@@ -406,7 +418,7 @@ pbAutoInvaderDemo.prototype.playerRocketMove = function()
 		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.image.surface.cellHigh)
 		{
 			// kill the bullet and add it back to the pool
-			rootLayer.removeChild(b);
+			this.layer.removeChild(b);
 			this.rocketPool.push(b);
 			this.rockets.splice(i, 1);
 		}
@@ -443,7 +455,7 @@ pbAutoInvaderDemo.prototype.invaderBomb = function(_invader)
 	var b = this.bombPool.pop();
 	b.x = _invader.x;
 	b.y = _invader.y;
-	rootLayer.addChild(b);
+	this.layer.addChild(b);
 
 	this.bombs.push(b);
 };
@@ -485,7 +497,7 @@ pbAutoInvaderDemo.prototype.invaderBombMove = function()
 		if (hit || b.y > this.renderer.height + b.image.surface.cellHigh * 0.5)
 		{
 			// kill the bullet and add it back to the pool
-			rootLayer.removeChild(b);
+			this.layer.removeChild(b);
 			this.bombPool.push(b);
 			this.bombs.splice(i, 1);
 		}
@@ -501,7 +513,7 @@ pbAutoInvaderDemo.prototype.addExplosion = function(_x, _y)
 		explosion.x = _x;
 		explosion.y = _y;
 		explosion.image.cellFrame = 0;
-		rootLayer.addChild(explosion);
+		this.layer.addChild(explosion);
 		this.explosions.push(explosion);
 	}
 };
@@ -515,7 +527,7 @@ pbAutoInvaderDemo.prototype.updateExplosions = function()
 		explosion.image.cellFrame += 0.2;
 		if (explosion.image.cellFrame >= 16)
 		{
-			rootLayer.removeChild(explosion);
+			this.layer.removeChild(explosion);
 			this.explosions.splice(i, 1);
 			this.explosionPool.push(explosion);
 		}
@@ -531,7 +543,7 @@ pbAutoInvaderDemo.prototype.addSmoke = function(_x, _y)
 		smoke.x = _x;
 		smoke.y = _y;
 		smoke.image.cellFrame = 0;
-		rootLayer.addChild(smoke);
+		this.layer.addChild(smoke);
 		this.smokes.push(smoke);
 	}
 };
@@ -545,7 +557,7 @@ pbAutoInvaderDemo.prototype.updateSmokes = function()
 		smoke.image.cellFrame += 0.2;
 		if (smoke.image.cellFrame >= 8)
 		{
-			rootLayer.removeChild(smoke);
+			this.layer.removeChild(smoke);
 			this.smokes.splice(i, 1);
 			this.smokePool.push(smoke);
 		}
