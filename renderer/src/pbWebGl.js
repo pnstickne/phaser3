@@ -133,11 +133,12 @@ var graphicsShaderSources = {
 
 var MAX_SPRITES = 100000;
 
+var gl = null;
 
 function pbWebGl()
 {
 	console.log( "pbWebGl c'tor" );
-	this.gl = null;
+	gl = null;
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
 	this.batchImageShaderProgram = null;
@@ -167,10 +168,10 @@ pbWebGl.prototype.initGL = function( canvas )
 		console.log( "pbWebGl.initGl" );
 		try
 		{
-			//this.gl = canvas.getContext( "webgl" );
-			this.gl = canvas.getContext( "webgl", { alpha: false } );
-			if (!this.gl)	// support IE11, lagging behind as usual
-				this.gl = canvas.getContext( "experimental-webgl", { alpha: false } );
+			//gl = canvas.getContext( "webgl" );
+			gl = canvas.getContext( "webgl", { alpha: false } );
+			if (!gl)	// support IE11, lagging behind as usual
+				gl = canvas.getContext( "experimental-webgl", { alpha: false } );
 		}
 		catch ( e )
 		{
@@ -179,40 +180,40 @@ pbWebGl.prototype.initGL = function( canvas )
 		}
 
 		// if this version can't use textures, it's useless to us
-		var numTexturesAvailableInVertexShader = this.gl.getParameter( this.gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS );
+		var numTexturesAvailableInVertexShader = gl.getParameter( gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS );
 		if ( numTexturesAvailableInVertexShader === 0 )
 		{
-			this.gl = null;
+			gl = null;
 			return null;
 		}
 
 		// create the shader programs for each drawing mode
-		this.graphicsShaderProgram = this.initShaders( this.gl, graphicsShaderSources );
-		this.imageShaderProgram = this.initShaders( this.gl, imageShaderSources );
+		this.graphicsShaderProgram = this.initShaders( gl, graphicsShaderSources );
+		this.imageShaderProgram = this.initShaders( gl, imageShaderSources );
 
-		this.batchImageShaderProgram = this.initShaders( this.gl, batchImageShaderSources );
-		this.rawBatchImageShaderProgram = this.initShaders( this.gl, rawBatchImageShaderSources );
+		this.batchImageShaderProgram = this.initShaders( gl, batchImageShaderSources );
+		this.rawBatchImageShaderProgram = this.initShaders( gl, rawBatchImageShaderSources );
 
 		// enable the depth buffer so we can order our sprites
-		this.gl.enable(this.gl.DEPTH_TEST);
-		this.gl.depthFunc(this.gl.LEQUAL);
+		gl.enable(gl.DEPTH_TEST);
+		gl.depthFunc(gl.LEQUAL);
 
 		// set blending mode
-		this.gl.blendFunc( this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA );
-		this.gl.enable( this.gl.BLEND );
+		gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
+		gl.enable( gl.BLEND );
 
-		// clear the render area
-		this.gl.clearColor( 0.1, 0.2, 0.1, 1.0 );
-		this.gl.clearDepth( 1.0 );
+		// set the parameters to clear the render area
+		gl.clearColor( 0.1, 0.2, 0.1, 1.0 );
+		gl.clearDepth( 1.0 );
 
 		// precalculate the drawing buffer's half-width and height values
-		this.screenWide2 = this.gl.drawingBufferWidth * 0.5;
-		this.screenHigh2 = this.gl.drawingBufferHeight * 0.5;
+		this.screenWide2 = gl.drawingBufferWidth * 0.5;
+		this.screenHigh2 = gl.drawingBufferHeight * 0.5;
 		// calculate inverse to avoid division in loop
 		this.iWide = 1.0 / this.screenWide2;
 		this.iHigh = 1.0 / this.screenHigh2;
 
-		return this.gl;
+		return gl;
 	}
 	return null;
 };
@@ -221,8 +222,8 @@ pbWebGl.prototype.initGL = function( canvas )
 pbWebGl.prototype.preRender = function()
 {
 	// clear the viewport
-	this.gl.viewport( 0, 0, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight );
-	this.gl.clear( this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT );
+	gl.viewport( 0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight );
+	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 };
 
 
@@ -325,7 +326,6 @@ pbWebGl.prototype.setGraphicsProgram = function()
 	this.clearProgram();
 	
 	var program = this.graphicsShaderProgram;
-	var gl = this.gl;
 
 	// set the shader program
 	gl.useProgram( program );
@@ -344,7 +344,6 @@ pbWebGl.prototype.clearGraphicsProgram = function()
 	// console.log( "pbWebGl.clearGraphicsProgram" );
 
 	var program = this.graphicsShaderProgram;
-	var gl = this.gl;
 
 	program.aPosition = gl.getAttribLocation( program, "aPosition" );
 	gl.disableVertexAttribArray( program.aPosition );
@@ -360,7 +359,6 @@ pbWebGl.prototype.setImageProgram = function()
 	this.clearProgram();
 	
 	var program = this.imageShaderProgram;
-	var gl = this.gl;
 
 	gl.useProgram( program );
 
@@ -382,7 +380,6 @@ pbWebGl.prototype.clearImageProgram = function()
 	// console.log( "pbWebGl.clearImageProgram" );
 
 	var program = this.imageShaderProgram;
-	var gl = this.gl;
 
 	program.aPosition = gl.getAttribLocation( program, "aPosition" );
 	gl.disableVertexAttribArray( program.aPosition );
@@ -396,7 +393,6 @@ pbWebGl.prototype.setBatchImageProgram = function()
 	this.clearProgram();
 	
 	var program = this.batchImageShaderProgram;
-	var gl = this.gl;
 
 	gl.useProgram( program );
 
@@ -420,7 +416,6 @@ pbWebGl.prototype.clearBatchImageProgram = function()
 	// console.log( "pbWebGl.clearBatchImageProgram" );
 
 	var program = this.batchImageShaderProgram;
-	var gl = this.gl;
 
 	program.aPosition = gl.getAttribLocation( program, "aPosition" );
 	gl.disableVertexAttribArray( program.aPosition );
@@ -436,8 +431,6 @@ pbWebGl.prototype.setRawBatchImageProgram = function()
 	this.clearProgram();
 	
 	var program = this.rawBatchImageShaderProgram;
-	var gl = this.gl;
-
 	gl.useProgram( program );
 
 	program.aPosition = gl.getAttribLocation( program, "aPosition" );
@@ -463,7 +456,6 @@ pbWebGl.prototype.clearRawBatchImageProgram = function()
 	// console.log( "pbWebGl.clearRawBatchImageProgram" );
 
 	var program = this.rawBatchImageShaderProgram;
-	var gl = this.gl;
 
 	program.aPosition = gl.getAttribLocation( program, "aPosition" );
 	gl.disableVertexAttribArray( program.aPosition );
@@ -493,7 +485,6 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 	// console.log( "pbWebGl.fillRect" );
 
 	var program = this.graphicsShaderProgram;
-	var gl = this.gl;
 
 	if ( this.currentProgram !== program )
 		this.currentProgram = this.setGraphicsProgram();
@@ -541,8 +532,6 @@ pbWebGl.prototype.handleTexture = function( _image, _tiled )
 	// this _image is already the selected texture
 	if (this.currentTexture && this.currentTexture.image === _image)
 		return;
-
-	var gl = this.gl;
 
 	var texture = null;
 
@@ -598,7 +587,7 @@ pbWebGl.prototype.handleTexture = function( _image, _tiled )
    	gl.uniform1i( this.currentProgram.samplerUniform, 0 );
 
 	// create a buffer to transfer all the vertex position data through
-	this.positionBuffer = this.gl.createBuffer();
+	this.positionBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
 
 	// set up the projection matrix in the vertex shader
@@ -608,8 +597,6 @@ pbWebGl.prototype.handleTexture = function( _image, _tiled )
 
 pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 {
-	var gl = this.gl;
-
 	if ( this.currentProgram !== this.imageShaderProgram )
 		this.currentProgram = this.setImageProgram();
 
@@ -680,8 +667,6 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 
 pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle, _scale )
 {
-	var gl = this.gl;
-
 	if ( this.currentProgram !== this.imageShaderProgram )
 		this.currentProgram = this.setImageProgram();
 
@@ -752,8 +737,6 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 
 pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 {
-	var gl = this.gl;
-
 	if ( this.currentProgram !== this.batchImageShaderProgram )
 		this.currentProgram = this.setBatchImageProgram();
 
@@ -886,7 +869,6 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 // list objects: { image: pbImage, transform: pbMatrix3, z_order: Number }
 pbWebGl.prototype.rawBatchDrawImages = function( _list )
 {
-	var gl = this.gl;
 	var surface = _list[0].image.surface;
 
 	if ( this.currentProgram !== this.rawBatchImageShaderProgram )
@@ -1018,10 +1000,16 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 
 pbWebGl.prototype.reset = function()
 {
-    this.gl.bindBuffer( this.gl.ARRAY_BUFFER, null );
-   	this.gl.bindTexture( this.gl.TEXTURE_2D, null );
+    gl.bindBuffer( gl.ARRAY_BUFFER, null );
+   	gl.bindTexture( gl.TEXTURE_2D, null );
    	this.clearProgram();
 	this.currentProgram = null;
 	this.currentTexture = null;
 };
+
+
+// function clearDepthBuffer()
+// {
+// 	gl.clear(gl.DEPTH_BUFFER_BIT);
+// }
 
