@@ -130,33 +130,6 @@ var rawBatchImageShaderSources = {
 
 
 /**
- * imageShaderSources - shaders for image drawing
- * @type {Array}
- */
-var imageShaderSources = {
-	fragment:
-		"  precision mediump float;" +
-		"  uniform sampler2D imageSampler;" +
-		"  varying vec2 vTexCoord;" +
-		"  void main(void) {" +
-		"    vec4 col;" +
-		"    col = texture2D(imageSampler, vTexCoord);" +
-		"    gl_FragColor = col;" +
-		"  }",
-
-	vertex:
-		"  attribute vec4 position;" +
-		"  varying vec2 vTexCoord;" +
-		"  void main(void) {" +
-		"    gl_Position.zw = vec2(1, 1);" +
-		"    gl_Position.xy = position.xy;" +
-		"    vTexCoord = position.zw;" +
-		"  }"
-};
-
-
-
-/**
  * graphicsShaderSources - shaders for graphics primitive drawing
  * @type {Array}
  */
