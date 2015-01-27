@@ -22,6 +22,7 @@ function pbImage()
 	this.anchorY = 0.5;
 	this.fullScreen = false;
 	this.tiling = false;
+	this.isParticle = false;
 }
 
 
@@ -43,6 +44,7 @@ pbImage.prototype.create = function(_renderer, _surface, _cellFrame, _anchorX, _
 	this.anchorY = _anchorY;
 	this.fullScreen = _fullScreen;
 	this.tiling = _tiling;		// TODO: move to pbSurface?? batch processing will be all or nothing so shared surface can't switch 'tiling' state on & off per pbImage
+	this.isParticle = false;
 };
 
 

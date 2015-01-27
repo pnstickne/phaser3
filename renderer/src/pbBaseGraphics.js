@@ -137,6 +137,12 @@ pbBaseGraphics.prototype.drawImageWithTransform = function(_image, _transform, _
 };
 
 
+pbBaseGraphics.prototype.blitDrawImages = function(_list, _surface)
+{
+	alert("ERROR: the selected graphic mode does not extend blitDrawImages from pbBaseGraphics!")
+};
+
+
 pbBaseGraphics.prototype.batchDrawImages = function(_list, _surface)
 {
 	alert("ERROR: the selected graphic mode does not extend batchDrawImages from pbBaseGraphics!")

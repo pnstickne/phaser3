@@ -6,6 +6,31 @@
 
 
 
+/**
+ * blitShaderSources - shaders for image blitting 
+ * no transform, no animation, no scaling... simple particles
+ * data = 24 floats per quad (4 corners * x,y,u,v plus 2 degenerate triangles to separate them)
+ * @type {Array}
+ */
+var blitShaderSources = {
+	fragment:
+		"  precision mediump float;" +
+		"  uniform sampler2D imageSampler;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    gl_FragColor = texture2D(imageSampler, vTexCoord);" +
+		"  }",
+
+	vertex:
+		"  attribute vec4 aPosition;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    gl_Position.zw = vec2(1, 1);" +
+		"    gl_Position.xy = aPosition.xy;" +
+		"    vTexCoord = aPosition.zw;" +
+		"  }"
+};
+
 
 /**
  * imageShaderSources - shaders for image drawing including matrix transforms for scalex,scaley, rotation and translation
@@ -70,7 +95,7 @@ var batchImageShaderSources = {
 
 
 /**
- * rawBatchImageShaderSources - shaders for batch image drawing (fixed orientation and scale)
+ * rawBatchImageShaderSources - shaders for batch image drawing
  * requires the transform matrix in the data buffer stream
  * @type {Array}
  */
@@ -102,6 +127,33 @@ var rawBatchImageShaderSources = {
 		"    vTexCoord = aPosition.zw;" +
 		"  }"
 };
+
+
+/**
+ * imageShaderSources - shaders for image drawing
+ * @type {Array}
+ */
+var imageShaderSources = {
+	fragment:
+		"  precision mediump float;" +
+		"  uniform sampler2D imageSampler;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    vec4 col;" +
+		"    col = texture2D(imageSampler, vTexCoord);" +
+		"    gl_FragColor = col;" +
+		"  }",
+
+	vertex:
+		"  attribute vec4 position;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    gl_Position.zw = vec2(1, 1);" +
+		"    gl_Position.xy = position.xy;" +
+		"    vTexCoord = position.zw;" +
+		"  }"
+};
+
 
 
 /**
@@ -141,6 +193,7 @@ function pbWebGl()
 	gl = null;
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
+	this.blitShaderProgram = null;
 	this.batchImageShaderProgram = null;
 	this.rawBatchImageShaderProgram = null;
 	this.bgVertexBuffer = null;
@@ -188,9 +241,15 @@ pbWebGl.prototype.initGL = function( canvas )
 		}
 
 		// create the shader programs for each drawing mode
+
+		// drawing
 		this.graphicsShaderProgram = this.initShaders( gl, graphicsShaderSources );
+
+		// individual sprite processing
 		this.imageShaderProgram = this.initShaders( gl, imageShaderSources );
 
+		// batch processing
+		this.blitShaderProgram = this.initShaders( gl, blitShaderSources );
 		this.batchImageShaderProgram = this.initShaders( gl, batchImageShaderSources );
 		this.rawBatchImageShaderProgram = this.initShaders( gl, rawBatchImageShaderSources );
 
@@ -309,6 +368,9 @@ pbWebGl.prototype.clearProgram = function()
 		case this.imageShaderProgram:
 			this.clearImageProgram();
 			break;
+		case this.blitShaderProgram:
+			this.clearBlitProgram();
+			break;
 		case this.batchImageShaderProgram:
 			this.clearBatchImageProgram();
 			break;
@@ -380,6 +442,31 @@ pbWebGl.prototype.clearImageProgram = function()
 	// console.log( "pbWebGl.clearImageProgram" );
 
 	var program = this.imageShaderProgram;
+
+	program.aPosition = gl.getAttribLocation( program, "aPosition" );
+	gl.disableVertexAttribArray( program.aPosition );
+};
+
+
+pbWebGl.prototype.setBlitProgram = function()
+{
+	this.clearProgram();
+	
+	var program = this.blitShaderProgram;
+
+	gl.useProgram( program );
+
+	program.aPosition = gl.getAttribLocation( program, "aPosition" );
+	gl.enableVertexAttribArray( program.aPosition );
+
+	this.currentTexture = null;
+
+	return program;
+};
+
+pbWebGl.prototype.clearBlitProgram = function()
+{
+	var program = this.blitShaderProgram;
 
 	program.aPosition = gl.getAttribLocation( program, "aPosition" );
 	gl.disableVertexAttribArray( program.aPosition );
@@ -735,6 +822,84 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 };
 
 
+pbWebGl.prototype.blitDrawImages = function( _list, _surface )
+{
+	if ( this.currentProgram !== this.blitShaderProgram )
+		this.currentProgram = this.setBlitProgram();
+
+	this.handleTexture( _surface.image );
+
+	var screenWide2 = gl.drawingBufferWidth * 0.5;
+	var screenHigh2 = gl.drawingBufferHeight * 0.5;
+
+	// calculate inverse to avoid division in loop
+	var iWide = 1.0 / screenWide2;
+	var iHigh = 1.0 / screenHigh2;
+
+	// TODO: generate warning if length is capped
+	var len = Math.min(_list.length, MAX_SPRITES);
+
+	var scale = 1.0;
+	var wide = _surface.cellWide * scale * 0.5 / screenWide2;
+	var high = _surface.cellHigh * scale * 0.5 / screenHigh2;
+
+	var old_t;
+	var old_r;
+
+	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
+    var qa = this.drawingArray.subarray(0, len * 24 - 8);
+
+	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
+	for ( var i = -1, c = 0; ++i < len; c += 16 )
+	{
+		var t = _list[ i ].transform;
+		var x = t[6] * iWide - 1;
+		var y = 1 - t[7] * iHigh;
+		var l = x - wide;
+		var b = y + high;
+
+		if ( i > 0 )
+		{
+			// degenerate triangle: repeat the last vertex
+			qa[ c     ] = old_r;
+			qa[ c + 1 ] = old_t;
+		 	// repeat the next vertex
+			qa[ c + 4 ] = l;
+		 	qa[ c + 5 ] = b;
+		 	// texture coordinates are unused
+			//qa[ c + 2 ] = qa[ c + 3 ] = qa[ c + 6 ] = qa[ c + 7 ] = 0;
+			c += 8;
+		}
+
+		// screen destination position
+		// l, b,		0,1
+		// l, t,		4,5
+		// r, b,		8,9
+		// r, t,		12,13
+
+		qa[ c     ] = qa[ c + 4 ] = l;
+		qa[ c + 1 ] = qa[ c + 9 ] = b;
+		qa[ c + 8 ] = qa[ c + 12] = old_r = x + wide;
+		qa[ c + 5 ] = qa[ c + 13] = old_t = y - high;
+
+		// texture source position
+		// 0, 0,		2,3
+		// 0, 1,		6,7
+		// 1, 0,		10,11
+		// 1, 1,		14,15
+		qa[ c + 2 ] = qa[ c + 6] = qa[ c + 3 ] = qa[ c + 11] = 0;
+		qa[ c + 10] = qa[ c + 14] = qa[ c + 7 ] = qa[ c + 15] = 1;
+	}
+
+
+    gl.bufferData( gl.ARRAY_BUFFER, qa, gl.STREAM_DRAW );
+    this.positionBuffer.numItems = (len * 24 - 8) / 4;		// -8 because the last one isn't followed by a degenerate point pair
+    gl.vertexAttribPointer( this.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.positionBuffer.numItems);
+};
+
+
 pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 {
 	if ( this.currentProgram !== this.batchImageShaderProgram )
@@ -752,15 +917,16 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
     var sa = this.drawingArray.subarray(0, len * (44 + 22) - 22);
 
-	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
+	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig (chrome)!
 	for ( var i = -1, c = 0; ++i < len; c += 44 )
 	{
 		// set up texture reference coordinates based on the image frame number
-		var img = _list[i].img;
-		var cell = Math.floor(_list[i].cell);
-		var cx = cell % img.cellsWide;
-		var cy = Math.floor(cell / img.cellsWide);
-		var rect = img.cellTextureBounds[cx][cy];
+		var img = _list[i].image;
+		var cell = Math.floor(img.cellFrame);
+		var surface = img.surface;
+		var cx = cell % surface.cellsWide;
+		var cy = Math.floor(cell / surface.cellsWide);
+		var rect = surface.cellTextureBounds[cx][cy];
 		var tex_x = rect.x;
 		var tex_y = rect.y;
 		var tex_r = rect.x + rect.width;

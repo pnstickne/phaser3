@@ -80,6 +80,7 @@ pbBunnyDemo.prototype.addSprites = function()
 	{
 		var img = new pbImage();
 		img.create(this.renderer, this.surface, 0, 26 / 32 * 0.5, 37.0 / 64.0);
+		img.isParticle = true;			// use fast batch drawing, object doesn't rotate
 
 		var spr = new pbSprite();
 		spr.create(img, 13, 37, 1.0, 0, 1.0, 1.0);

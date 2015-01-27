@@ -87,11 +87,15 @@ pbLayer.prototype.update = function(_dictionary)
 pbLayer.prototype.draw = function(_list)
 {
 	var l = _list.length;
-	var obj = _list[0];
+	var obj = _list[0];			// either a pbSprite or pbLayer
 	
 	if (l == 1)
 	{
 		obj.image.renderer.graphics.drawImageWithTransform( obj.image, obj.transform, obj.z_order );
+	}
+	else if (obj.image.isParticle)
+	{
+		obj.image.renderer.graphics.blitDrawImages( _list, obj.image.surface );
 	}
 	else
 	{
