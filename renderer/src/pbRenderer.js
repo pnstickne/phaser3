@@ -77,7 +77,6 @@ pbRenderer.prototype.destroy = function()
 	canvas = null;
 	ctx = null;
 	webGl = null;
-	rootLayer = null;
 };
 
 
@@ -109,7 +108,7 @@ pbRenderer.prototype.boot = function()
 
 	// create the rootLayer container for all graphics
 	rootLayer = new pbLayer();
-	rootLayer.create(null, 0, 0, 0, 0, 1, 1);
+	rootLayer.create(null, this, 0, 0, 0, 0, 1, 1);
 
     // call the boot callback now the renderer is ready
     this.bootCallback.call(this.context);
@@ -165,17 +164,19 @@ pbRenderer.prototype.update = function()
 
 	this.frameCount++;
 
+	// update game logic
+	this.updateCallback.call(this.context);
+
+	// prepare to draw
 	this.graphics.preRender();
 
-	// update all object transforms then draw them
+	// update all object transforms then draw everything
 	if (rootLayer)
 	{
 		// the rootLayer update will iterate the entire display list
 		rootLayer.update(this);
 	}
 
-	this.updateCallback.call(this.context);
-	
 	stats.end();
 };
 

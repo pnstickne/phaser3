@@ -111,12 +111,12 @@ pbSoldierDemo.prototype.addSprites = function(num)
 		var img = new pbImage();
 		if (i % 2 == 1)
 		{
-			img.create(this.renderer, this.surface_run, Math.floor(Math.random() * 3));
+			img.create(this.surface_run, Math.floor(Math.random() * 3));
 			frames = 8;
 		}
 		else
 		{
-			img.create(this.renderer, this.surface_smash, Math.floor(Math.random() * 3));
+			img.create(this.surface_smash, Math.floor(Math.random() * 3));
 			frames = 6;
 		}
 

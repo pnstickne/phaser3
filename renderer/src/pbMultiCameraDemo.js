@@ -22,7 +22,7 @@ pbMultiCameraDemo.prototype.create = function()
 	for(var i = 0; i < 4; i++)
 	{
 		var layer = new pbLayer();
-		layer.create(rootLayer, 0, 0, 0, 0, 0.5, 0.5);
+		layer.create(rootLayer, this.renderer, 0, 0, 0, 0, 0.5, 0.5);
 		this.cameras[i] = new pbAutoInvaderDemo();
 		this.cameras[i].create(layer);
 	}

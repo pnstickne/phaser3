@@ -74,18 +74,16 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	this.surface = new pbSurface();
 	this.surface.create(16, 16, 95, 7, image);		// there are 7 rows of 95 characters which are 16x16 pixels each
 
-	// TODO: layers are reversed in order from where they should be (children on top), check pbLayer and pbSprite tree traversal and drawing order
-
 	this.greenLayer = new pbLayer();
-	this.greenLayer.create(rootLayer, 0, 0, 0, 0, 1, 1);
+	this.greenLayer.create(rootLayer, this.renderer, 0, 0, 0, 0, 1, 1);
 	rootLayer.addChild(this.greenLayer);
 
 	this.redLayer = new pbLayer();
-	this.redLayer.create(this.greenLayer, 0, 0, 0, 0, 1, 1);
+	this.redLayer.create(this.greenLayer, this.renderer, 0, 0, 0, 0, 1, 1);
 	this.greenLayer.addChild(this.redLayer);
 
 	this.yellowLayer = new pbLayer();
-	this.yellowLayer.create(this.redLayer, 0, 0, 0, 0, 1, 1);
+	this.yellowLayer.create(this.redLayer, this.renderer, 0, 0, 0, 0, 1, 1);
 	this.redLayer.addChild(this.yellowLayer);
 
 	var fillScreen = Math.floor(this.renderer.width / 16) * Math.floor(this.renderer.height / 16);
@@ -98,7 +96,7 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	{
 		r = Math.floor(Math.random() * chars.length);
 		img = new pbImage();
-		img.create(this.renderer, this.surface, r);
+		img.create(this.surface, r);
 
 		spr = new pbSprite();
 		x = 8 + (i * 16) % this.renderer.width;
@@ -115,7 +113,7 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	{
 		r = Math.floor(Math.random() * chars.length);
 		img = new pbImage();
-		img.create(this.renderer, this.surface, r + 95);
+		img.create(this.surface, r + 95);
 
 		spr = new pbSprite();
 		x = 8 + (i * 16) % this.renderer.width;
@@ -132,7 +130,7 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	{
 		r = Math.floor(Math.random() * chars.length);
 		img = new pbImage();
-		img.create(this.renderer, this.surface, r + 95 * 2);
+		img.create(this.surface, r + 95 * 2);
 
 		spr = new pbSprite();
 		x = 8 + (i * 16) % this.renderer.width;

@@ -174,7 +174,7 @@ pbBunnyDemo.prototype.update = function()
 		this.fps60 = 0;
 	}
 
-	if (fps > 0 && fps <= 57 && (this.renderer.frameCount & 15) == 0)
+	if (fps > 0 && fps <= 57 && (this.renderer.frameCount & 15) === 0)
 	{
 		// fps is too low, remove sprites... go faster if the fps is lower
 	 	this.removeSprites((58 - fps) * 16);
