@@ -156,16 +156,20 @@ pbBunnyDemo.prototype.update = function()
 
 	if (fps >= 60)
 	{
+		// don't add more until the fps has been at 60 for one second
 		if (this.fps60++ > 60)
-	 		this.addSprites(Math.min(this.fps60, 500));
+			// add more with a gradually increasing amount as the fps stays at 60
+	 		this.addSprites(Math.min(this.fps60, 250));
 	}
 	else
 	{
+		// fps dropped a little, reset counter
 		this.fps60 = 0;
 	}
 
 	if (fps > 0 && fps <= 57)
 	{
+		// fps is too low, remove sprites... go faster if the fps is lower
 	 	this.removeSprites(58 - fps);
 	}
 };
