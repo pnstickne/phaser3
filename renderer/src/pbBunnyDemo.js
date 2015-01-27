@@ -69,7 +69,7 @@ pbBunnyDemo.prototype.restart = function()
 };
 
 
-pbBunnyDemo.prototype.addSprites = function()
+pbBunnyDemo.prototype.addSprites = function(num)
 {
 	// create animation data and set destination for movement
 	if (!this.surface)
@@ -78,8 +78,8 @@ pbBunnyDemo.prototype.addSprites = function()
 		this.surface = new pbSurface();
 		this.surface.create(0, 0, 1, 1, image);
 	}
-	
-	for(var i = 0; i < 100; i++)
+
+	for(var i = 0; i < num; i++)
 	{
 		var img = new pbImage();
 		img.create(this.renderer, this.surface, 0, 26 / 32 * 0.5, 37.0 / 64.0);
@@ -149,12 +149,12 @@ pbBunnyDemo.prototype.update = function()
 
 	if (fps > 59 && (this.renderer.frameCount & 7) === 0)
 	{
-	 	this.addSprites();
+	 	this.addSprites(1000);
 	}
 
 	if (fps > 0 && fps < 55)
 	{
-	 	this.removeSprites(1);
+	 	this.removeSprites(10);
 	}
 };
 
