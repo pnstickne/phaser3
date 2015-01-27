@@ -72,10 +72,13 @@ pbBunnyDemo.prototype.restart = function()
 pbBunnyDemo.prototype.addSprites = function()
 {
 	// create animation data and set destination for movement
-	var image = this.loader.getImage( this.spriteImg );
-	this.surface = new pbSurface();
-	this.surface.create(0, 0, 1, 1, image);
-
+	if (!this.surface)
+	{
+		var image = this.loader.getImage( this.spriteImg );
+		this.surface = new pbSurface();
+		this.surface.create(0, 0, 1, 1, image);
+	}
+	
 	for(var i = 0; i < 100; i++)
 	{
 		var img = new pbImage();
