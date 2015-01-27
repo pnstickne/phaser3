@@ -156,7 +156,7 @@ var graphicsShaderSources = {
 };
 
 
-var MAX_SPRITES = 200000;
+var MAX_SPRITES = 300000;
 
 var gl = null;
 

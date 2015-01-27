@@ -43,11 +43,12 @@ pbBunnyDemo.prototype.create = function()
 {
 	console.log("pbBunnyDemo.create");
 
-	this.layer = new pbSimpleLayer();
-	this.layer.create(rootLayer, 0, 0, null, this.renderer);
-	rootLayer.addChild(this.layer);
+	//this.layer = new pbSimpleLayer();
+	//this.layer.create(null, 0, 0, null, this.renderer);
+	//rootLayer.addChild(this.layer);
 
 	this.list = [];
+	this.addSprites(100);
 };
 
 
@@ -57,6 +58,10 @@ pbBunnyDemo.prototype.destroy = function()
 
 	this.gui.destroy();
 	this.list = null;
+
+	// this.layer.destroy();
+	// this.layer = null;
+
 	this.surface.destroy();
 	this.surface = null;
 
@@ -83,20 +88,21 @@ pbBunnyDemo.prototype.addSprites = function(num)
 		var image = this.loader.getImage( this.spriteImg );
 		this.surface = new pbSurface();
 		this.surface.create(0, 0, 1, 1, image);
-		this.layer.surface = this.surface;
+		// this.layer.surface = this.surface;
 	}
 
 	for(var i = 0; i < num; i++)
 	{
-		var img = new pbImage();
-		img.create(this.renderer, this.surface, 0, 26 / 32 * 0.5, 37.0 / 64.0);
-		img.isParticle = true;			// use fast batch drawing, object doesn't rotate
+		// var img = new pbImage();
+		// img.create(this.renderer, this.surface, 0, 26 / 32 * 0.5, 37.0 / 64.0);
+		// img.isParticle = true;			// use fast batch drawing, object doesn't rotate
 
-		var spr = new pbSprite();
-		spr.create(img, 13, 37, 1.0, 0, 1.0, 1.0);
-		this.layer.addChild(spr);
+		// var spr = new pbSprite();
+		// spr.create(img, 13, 37, 1.0, 0, 1.0, 1.0);
+		// this.layer.addChild(spr);
 
-		this.list.push( { sprite:spr, vx:Math.random() * 10, vy:(Math.random() * 10) - 5 });
+		// this.list.push( { sprite:spr, vx:Math.random() * 10, vy:(Math.random() * 10) - 5 });
+		this.list.push( { x:13, y:37, vx:Math.random() * 10, vy:(Math.random() * 10) - 5 });
 	}
 
 	this.numSprites = this.list.length;
@@ -107,11 +113,11 @@ pbBunnyDemo.prototype.removeSprites = function(num)
 {
 	for( var i = 0; i < num; i++ )
 	{
-		if (this.list.length > 0)
-		{
-			var obj = this.list[this.list.length - 1];
-			obj.sprite.destroy();
-		}
+		// if (this.list.length > 0)
+		// {
+		// 	var obj = this.list[this.list.length - 1];
+		// 	obj.sprite.destroy();
+		// }
 
 		this.list.pop();
 	}
@@ -124,35 +130,36 @@ pbBunnyDemo.prototype.update = function()
 	for(var i = 0, l = this.list.length; i < l; i++)
 	{
 		var obj = this.list[i];
-		var spr = obj.sprite;
-		spr.x += obj.vx;
-		spr.y += obj.vy;
+		obj.x += obj.vx;
+		obj.y += obj.vy;
 		obj.vy += 0.75;
-		if (spr.x < 13)
+		if (obj.x < 13)
 		{
-			spr.x = 13;
+			obj.x = 13;
 			obj.vx = -obj.vx;
 		}
-		else if (spr.x > this.renderer.width - 13)
+		else if (obj.x > this.renderer.width - 13)
 		{
-			spr.x = this.renderer.width - 13;
+			obj.x = this.renderer.width - 13;
 			obj.vx = -obj.vx;
 		}
-		if (spr.y >= this.renderer.height)
+		if (obj.y >= this.renderer.height)
 		{
-			spr.y = this.renderer.height;
+			obj.y = this.renderer.height;
 			obj.vy *= - 0.85;
 			if (Math.random() > 0.5)
 			{
 				obj.vy -= Math.random() * 6;
 			}			
 		}
-		if (spr.y < 0)
+		if (obj.y < 0)
 		{
-			spr.y = 0;
+			obj.y = 0;
 			obj.vy = 0;
 		}
 	}
+
+	this.renderer.graphics.blitSimpleDrawImages( this.list, this.surface );
 
 	if (fps >= 60)
 	{
@@ -167,10 +174,10 @@ pbBunnyDemo.prototype.update = function()
 		this.fps60 = 0;
 	}
 
-	if (fps > 0 && fps <= 57)
+	if (fps > 0 && fps <= 57 && (this.renderer.frameCount & 15) == 0)
 	{
 		// fps is too low, remove sprites... go faster if the fps is lower
-	 	this.removeSprites(58 - fps);
+	 	this.removeSprites((58 - fps) * 16);
 	}
 };
 

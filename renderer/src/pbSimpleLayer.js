@@ -68,7 +68,6 @@ pbSimpleLayer.prototype.update = function(_dictionary)
 
 pbSimpleLayer.prototype.draw = function(_list)
 {
-	var l = _list.length;
 	this.renderer.graphics.blitSimpleDrawImages( _list, this.surface );
 };
 
