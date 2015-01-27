@@ -15,7 +15,9 @@ function pbBunnyDemo( docId )
 
 	this.docId = docId;
 
+	this.fps60 = 0;
 	this.numSprites = 0;
+
 	// dat.GUI controlled variables and callbacks
 	this.gui = new dat.GUI();
 	var numCtrl = this.gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
@@ -40,6 +42,10 @@ pbBunnyDemo.prototype.allLoaded = function()
 pbBunnyDemo.prototype.create = function()
 {
 	console.log("pbBunnyDemo.create");
+
+	this.layer = new pbSimpleLayer();
+	this.layer.create(rootLayer, 0, 0, null, this.renderer);
+	rootLayer.addChild(this.layer);
 
 	this.list = [];
 };
@@ -77,6 +83,7 @@ pbBunnyDemo.prototype.addSprites = function(num)
 		var image = this.loader.getImage( this.spriteImg );
 		this.surface = new pbSurface();
 		this.surface.create(0, 0, 1, 1, image);
+		this.layer.surface = this.surface;
 	}
 
 	for(var i = 0; i < num; i++)
@@ -87,7 +94,7 @@ pbBunnyDemo.prototype.addSprites = function(num)
 
 		var spr = new pbSprite();
 		spr.create(img, 13, 37, 1.0, 0, 1.0, 1.0);
-		rootLayer.addChild(spr);
+		this.layer.addChild(spr);
 
 		this.list.push( { sprite:spr, vx:Math.random() * 10, vy:(Math.random() * 10) - 5 });
 	}
@@ -147,14 +154,19 @@ pbBunnyDemo.prototype.update = function()
 		}
 	}
 
-	if (fps > 59 && (this.renderer.frameCount & 7) === 0)
+	if (fps >= 60)
 	{
-	 	this.addSprites(500);
+		if (this.fps60++ > 60)
+	 		this.addSprites(Math.min(this.fps60, 500));
+	}
+	else
+	{
+		this.fps60 = 0;
 	}
 
-	if (fps > 0 && fps < 55)
+	if (fps > 0 && fps <= 57)
 	{
-	 	this.removeSprites(10);
+	 	this.removeSprites(58 - fps);
 	}
 };
 
