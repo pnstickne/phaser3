@@ -873,7 +873,7 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _surface )
 	}
 
 
-    gl.bufferData( gl.ARRAY_BUFFER, qa, gl.STREAM_DRAW );
+    gl.bufferData( gl.ARRAY_BUFFER, qa, gl.STATIC_DRAW );
     gl.vertexAttribPointer( this.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points
@@ -950,7 +950,7 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 	}
 
 
-    gl.bufferData( gl.ARRAY_BUFFER, qa, gl.STREAM_DRAW );
+    gl.bufferData( gl.ARRAY_BUFFER, qa, gl.STATIC_DRAW );
     gl.vertexAttribPointer( this.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points
