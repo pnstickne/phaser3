@@ -18,7 +18,6 @@ var blitShaderSources = {
 		"  uniform sampler2D imageSampler;" +
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
-		"    gl_FragColor = texture2D(imageSampler, vTexCoord);" +
 		"  }",
 
 	vertex:
@@ -27,7 +26,6 @@ var blitShaderSources = {
 		"  void main(void) {" +
 		"    gl_Position.zw = vec2(1, 1);" +
 		"    gl_Position.xy = aPosition.xy;" +
-		"    vTexCoord = aPosition.zw;" +
 		"  }"
 };
 
@@ -156,7 +154,7 @@ var graphicsShaderSources = {
 };
 
 
-var MAX_SPRITES = 100000;
+var MAX_SPRITES = 200000;
 
 var gl = null;
 
