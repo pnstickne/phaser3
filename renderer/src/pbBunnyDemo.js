@@ -159,7 +159,8 @@ pbBunnyDemo.prototype.update = function()
 		}
 	}
 
-	this.renderer.graphics.blitSimpleDrawImages( this.list, this.surface );
+	if (this.list.length > 0)
+		this.renderer.graphics.blitSimpleDrawImages( this.list, this.surface );
 
 	if (fps >= 60)
 	{

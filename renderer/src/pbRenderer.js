@@ -164,11 +164,11 @@ pbRenderer.prototype.update = function()
 
 	this.frameCount++;
 
+	// prepare to draw (erase screen)
+	this.graphics.preRender();
+
 	// update game logic
 	this.updateCallback.call(this.context);
-
-	// prepare to draw
-	this.graphics.preRender();
 
 	// update all object transforms then draw everything
 	if (rootLayer)

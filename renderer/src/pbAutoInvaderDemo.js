@@ -95,7 +95,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	this.bgSurface = new pbSurface();
 	this.bgSurface.create(0, 0, 1, 1, image);
 	this.bgImage = new pbImage();
-	this.bgImage.create(this.renderer, this.bgSurface, 0, 0, 0, true, true);
+	this.bgImage.create(this.bgSurface, 0, 0, 0, true, true);
 	this.bg = new pbSprite();
 	this.bg.create(this.bgImage, 0, 0, 1, 0, 1.0, 1.0);
 	this.layer.addChild(this.bg);
@@ -105,7 +105,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	this.playerSurface = new pbSurface();
 	this.playerSurface.create(0, 0, 1, 1, image);
 	this.playerImage = new pbImage();
-	this.playerImage.create(this.renderer, this.playerSurface, 0);
+	this.playerImage.create(this.playerSurface, 0);
 	this.player = new pbSprite();
 	this.player.create(this.playerImage, this.renderer.width * 0.5, this.renderer.height * 0.9, 0, 0, 1.0, 1.0);
 	this.layer.addChild(this.player);
@@ -122,7 +122,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	{
 		var img = new pbImage();
 		// anchor point at front of bullet for easy collisions...
-		img.create(this.renderer, this.bulletSurface, 0, 0.5, 0.0);
+		img.create(this.bulletSurface, 0, 0.5, 0.0);
 		var bullet = new pbSprite();
 		bullet.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		// don't add it to the layer until it's fired
@@ -138,7 +138,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	for(var i = 0; i < 100; i++)
 	{
 		var img = new pbImage();
-		img.create(this.renderer, this.rocketSurface, 0, 0.5, 0.5);
+		img.create(this.rocketSurface, 0, 0.5, 0.5);
 		var rocket = new pbSprite();
 		rocket.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		// don't add it to the layer until it's fired
@@ -160,7 +160,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	for(var i = 0; i < 100; i++)
 	{
 		var img = new pbImage();
-		img.create(this.renderer, this.bombSurface, 0);
+		img.create(this.bombSurface, 0);
 		var bomb = new pbSprite();
 		bomb.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		// don't add it to the layer until it's fired
@@ -178,7 +178,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	for(var i = 0; i < 100; i++)
 	{
 		var img = new pbImage();
-		img.create(this.renderer, this.explosionSurface, 0);
+		img.create(this.explosionSurface, 0);
 		var explosion = new pbSprite();
 		explosion.create(img, 0, 0, 0, 0, 0.5, 0.5);
 		this.explosionPool.push(explosion);
@@ -193,7 +193,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	for(var i = 0; i < 200; i++)
 	{
 		var img = new pbImage();
-		img.create(this.renderer, this.smokeSurface, 0);
+		img.create(this.smokeSurface, 0);
 		var smoke = new pbSprite();
 		smoke.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		this.smokePool.push(smoke);
@@ -208,7 +208,7 @@ pbAutoInvaderDemo.prototype.addInvaders = function()
 		for(var x = 0; x < 12; x++)
 		{
 			var img = new pbImage();
-			img.create(this.renderer, this.invaderSurface, Math.floor(Math.random() * 3));
+			img.create(this.invaderSurface, Math.floor(Math.random() * 3));
 			var invader = new pbSprite();
 			invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
 			this.layer.addChild(invader);

@@ -682,10 +682,10 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 	var wide, high;
 	if (_image.fullScreen)
 	{
-		rect.width = _image.renderer.width / surface.cellWide;
-		rect.height = _image.renderer.height / surface.cellHigh;
-		wide = _image.renderer.width;
-		high = _image.renderer.height;
+		rect.width = gl.drawingBufferWidth / surface.cellWide;
+		rect.height = gl.drawingBufferHeight / surface.cellHigh;
+		wide = gl.drawingBufferWidth;
+		high = gl.drawingBufferHeight;
 	}
 	else
 	{

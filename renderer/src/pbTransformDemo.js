@@ -70,7 +70,7 @@ pbTransformDemo.prototype.addSprites = function()
 	this.surface.create(0, 0, 1, 1, image);
 
 	var img = new pbImage();
-	img.create(this.renderer, this.surface, 0);
+	img.create(this.surface, 0);
 
 	this.dirx = 2;
 	this.spr = new pbSprite();
