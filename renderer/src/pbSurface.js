@@ -17,6 +17,7 @@ function pbSurface()
 	this.cellsHigh = 0;
 	this.image = null;
 	this.cellTextureBounds = null;
+	this.isNPOT = false;
 }
 
 
@@ -30,6 +31,7 @@ pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageDa
 	this.cellsWide = _numWide;
 	this.cellsHigh = _numHigh;
 	this.image = _imageData;
+	this.isNPOT = false;
 
 	// dimensions of one cell in texture coordinates (0 = left/top, 1 = right/bottom)
 	var texWide = 1.0 / (this.image.width / this.cellWide);

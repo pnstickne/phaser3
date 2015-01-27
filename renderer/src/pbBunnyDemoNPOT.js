@@ -7,9 +7,9 @@
 
 
 // created while the data is loading (preloader)
-function pbBunnyDemo( docId )
+function pbBunnyDemoNPOT( docId )
 {
-	console.log( "pbBunnyDemo c'tor entry" );
+	console.log( "pbBunnyDemoNPOT c'tor entry" );
 
 	var _this = this;
 
@@ -23,31 +23,31 @@ function pbBunnyDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "../img/bunny_pot.png" );
+	this.spriteImg = this.loader.loadImage( "../img/bunny.png" );
 
-	console.log( "pbBunnyDemo c'tor exit" );
+	console.log( "pbBunnyDemoNPOT c'tor exit" );
 }
 
 
-pbBunnyDemo.prototype.allLoaded = function()
+pbBunnyDemoNPOT.prototype.allLoaded = function()
 {
-	console.log( "pbBunnyDemo.allLoaded" );
+	console.log( "pbBunnyDemoNPOT.allLoaded" );
 
 	this.renderer = new pbRenderer( this.docId, this.create, this.update, this );
 };
 
 
-pbBunnyDemo.prototype.create = function()
+pbBunnyDemoNPOT.prototype.create = function()
 {
-	console.log("pbBunnyDemo.create");
+	console.log("pbBunnyDemoNPOT.create");
 
 	this.list = [];
 };
 
 
-pbBunnyDemo.prototype.destroy = function()
+pbBunnyDemoNPOT.prototype.destroy = function()
 {
-	console.log("pbBunnyDemo.destroy");
+	console.log("pbBunnyDemoNPOT.destroy");
 
 	this.gui.destroy();
 	this.list = null;
@@ -60,16 +60,16 @@ pbBunnyDemo.prototype.destroy = function()
 };
 
 
-pbBunnyDemo.prototype.restart = function()
+pbBunnyDemoNPOT.prototype.restart = function()
 {
-	console.log("pbBunnyDemo.restart");
+	console.log("pbBunnyDemoNPOT.restart");
 	
 	this.destroy();
 	this.create();
 };
 
 
-pbBunnyDemo.prototype.addSprites = function(num)
+pbBunnyDemoNPOT.prototype.addSprites = function(num)
 {
 	// create animation data and set destination for movement
 	if (!this.surface)
@@ -77,12 +77,13 @@ pbBunnyDemo.prototype.addSprites = function(num)
 		var image = this.loader.getImage( this.spriteImg );
 		this.surface = new pbSurface();
 		this.surface.create(0, 0, 1, 1, image);
+		this.surface.isNPOT = true;
 	}
 
 	for(var i = 0; i < num; i++)
 	{
 		var img = new pbImage();
-		img.create(this.renderer, this.surface, 0, 26 / 32 * 0.5, 37.0 / 64.0);
+		img.create(this.renderer, this.surface, 0, 0.5, 1.0);
 		img.isParticle = true;			// use fast batch drawing, object doesn't rotate
 
 		var spr = new pbSprite();
@@ -96,7 +97,7 @@ pbBunnyDemo.prototype.addSprites = function(num)
 };
 
 
-pbBunnyDemo.prototype.removeSprites = function(num)
+pbBunnyDemoNPOT.prototype.removeSprites = function(num)
 {
 	for( var i = 0; i < num; i++ )
 	{
@@ -112,7 +113,7 @@ pbBunnyDemo.prototype.removeSprites = function(num)
 };
 
 
-pbBunnyDemo.prototype.update = function()
+pbBunnyDemoNPOT.prototype.update = function()
 {
 	for(var i = 0, l = this.list.length; i < l; i++)
 	{

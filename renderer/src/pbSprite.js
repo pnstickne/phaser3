@@ -89,8 +89,9 @@ pbSprite.prototype.update = function(_drawDictionary)
 	if (!this.alive)
 		return true;
 
-	// build the transform matrix from parent and my own transform member variables
+	// set my own transform matrix
 	pbMatrix3.setTransform(this.transform, this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY);
+	// multiply with the transform matrix from my parent
 	if (this.parent && this.parent.transform)
 		pbMatrix3.setFastMultiply(this.transform, this.transform, this.parent.transform);
 	

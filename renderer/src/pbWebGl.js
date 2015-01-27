@@ -614,7 +614,7 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 };
 
 
-pbWebGl.prototype.handleTexture = function( _image, _tiled )
+pbWebGl.prototype.handleTexture = function( _image, _tiled, _npot )
 {
 	// this _image is already the selected texture
 	if (this.currentTexture && this.currentTexture.image === _image)
@@ -648,19 +648,28 @@ pbWebGl.prototype.handleTexture = function( _image, _tiled )
 
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
 	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _image);
-	    if (_tiled)
+	    if (_npot)
+	    {
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	    }
+	    else if (_tiled)
 	    {
 		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
 		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+		    gl.generateMipmap(gl.TEXTURE_2D);
 	    }
     	else
     	{
 		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+		    gl.generateMipmap(gl.TEXTURE_2D);
     	}
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-	    gl.generateMipmap(gl.TEXTURE_2D);
 
 	    // remember that this texture has been uploaded
 	    this.onGPU.push(_image);
@@ -688,7 +697,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 		this.currentProgram = this.setImageProgram();
 
 	var surface = _image.surface;
-	this.handleTexture( surface.image, _image.tiling );
+	this.handleTexture( surface.image, _image.tiling, surface.isNPOT );
 
 	// split off a small part of the big buffer, for a single display object
 	var sa = this.drawingArray.subarray(0, 16);
@@ -757,7 +766,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 	if ( this.currentProgram !== this.imageShaderProgram )
 		this.currentProgram = this.setImageProgram();
 
-	this.handleTexture( _surface.image );
+	this.handleTexture( _surface.image, null, _surface.isNPOT );
 
 	// split off a small part of the big buffer, for a single display object
 	var sa = this.drawingArray.subarray(0, 20);
@@ -827,7 +836,7 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 	if ( this.currentProgram !== this.blitShaderProgram )
 		this.currentProgram = this.setBlitProgram();
 
-	this.handleTexture( _surface.image );
+	this.handleTexture( _surface.image, null, _surface.isNPOT );
 
 	var screenWide2 = gl.drawingBufferWidth * 0.5;
 	var screenHigh2 = gl.drawingBufferHeight * 0.5;
@@ -905,7 +914,7 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 	if ( this.currentProgram !== this.batchImageShaderProgram )
 		this.currentProgram = this.setBatchImageProgram();
 
-	this.handleTexture( _surface.image );
+	this.handleTexture( _surface.image, null, _surface.isNPOT );
 
 	// half width, half height (of source frame)
 	var wide = _surface.cellWide * 0.5;
@@ -1040,7 +1049,7 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 	if ( this.currentProgram !== this.rawBatchImageShaderProgram )
 		this.currentProgram = this.setRawBatchImageProgram();
 
-	this.handleTexture( surface.image, _list[0].image.tiling );
+	this.handleTexture( surface.image, _list[0].image.tiling, surface.isNPOT );
 
 	// half width, half height (of source frame)
 	var wide = surface.cellWide * 0.5;
