@@ -18,6 +18,7 @@ function pbLayer()
 {
 	this.list = null;
 	this.parent = null;
+	this.renderer = null;
 	this.drawDictionary = null;
 }
 
@@ -27,11 +28,13 @@ pbLayer.prototype = new pbSprite();
 pbLayer.prototype.__super__ = pbSprite;		// http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
 
 
-pbLayer.prototype.create = function(_parent, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
+pbLayer.prototype.create = function(_parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
 {
 	// TODO: add pass-through option so that layers can choose not to inherit their parent's transforms and will use the rootLayer transform instead
 	 
 	// TODO: pbLayer is rotating around it's top-left corner (because there's no width/height and no anchor point??)
+
+	this.renderer = _renderer;
 
 	// create dictionary to store drawing commands in the correct order, indexed by the source surface
 	// to prepare the data for fast batch drawing
@@ -50,6 +53,7 @@ pbLayer.prototype.destroy = function()
 {
 	// call the pbSprite destroy for this pbLayer
 	this.__super__.prototype.destroy.call(this);
+	this.renderer = null;
 	this.parent = null;
 	this.list = null;
 	this.drawDictionary = null;
@@ -87,20 +91,19 @@ pbLayer.prototype.update = function(_dictionary)
 
 pbLayer.prototype.draw = function(_list)
 {
-	var l = _list.length;
-	var obj = _list[0];			// either a pbSprite or pbLayer
+	var obj = _list[0];
 	
-	if (l == 1)
+	if (_list.length === 1)
 	{
-		obj.image.renderer.graphics.drawImageWithTransform( obj.image, obj.transform, obj.z_order );
+		this.renderer.graphics.drawImageWithTransform( obj.image, obj.transform, obj.z_order );
 	}
 	else if (obj.image.isParticle)
 	{
-		obj.image.renderer.graphics.blitDrawImages( _list, obj.image.surface );
+		this.renderer.graphics.blitDrawImages( _list, obj.image.surface );
 	}
 	else
 	{
-		obj.image.renderer.graphics.rawBatchDrawImages( _list );
+		this.renderer.graphics.rawBatchDrawImages( _list );
 	}
 };
 

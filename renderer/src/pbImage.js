@@ -13,7 +13,6 @@
 
 function pbImage()
 {
-	this.renderer = null;
 	this.surface = null;
 	this.cellFrame = 0;
 	this.gpuTexture = null;
@@ -26,16 +25,14 @@ function pbImage()
 }
 
 
-pbImage.prototype.create = function(_renderer, _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen)
+pbImage.prototype.create = function(_surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen)
 {
-
 	if (_cellFrame === undefined || _cellFrame === null) _cellFrame = 0;
 	if (_anchorX === undefined || _anchorX === null) _anchorX = 0.5;
 	if (_anchorY === undefined || _anchorY === null) _anchorY = 0.5;
 	if (_tiling === undefined || _tiling === null) _tiling = false;
 	if (_fullScreen === undefined || _fullScreen === null) _fullScreen = false;
 
-	this.renderer = _renderer;
 	this.surface = _surface;
 	this.cellFrame = _cellFrame;
 	this.gpuTexture = null;
@@ -73,7 +70,6 @@ pbImage.prototype.setCorners = function(ltx, lty, rtx, rty, lbx, lby, rbx, rby)
 
 pbImage.prototype.destroy = function()
 {
-	this.renderer = null;
 	this.surface = null;
 	this.gpuTexture = null;
 	this.corners = null;
@@ -87,18 +83,12 @@ pbImage.prototype.preUpdate = function()
 
 pbImage.prototype.draw = function(_drawDictionary, _transform, _z_order)
 {
-	// TODO: produce batches of images in each layer which all use the same source surface. Draw them using the much faster batch draw options
-	//this.renderer.graphics.drawImageWithTransform( _transform, _z_order, this.surface, this.cellFrame );
-
 	_drawDictionary.add( this.surface, { image: this, transform: _transform, z_order: _z_order });
 };
 
 
 pbImage.prototype.simpleDraw = function(_drawDictionary, _x, _y)
 {
-	// TODO: produce batches of images in each layer which all use the same source surface. Draw them using the much faster batch draw options
-	//this.renderer.graphics.drawImageWithTransform( _transform, _z_order, this.surface, this.cellFrame );
-
 	_drawDictionary.add( this.surface, { image: this, x: _x, y: _y });
 };
 

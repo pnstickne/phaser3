@@ -7,9 +7,9 @@
 
 function pbSimpleLayer()
 {
-	this.surface = null;
-	this.renderer = null;
 	this.parent = null;
+	this.renderer = null;
+	this.surface = null;
 }
 
 // pbSimpleLayer extends from the pbSprite prototype chain
@@ -18,13 +18,13 @@ pbSimpleLayer.prototype = new pbSprite();
 pbSimpleLayer.prototype.__super__ = pbSprite;		// http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
 
 
-pbSimpleLayer.prototype.create = function(_parent, _x, _y, _surface, _renderer)
+pbSimpleLayer.prototype.create = function(_parent, _renderer, _x, _y, _surface)
 {
 	this.parent = _parent;
+	this.renderer = _renderer;
 	// call the pbSprite create for this pbSimpleLayer
 	this.__super__.prototype.create.call(this, null, _x, _y);
 	this.surface = _surface;
-	this.renderer = _renderer;
 };
 
 
@@ -33,6 +33,8 @@ pbSimpleLayer.prototype.destroy = function()
 	// call the pbSprite destroy for this pbSimpleLayer
 	this.__super__.prototype.destroy.call(this);
 	this.parent = null;
+	this.renderer = null;
+	this.surface = null;
 };
 
 
