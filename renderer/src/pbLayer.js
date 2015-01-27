@@ -52,6 +52,7 @@ pbLayer.prototype.destroy = function()
 	this.__super__.prototype.destroy.call(this);
 	this.parent = null;
 	this.list = null;
+	this.drawDictionary = null;
 };
 
 
@@ -112,7 +113,7 @@ pbLayer.prototype.draw = function(_list)
  */
 pbLayer.prototype.addChild = function( _child )
 {
-	if (_child instanceof pbLayer)
+	if ((_child instanceof pbLayer) || (_child instanceof pbSimpleLayer))
 	{
 		this.list.push( _child );
 	}

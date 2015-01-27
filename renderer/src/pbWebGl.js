@@ -831,6 +831,82 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 };
 
 
+pbWebGl.prototype.blitSimpleDrawImages = function( _list, _surface )
+{
+	if ( this.currentProgram !== this.blitShaderProgram )
+		this.currentProgram = this.setBlitProgram();
+
+	this.handleTexture( _surface.image, null, _surface.isNPOT );
+
+	var screenWide2 = gl.drawingBufferWidth * 0.5;
+	var screenHigh2 = gl.drawingBufferHeight * 0.5;
+
+	// calculate inverse to avoid division in loop
+	var iWide = 1.0 / screenWide2;
+	var iHigh = 1.0 / screenHigh2;
+
+	// TODO: generate warning if length is capped
+	var len = Math.min(_list.length, MAX_SPRITES);
+
+	var scale = 1.0;
+	var wide = _surface.cellWide * scale * 0.5 / screenWide2;
+	var high = _surface.cellHigh * scale * 0.5 / screenHigh2;
+
+	var old_t;
+	var old_r;
+
+	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
+    var qa = this.drawingArray.subarray(0, len * 24 - 8);
+
+	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
+	for ( var i = -1, c = 0; ++i < len; c += 16 )
+	{
+		var x = _list[i].x * iWide - 1;
+		var y = 1 - _list[i].y * iHigh;
+		var l = x - wide;
+		var b = y + high;
+
+		if ( i > 0 )
+		{
+			// degenerate triangle: repeat the last vertex
+			qa[ c     ] = old_r;
+			qa[ c + 1 ] = old_t;
+		 	// repeat the next vertex
+			qa[ c + 4 ] = l;
+		 	qa[ c + 5 ] = b;
+		 	// texture coordinates are unused
+			//qa[ c + 2 ] = qa[ c + 3 ] = qa[ c + 6 ] = qa[ c + 7 ] = 0;
+			c += 8;
+		}
+
+		// screen destination position
+		// l, b,		0,1
+		// l, t,		4,5
+		// r, b,		8,9
+		// r, t,		12,13
+
+		qa[ c     ] = qa[ c + 4 ] = l;
+		qa[ c + 1 ] = qa[ c + 9 ] = b;
+		qa[ c + 8 ] = qa[ c + 12] = old_r = x + wide;
+		qa[ c + 5 ] = qa[ c + 13] = old_t = y - high;
+
+		// texture source position
+		// 0, 0,		2,3
+		// 0, 1,		6,7
+		// 1, 0,		10,11
+		// 1, 1,		14,15
+		qa[ c + 2 ] = qa[ c + 6] = qa[ c + 3 ] = qa[ c + 11] = 0;
+		qa[ c + 10] = qa[ c + 14] = qa[ c + 7 ] = qa[ c + 15] = 1;
+	}
+
+
+    gl.bufferData( gl.ARRAY_BUFFER, qa, gl.STREAM_DRAW );
+    gl.vertexAttribPointer( this.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points
+};
+
+
 pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 {
 	if ( this.currentProgram !== this.blitShaderProgram )
@@ -902,10 +978,9 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 
 
     gl.bufferData( gl.ARRAY_BUFFER, qa, gl.STREAM_DRAW );
-    this.positionBuffer.numItems = (len * 24 - 8) / 4;		// -8 because the last one isn't followed by a degenerate point pair
     gl.vertexAttribPointer( this.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
 
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.positionBuffer.numItems);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points
 };
 
 

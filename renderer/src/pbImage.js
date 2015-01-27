@@ -93,3 +93,12 @@ pbImage.prototype.draw = function(_drawDictionary, _transform, _z_order)
 	_drawDictionary.add( this.surface, { image: this, transform: _transform, z_order: _z_order });
 };
 
+
+pbImage.prototype.simpleDraw = function(_drawDictionary, _x, _y)
+{
+	// TODO: produce batches of images in each layer which all use the same source surface. Draw them using the much faster batch draw options
+	//this.renderer.graphics.drawImageWithTransform( _transform, _z_order, this.surface, this.cellFrame );
+
+	_drawDictionary.add( this.surface, { image: this, x: _x, y: _y });
+};
+

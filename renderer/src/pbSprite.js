@@ -119,6 +119,18 @@ pbSprite.prototype.update = function(_drawDictionary)
 };
 
 
+pbSprite.prototype.simpleUpdate = function(_drawList)
+{
+	if (!this.alive)
+		return true;
+
+	// add this sprite to the drawList
+	_drawList.push( { x: this.x, y: this.y } );
+
+	return true;
+};
+
+
 pbSprite.prototype.kill = function()
 {
 	this.alive = false;
