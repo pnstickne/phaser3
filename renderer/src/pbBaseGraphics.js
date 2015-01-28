@@ -160,3 +160,9 @@ pbBaseGraphics.prototype.reset = function()
 	alert("ERROR: the selected graphic mode does not extend reset from pbBaseGraphics!")
 };
 
+
+pbBaseGraphics.prototype.scissor = function(_x, _y, _width, _height)
+{
+	alert("ERROR: the selected graphic mode does not extend scissor from pbBaseGraphics!")
+};
+

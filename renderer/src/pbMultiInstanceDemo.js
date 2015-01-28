@@ -1,6 +1,7 @@
 /**
  *
  * pbMultiInstanceDemo.js - example to illustrate the use of multiple cameras simultaneously
+ *
  * 
  */
 
@@ -69,6 +70,7 @@ pbMultiInstanceDemo.prototype.addCameras = function()
 			// add a new camera
 			var layer = new pbLayer();
 			layer.create(rootLayer, this.renderer, cx, cy, 0, 0, 1 / this.numWide, 1 / this.numHigh);
+			layer.setClipping(cx, cy, tx, ty);
 			this.cameras[y][x] = new pbInvaderDemoCore();
 			this.cameras[y][x].create(this, layer);
 			rootLayer.addChild(layer);

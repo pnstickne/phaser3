@@ -254,6 +254,7 @@ pbWebGl.prototype.initGL = function( canvas )
 pbWebGl.prototype.preRender = function()
 {
 	// clear the viewport
+	gl.disable( gl.SCISSOR_TEST );
 	gl.viewport( 0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight );
 	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 };
@@ -1228,6 +1229,21 @@ pbWebGl.prototype.reset = function()
    	this.clearProgram();
 	this.currentProgram = null;
 	this.currentTexture = null;
+};
+
+
+
+pbWebGl.prototype.scissor = function(_x, _y, _width, _height)
+{
+	if (_x === undefined)
+	{
+		gl.disable(gl.SCISSOR_TEST);
+	}
+	else
+	{
+		gl.enable(gl.SCISSOR_TEST);
+		gl.scissor(_x, gl.drawingBufferHeight - (_y + _height), _width, _height);
+	}
 };
 
 

@@ -20,6 +20,7 @@ function pbLayer()
 	this.parent = null;
 	this.renderer = null;
 	this.drawDictionary = null;
+	this.clip = null;
 }
 
 // pbLayer extends from the pbSprite prototype chain
@@ -30,6 +31,8 @@ pbLayer.prototype.__super__ = pbSprite;		// http://stackoverflow.com/questions/7
 
 pbLayer.prototype.create = function(_parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
 {
+	console.log("pbLayer.create", _x, _y);
+	
 	// TODO: add pass-through option so that layers can choose not to inherit their parent's transforms and will use the rootLayer transform instead
 	 
 	// TODO: pbLayer is rotating around it's top-left corner (because there's no width/height and no anchor point??)
@@ -48,21 +51,30 @@ pbLayer.prototype.create = function(_parent, _renderer, _x, _y, _z, _angleInRadi
 };
 
 
+pbLayer.prototype.setClipping = function(_x, _y, _width, _height)
+{
+	this.clip = new pbRectangle(_x, _y, _width, _height);
+};
+
+
 pbLayer.prototype.destroy = function()
 {
 	// call the pbSprite destroy for this pbLayer
 	this.__super__.prototype.destroy.call(this);
+
+	this.clip = null;
+	this.drawDictionary = null;
+
 	this.renderer = null;
+
 	if (this.parent && this.parent.list)
 	{
 		var i = this.parent.list.indexof(this);
 		if (i != -1)
 			this.parent.list.splice(i, 1);
 	}
-
 	this.parent = null;
 	this.list = null;
-	this.drawDictionary = null;
 };
 
 
@@ -77,6 +89,17 @@ pbLayer.prototype.update = function(_dictionary)
 
 	// call the pbSprite update for this pbLayer to access the child hierarchy
 	this.__super__.prototype.update.call(this, this.drawDictionary);
+
+	if (this.clip)
+	{
+		// apply clipping for this layer
+		this.renderer.graphics.scissor(Math.floor(this.clip.x), Math.floor(this.clip.y), Math.ceil(this.clip.width), Math.ceil(this.clip.height));
+	}
+	else
+	{
+		// disable clipping for this layer
+		this.renderer.graphics.scissor();
+	}
 
 	// iterate the drawDictionary to obtain all values for each key
 	// draw the queued objects in the callback

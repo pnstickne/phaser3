@@ -2,6 +2,9 @@
  *
  * The auto-invaders demo for the new Phaser 3 renderer.
  *
+ * Also illustrates layer clipping.
+ * 
+ *
  */
 
 
@@ -52,14 +55,22 @@ pbAutoInvaderDemo.prototype.create = function()
 {
 	console.log("pbAutoInvaderDemo.create");
 
+	this.layer = new pbLayer();
+	this.layer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
+	// illustrate layer clipping by chopping 20 pixels off each edge
+	this.layer.setClipping( 20, 20, this.renderer.width - 40, this.renderer.height - 40 );
+	rootLayer.addChild(this.layer);
 	this.game = new pbInvaderDemoCore();
-	this.game.create(this, rootLayer);
+	this.game.create(this, this.layer);
 };
 
 
 pbAutoInvaderDemo.prototype.destroy = function()
 {
 	console.log("pbAutoInvaderDemo.destroy");
+
+	this.layer.destroy();
+	this.layer = null;
 
 	this.renderer.destroy();
 	this.renderer = null;
