@@ -1,13 +1,13 @@
 /**
  *
- * pbMultiCameraDemo.js - example to illustrate the use of multiple cameras simultaneously
+ * pbMultiInstanceDemo.js - example to illustrate the use of multiple cameras simultaneously
  * 
  */
 
 
-function pbMultiCameraDemo( docId )
+function pbMultiInstanceDemo( docId )
 {
-	console.log( "pbMultiCameraDemo c'tor entry" );
+	console.log( "pbMultiInstanceDemo c'tor entry" );
 
 	var _this = this;
 	this.docId = docId;
@@ -30,20 +30,20 @@ function pbMultiCameraDemo( docId )
 	this.explosionImg = this.loader.loadImage( "../img/invader/explode.png" );
 	this.fontImg = this.loader.loadImage( "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png" );
 
-	console.log( "pbMultiCameraDemo c'tor exit" );
+	console.log( "pbMultiInstanceDemo c'tor exit" );
 }
 
 
-pbMultiCameraDemo.prototype.allLoaded = function()
+pbMultiInstanceDemo.prototype.allLoaded = function()
 {
-	console.log( "pbMultiCameraDemo.allLoaded" );
+	console.log( "pbMultiInstanceDemo.allLoaded" );
 
 	// callback to this.create when ready, callback to this.update once every frame
 	this.renderer = new pbRenderer( this.docId, this.create, this.update, this );
 };
 
 
-pbMultiCameraDemo.prototype.create = function()
+pbMultiInstanceDemo.prototype.create = function()
 {
 	this.numWide = 1;
 	this.numHigh = 1;
@@ -51,7 +51,7 @@ pbMultiCameraDemo.prototype.create = function()
 };
 
 
-pbMultiCameraDemo.prototype.addCameras = function()
+pbMultiInstanceDemo.prototype.addCameras = function()
 {
 	var cx = 0;
 	var cy = 0;
@@ -81,7 +81,7 @@ pbMultiCameraDemo.prototype.addCameras = function()
 };
 
 
-pbMultiCameraDemo.prototype.removeCameras = function()
+pbMultiInstanceDemo.prototype.removeCameras = function()
 {
 	for(var y = 0; y < this.numHigh; y++)
 	{
@@ -96,7 +96,7 @@ pbMultiCameraDemo.prototype.removeCameras = function()
 };
 
 
-pbMultiCameraDemo.prototype.destroy = function()
+pbMultiInstanceDemo.prototype.destroy = function()
 {
 	this.removeCameras();
 
@@ -105,7 +105,7 @@ pbMultiCameraDemo.prototype.destroy = function()
 };
 
 
-pbMultiCameraDemo.prototype.update = function()
+pbMultiInstanceDemo.prototype.update = function()
 {
 	for(var y = 0; y < this.numHigh; y++)
 		for(var x = 0; x < this.numWide; x++)
