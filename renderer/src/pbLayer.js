@@ -45,7 +45,6 @@ pbLayer.prototype.create = function(_parent, _renderer, _x, _y, _z, _angleInRadi
 	// call the pbSprite create for this pbLayer
 	this.__super__.prototype.create.call(this, null, _x, _y, _z, _angleInRadians, _scaleX, _scaleY);
 	this.list = [];
-
 };
 
 
@@ -54,6 +53,13 @@ pbLayer.prototype.destroy = function()
 	// call the pbSprite destroy for this pbLayer
 	this.__super__.prototype.destroy.call(this);
 	this.renderer = null;
+	if (this.parent && this.parent.list)
+	{
+		var i = this.parent.list.indexof(this);
+		if (i != -1)
+			this.parent.list.splice(i, 1);
+	}
+
 	this.parent = null;
 	this.list = null;
 	this.drawDictionary = null;
@@ -64,6 +70,9 @@ pbLayer.prototype.update = function(_dictionary)
 {
 	// TODO: check this dictionary implementation works correctly with nested layers, nested sprites, and combinations of both
 	// prepare the dictionary
+	if (!this.drawDictionary)
+		console.log("ERROR: no dictionary on layer!");
+
 	this.drawDictionary.clear();
 
 	// call the pbSprite update for this pbLayer to access the child hierarchy
@@ -78,6 +87,7 @@ pbLayer.prototype.update = function(_dictionary)
 	for(var i = this.list.length - 1; i >= 0; --i)
 	{
 		var member = this.list[i];
+
 		if (!member.update(this.drawDictionary))
 		{
 			member.destroy();
@@ -119,11 +129,32 @@ pbLayer.prototype.addChild = function( _child )
 	if ((_child instanceof pbLayer) || (_child instanceof pbSimpleLayer))
 	{
 		this.list.push( _child );
+		_child.parent = this;
 	}
 	else
 	{
 		// call the super.addChild function
 		this.__super__.prototype.addChild.call( this, _child );
+	}
+};
+
+
+pbLayer.prototype.removeChild = function( _child )
+{
+	if ((_child instanceof pbLayer) || (_child instanceof pbSimpleLayer))
+	{
+		if (!this.list) return;
+		var index = this.list.indexOf(_child);
+		if (index != -1 && index < this.list.length)
+		{
+			this.list[index].parent = null;
+			this.list.splice(index, 1);
+		}
+	}
+	else
+	{
+		// call the super.removeChild function
+		this.__super__.prototype.removeChild.call( this, _child );
 	}
 };
 
