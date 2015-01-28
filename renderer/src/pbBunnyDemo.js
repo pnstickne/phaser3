@@ -2,6 +2,8 @@
  *
  * Bunny Mark
  *
+ * TODO: optimise the pbSprite, pbImage and pbLayer code to close the distance between this and pbBunnyDemoNPOT
+ * 
  */
 
 
