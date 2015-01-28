@@ -18,9 +18,14 @@ function pbAutoInvaderDemo( docId )
 
 	this.docId = docId;
 	this.layer = null;
-	
+	this.uiLayer = null;
+	this.textSurface = null;
+	this.text = null;
+	this.score = 0;
+
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
+
 	this.playerImg = this.loader.loadImage( "../img/invader/player.png" );
 	this.invaderImg = this.loader.loadImage( "../img/invader/invader32x32x4.png" );
 	this.saucerImg = this.loader.loadImage( "../img/invader/invader.png" );
@@ -30,6 +35,7 @@ function pbAutoInvaderDemo( docId )
 	this.rocketImg = this.loader.loadImage( "../img/invader/rockets32x32x8.png" );
 	this.smokeImg = this.loader.loadImage( "../img/invader/smoke64x64x8.png" );
 	this.explosionImg = this.loader.loadImage( "../img/invader/explode.png" );
+	this.fontImg = this.loader.loadImage( "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png" );
 
 	console.log( "pbAutoInvaderDemo c'tor exit" );
 }
@@ -57,6 +63,21 @@ pbAutoInvaderDemo.prototype.create = function(_rootLayer)
 		this.layer = _rootLayer;
 	}
 
+	this.uiLayer = new pbLayer();
+	this.uiLayer.create(rootLayer, this.renderer, 0, 0, 0, 0, 1, 1);
+	this.layer.addChild(this.uiLayer);
+
+	var image = this.loader.getImage( this.fontImg );
+	image = imageToPowerOfTwo(image);
+	this.textSurface = new pbSurface();
+	this.textSurface.create(16, 16, 95, 7, image);		// there are 7 rows of 95 characters which are 16x16 pixels each, first character is Space
+
+	this.text = new pbText();
+	this.text.create(this.textSurface, this.uiLayer, " ".charCodeAt(0));
+	this.scoreLine = this.text.addLine("SCORE 000000", 20, 20, 16);
+
+	this.score = 0;
+
 	this.addSprites();
 };
 
@@ -70,6 +91,15 @@ pbAutoInvaderDemo.prototype.destroy = function()
 
 	this.renderer.destroy();
 	this.renderer = null;
+
+	this.text.destroy();
+	this.text = null;
+
+	this.uiLayer.destroy();
+	this.uiLayer = null;
+
+	this.textSurface.destroy();
+	this.textSurface = null;
 
 	this.layer = null;
 };
@@ -312,6 +342,8 @@ pbAutoInvaderDemo.prototype.update = function()
 	// update effects
 	this.updateExplosions();
 	this.updateSmokes();
+
+	this.scoreLine = this.text.changeLine(this.scoreLine, "SCORE " + padWithZero(this.score, 6));
 };
 
 
@@ -413,7 +445,6 @@ pbAutoInvaderDemo.prototype.playerRocketMove = function()
 			}
 		}
 
-
 		// hit alien or off the top of the screen?
 		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.image.surface.cellHigh)
 		{
@@ -441,6 +472,7 @@ pbAutoInvaderDemo.prototype.invaderCollide = function(_x, _y, _explode)
 				{
 					this.addExplosion(invader.x, invader.y);
 					invader.die = true;
+					this.score += 10;
 				}
 				return true;
 			}
@@ -587,3 +619,10 @@ function sgn0(_value)
 }
 
 
+function padWithZero(_value, _length)
+{
+	var s = _value.toString();
+	while (s.length < _length)
+		s = "0" + s;
+	return s;
+}
