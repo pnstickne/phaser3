@@ -22,6 +22,7 @@ function pbAutoInvaderDemo( docId )
 	this.textSurface = null;
 	this.text = null;
 	this.score = 0;
+	this.level = 0;
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
@@ -75,8 +76,11 @@ pbAutoInvaderDemo.prototype.create = function(_rootLayer)
 	this.text = new pbText();
 	this.text.create(this.textSurface, this.uiLayer, " ".charCodeAt(0));
 	this.scoreLine = this.text.addLine("SCORE 000000", 20, 20, 16);
+	this.levelLine = this.text.addLine("LEVEL 001", this.renderer.width - 20 - 9 * 16, 20, 16);
 
 	this.score = 0;
+	this.level = 1;
+	this.invaderSpeed = 10;
 
 	this.addSprites();
 };
@@ -140,7 +144,7 @@ pbAutoInvaderDemo.prototype.addSprites = function()
 	this.player.create(this.playerImage, this.renderer.width * 0.5, this.renderer.height * 0.9, 0, 0, 1.0, 1.0);
 	this.layer.addChild(this.player);
 	this.player.die = false;
-	this.playerDirX = 2;
+	this.playerDirX = -2;
 
 	// player bullets
 	image = this.loader.getImage( this.bulletImg );
@@ -246,8 +250,10 @@ pbAutoInvaderDemo.prototype.addInvaders = function()
 			invader.die = false;
 			this.invaders.push(invader);
 		}
+	this.tick = 100;
 	this.moveY = 4;
 	this.invaderDirX = 8;
+	this.invaderMoveY = 0;
 	this.flipDir = false;
 };
 
@@ -289,18 +295,26 @@ pbAutoInvaderDemo.prototype.update = function()
 		if (this.rocketPool.length > 0)
 			this.playerShootRocket();
 
-	// create new field of invaders if they've all been killed
 	if (this.invaders.length === 0)
+	{
+		// create new field of invaders if they've all been killed
 		this.addInvaders();
+		// speed them up a bit
+		this.invaderSpeed = Math.min(this.invaderSpeed + 10, 100);
+		// next level
+		this.level++;
+		this.levelLine = this.text.changeLine(this.levelLine, "LEVEL " + padWithZero(this.level, 3));
+	}
 
 	// update invaders
+	var invader;
 	for(var i = this.invaders.length - 1; i >= 0; --i)
 	{
-		var invader = this.invaders[i];
+		invader = this.invaders[i];
 
-		if (this.moveY == invader.row)
+		if (this.tick == 100 && this.moveY == invader.row)
 		{
-			// movement
+			// horizontal movement
 			invader.x += this.invaderDirX;
 			if (invader.x < invader.image.surface.cellWide * 0.5
 				|| invader.x > this.renderer.width - invader.image.surface.cellWide * 0.5)
@@ -312,26 +326,42 @@ pbAutoInvaderDemo.prototype.update = function()
 					this.invaderBomb(invader);
 		}
 
+		// vertical movement
+		invader.y += this.invaderMoveY;
+		if (invader.y > this.renderer.height + invader.image.surface.cellHigh)
+			invader.die = true;
+
 		// animation
 		invader.image.cellFrame += 0.2;
 		if (invader.image.cellFrame >= 4) invader.image.cellFrame = 0;
 
 		if (invader.die)
 		{
-			// TODO: death effect for invaders
 			this.layer.removeChild(invader);
 			this.invaders.splice(i, 1);
 		}
 	}
 
+	this.invaderMoveY = 0;
+
 	// ('whole row at once' movement https://www.youtube.com/watch?v=437Ld_rKM2s#t=30)
-	this.moveY -= 0.25;
-	if (this.moveY < 0)
+	this.tick -= this.invaderSpeed;
+	if (this.tick <= 0)
 	{
-		this.moveY = 4;
-		if (this.flipDir)
-			this.invaderDirX = -this.invaderDirX;
-		this.flipDir = false;
+		this.tick = 100;
+		this.moveY--;
+		if (this.moveY < 0)
+		{
+			this.moveY = 4;
+			if (this.flipDir)
+			{
+				// reverse direction
+				this.invaderDirX = -this.invaderDirX;
+				this.invaderMoveY = 16;
+				this.invaderSpeed = Math.min(this.invaderSpeed + 10, 100);
+			}
+			this.flipDir = false;
+		}
 	}
 
 	// update active munitions
@@ -445,10 +475,10 @@ pbAutoInvaderDemo.prototype.playerRocketMove = function()
 			}
 		}
 
-		// hit alien or off the top of the screen?
-		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.image.surface.cellHigh)
+		// hit alien or off the edges of the screen?
+		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.image.surface.cellHigh || b.x < 0 || b.x > this.renderer.width)
 		{
-			// kill the bullet and add it back to the pool
+			// kill the rocket and add it back to the pool
 			this.layer.removeChild(b);
 			this.rocketPool.push(b);
 			this.rockets.splice(i, 1);
@@ -487,6 +517,7 @@ pbAutoInvaderDemo.prototype.invaderBomb = function(_invader)
 	var b = this.bombPool.pop();
 	b.x = _invader.x;
 	b.y = _invader.y;
+	b.vy = 2;
 	this.layer.addChild(b);
 
 	this.bombs.push(b);
@@ -501,7 +532,8 @@ pbAutoInvaderDemo.prototype.invaderBombMove = function()
 	for(var i = this.bombs.length - 1; i >= 0; --i)
 	{
 		var b = this.bombs[i];
-		b.y += 2;
+		b.y += b.vy;
+		b.vy += 0.02;
 
 		var hit = false;
 		var w2 = this.player.image.surface.cellWide * 0.5;
