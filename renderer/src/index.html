@@ -1,11 +1,20 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8" />
     <title>Renderer Test Bed</title>
-    <style> body { margin: 0; background: #111; } </style>
-    <canvas id="renderer-test" style="border: none;" width="800" height="600"></canvas>
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+        }
+
+        #gui {
+            position: absolute;
+            top: 200px;
+            right: 0;
+        }
+    </style>
 
     <script type="text/javascript" src="dat.gui.js"></script>
     <script type="text/javascript" src="stats.js"></script>    
@@ -34,10 +43,14 @@
     <script type="text/javascript" src="pbMultiInstanceDemo.js"></script>
     <script type="text/javascript" src="pbBunnyDemo.js"></script>
     <script type="text/javascript" src="pbBunnyDemoNPOT.js"></script>
-
 </head>
 
 <body>
+
+    <canvas id="renderer-test" style="border: none;" width="800" height="600"></canvas>
+
+    <div id="gui"></div>
+
 <script type="text/javascript">
 
 /**
@@ -57,7 +70,11 @@
     stats.domElement.style.bottom = '0px';
     document.body.appendChild( stats.domElement );
 
-    var gui = new dat.GUI();
+    var gui = new dat.GUI({ autoPlace: false });
+
+    var guiContainer = document.getElementById('gui');
+    guiContainer.appendChild(gui.domElement);
+
     var pickDemo = gui.add(this, "demoName",
         {
             none: null,
@@ -88,7 +105,6 @@
     );
 
 </script>
+
 </body>
-
 </html>
-
