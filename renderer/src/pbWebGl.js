@@ -1159,9 +1159,9 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 		{
 			var cnr = img.corners;
 			l = -wide * img.anchorX;
-			r = wide + l - 1;
+			r = wide + l;
 			t = -high * img.anchorY;
-			b = high + t - 1;
+			b = high + t;
 			// object has corner offets (skewing/perspective etc)
 			sa[ c     ] = cnr.lbx * l; sa[ c + 1 ] = cnr.lby * b;
 			sa[ c + 11] = cnr.ltx * l; sa[ c + 12] = cnr.lty * t;
