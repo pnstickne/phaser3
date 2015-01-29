@@ -695,19 +695,35 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 		high = surface.cellHigh;
 	}
 
-	// image anchor point
-	var ax = _image.anchorX;
-	var ay = _image.anchorY;
-
 	// screen destination position
 	// l, b,		0,1
 	// l, t,		4,5
 	// r, b,		8,9
 	// r, t,		12,13
-	sa[ 0 ] = sa[ 4 ] = -wide * ax;
-	sa[ 1 ] = sa[ 9 ] =  high * (1 - ay);
-	sa[ 8 ] = sa[ 12] =  wide * (1 - ax);
-	sa[ 5 ] = sa[ 13] = -high * ay;
+	if (_image.corners)
+	{
+		var cnr = _image.corners;
+		l = -wide * _image.anchorX;
+		r = wide + l;
+		t = -high * _image.anchorY;
+		b = high + t;
+		// object has corner offets (skewing/perspective etc)
+		sa[ 0 ] = cnr.lbx * l; sa[ 1 ] = cnr.lby * b;
+		sa[ 4 ] = cnr.ltx * l; sa[ 5 ] = cnr.lty * t;
+		sa[ 8 ] = cnr.rbx * r; sa[ 9 ] = cnr.rby * b;
+		sa[ 12] = cnr.rtx * r; sa[ 13] = cnr.rty * t;
+	}
+	else
+	{
+		l = -wide * _image.anchorX;
+		r = wide + l;
+		t = -high * _image.anchorY;
+		b = high + t;
+		sa[ 0 ] = l; sa[ 1 ] = b;
+		sa[ 4 ] = l; sa[ 5 ] = t;
+		sa[ 8 ] = r; sa[ 9 ] = b;
+		sa[ 12] = r; sa[ 13] = t;
+	}
 
 	// texture source position
 	// x, b,		2,3
