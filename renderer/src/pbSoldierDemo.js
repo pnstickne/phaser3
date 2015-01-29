@@ -24,8 +24,8 @@ function pbSoldierDemo( docId )
 
 	// dat.GUI controlled variables and callbacks
 	// this.gui = new dat.GUI();
-	var numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
-	numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
+	this.numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
+	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
 
 	// this.useBatch = false;
 	// var btcCtrl = this.gui.add(this, "useBatch");
@@ -63,7 +63,7 @@ pbSoldierDemo.prototype.destroy = function()
 {
 	console.log("pbSoldierDemo.destroy");
 
-	this.gui.destroy();
+	gui.remove(this.numCtrl);
 
 	this.spriteList = null;
 	this.surface_run.destroy();
