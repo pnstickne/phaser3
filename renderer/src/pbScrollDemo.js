@@ -13,11 +13,12 @@ function pbScrollDemo( docId )
 
 	var _this = this;
 
+	this.numLayers = 8;
+
 	this.docId = docId;
 	this.tileMap = null;
 	this.bgSpr = null;
 	this.tileSurface = null;
-	this.tileImage = null;
 	this.mapSprites = null;
 	this.scrollLayers = null;
 	this.mapWidth = 0;
@@ -91,11 +92,26 @@ pbScrollDemo.prototype.destroy = function()
 {
 	console.log("pbScrollDemo.destroy");
 
-	this.surface.destroy();
-	this.surface = null;
-
 	this.renderer.destroy();
 	this.renderer = null;
+
+	this.tileMap = null;
+	this.bgSpr.destroy();
+	this.bgSpr = null;
+	this.tileSurface.destroy();
+	this.tileSurface = null;
+	this.mapSprites = null;
+
+	for(var i = 0, l = this.scrollLayers.length; i < l; i++)
+		this.scrollLayers[i].destroy();
+	this.scrollLayers = null;
+
+	this.loader = null;
+
+	this.levelData = null;
+	this.bgImg = null;
+	this.dudeImg = null;
+	this.tileImg = null;
 };
 
 
@@ -134,7 +150,7 @@ pbScrollDemo.prototype.addSprites = function()
 
 	// create the scrolling layers
 	this.scrollLayers = [];
-	for(var i = 0; i < 4; i++)
+	for(var i = 0; i < this.numLayers; i++)
 	{
 		this.scrollLayers[i] = new pbLayer();
 		this.scrollLayers[i].create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
