@@ -65,7 +65,7 @@ pbBlankDemo.prototype.addSprites = function()
 	console.log("pbBlankDemo.addSprites");
 
 	// create animation data and set destination for movement
-	var image = this.loader.getImage( this.spriteImg );
+	var image = this.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
 	this.surface.create(0, 0, 1, 1, image);
 

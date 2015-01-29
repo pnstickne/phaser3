@@ -69,7 +69,7 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	console.log("pbTextSpriteDemo.addSprites");
 
 	// get the source image, it's NPOT so duplicate it into a larger canvas which is power of two in both dimensions (webgl requirement)
-	var image = this.loader.getImage( this.spriteImg );
+	var image = this.loader.getFile( this.spriteImg );
 	image = imageToPowerOfTwo(image);
 	this.surface = new pbSurface();
 	this.surface.create(16, 16, 95, 7, image);		// there are 7 rows of 95 characters which are 16x16 pixels each

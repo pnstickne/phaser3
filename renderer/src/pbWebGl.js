@@ -1242,7 +1242,8 @@ pbWebGl.prototype.scissor = function(_x, _y, _width, _height)
 	else
 	{
 		gl.enable(gl.SCISSOR_TEST);
-		gl.scissor(_x, gl.drawingBufferHeight - (_y + _height), _width, _height);
+		// vertical coordinate system is inverted (0,0) is left, bottom of the screen
+		gl.scissor(_x, gl.drawingBufferHeight - 1 - (_y + _height), _width, _height);
 	}
 };
 

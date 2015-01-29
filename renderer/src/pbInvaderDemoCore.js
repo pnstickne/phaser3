@@ -39,7 +39,7 @@ pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer)
 	this.uiLayer.create(this.layer, this.parent.renderer, 0, 0, 0, 0, 1, 1);
 	this.layer.addChild(this.uiLayer);
 
-	var image = this.parent.loader.getImage( this.parent.fontImg );
+	var image = this.parent.loader.getFile( this.parent.fontImg );
 	image = imageToPowerOfTwo(image);
 	this.textSurface = new pbSurface();
 	this.textSurface.create(16, 16, 95, 7, image);		// there are 7 rows of 95 characters which are 16x16 pixels each, first character is Space
@@ -93,7 +93,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	// TODO: use different pbLayers for each part of this demo
 
 	// background
-	var image = this.parent.loader.getImage( this.parent.starsImg );
+	var image = this.parent.loader.getFile( this.parent.starsImg );
 	this.bgSurface = new pbSurface();
 	this.bgSurface.create(0, 0, 1, 1, image);
 	this.bgImage = new pbImage();
@@ -103,7 +103,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.layer.addChild(this.bg);
 
 	// player
-	image = this.parent.loader.getImage( this.parent.playerImg );
+	image = this.parent.loader.getFile( this.parent.playerImg );
 	this.playerSurface = new pbSurface();
 	this.playerSurface.create(0, 0, 1, 1, image);
 	this.playerImage = new pbImage();
@@ -115,7 +115,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.playerDirX = -2;
 
 	// player bullets
-	image = this.parent.loader.getImage( this.parent.bulletImg );
+	image = this.parent.loader.getFile( this.parent.bulletImg );
 	this.bulletSurface = new pbSurface();
 	this.bulletSurface.create(0, 0, 1, 1, image);
 	this.bulletPool = [];		// pool for bullets which aren't firing
@@ -132,7 +132,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	}
 
 	// player rockets
-	image = this.parent.loader.getImage( this.parent.rocketImg );
+	image = this.parent.loader.getFile( this.parent.rocketImg );
 	this.rocketSurface = new pbSurface();
 	this.rocketSurface.create(32, 32, 8, 1, image);
 	this.rocketPool = [];		// pool for rockets which aren't firing
@@ -148,13 +148,13 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	}
 
 	// aliens
-	image = this.parent.loader.getImage( this.parent.invaderImg );
+	image = this.parent.loader.getFile( this.parent.invaderImg );
 	this.invaderSurface = new pbSurface();
 	this.invaderSurface.create(32, 32, 4, 1, image);
 	this.addInvaders();
 
 	// alien bombs
-	image = this.parent.loader.getImage( this.parent.bombImg );
+	image = this.parent.loader.getFile( this.parent.bombImg );
 	this.bombSurface = new pbSurface();
 	this.bombSurface.create(0, 0, 1, 1, image);
 	this.bombPool = [];			// pool for bombs which aren't firing
@@ -172,7 +172,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.nearest = null;
 
 	// explosions
-	image = this.parent.loader.getImage( this.parent.explosionImg );
+	image = this.parent.loader.getFile( this.parent.explosionImg );
 	this.explosionSurface = new pbSurface();
 	this.explosionPool = [];
 	this.explosions = [];
@@ -187,7 +187,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	}
 
 	// smoke puffs
-	image = this.parent.loader.getImage( this.parent.smokeImg );
+	image = this.parent.loader.getFile( this.parent.smokeImg );
 	this.smokeSurface = new pbSurface();
 	this.smokePool = [];
 	this.smokes = [];

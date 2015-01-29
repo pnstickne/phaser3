@@ -12,7 +12,7 @@ function pbLoader(callback, context)
 	console.log("pbLoader c'tor entry");
 
 	this.queue = [];
-	this.images = [];
+	this.files = [];
 
 	this.callback = callback;
 	this.context = context;
@@ -21,18 +21,38 @@ function pbLoader(callback, context)
 }
 
 
+pbLoader.prototype.loadFile = function(filename)
+{
+	console.log("pbLoader.loadFile ", filename);
+
+	var index = this.files.length;
+	var _this = this;
+	
+	this.files[index] = new XMLHttpRequest();
+	this.files[index].open("GET", filename, true);
+	this.files[index].responseType = 'text';
+	this.files[index].onload = function(evt) {
+		_this.loaded.call(_this, evt, index);
+	};
+
+	this.queue.push(this.files[index]);
+	this.files[index].send();
+
+	return index;
+};
+
 
 pbLoader.prototype.loadImage = function(filename)
 {
 	console.log("pbLoader.loadImage ", filename);
 
-	var index = this.images.length;
+	var index = this.files.length;
 	var _this = this;
 	
-	this.images[index] = new Image();
-	this.images[index].onload = function(evt) { _this.loaded.call(_this, evt); };
-	this.images[index].src = filename;
-	this.queue.push(this.images[index]);
+	this.files[index] = new Image();
+	this.files[index].onload = function(evt) { _this.loaded.call(_this, evt, index); };
+	this.files[index].src = filename;
+	this.queue.push(this.files[index]);
 
 	return index;
 };
@@ -44,17 +64,19 @@ pbLoader.prototype.loaded = function(evt)
 
 	var i = this.queue.indexOf(evt.target);
 	if (i != -1)
+	{
 		this.queue.splice(i, 1);
+	}
 
-	// loaded all images so the queue is now empty?
+	// loaded all files so the queue is now empty?
 	if (this.queue.length === 0)
 		this.callback.call(this.context);
 };
 
 
-pbLoader.prototype.getImage = function(imgIndex)
+pbLoader.prototype.getFile = function(_index)
 {
-	return this.images[imgIndex];
+	return this.files[_index];
 };
 
 
