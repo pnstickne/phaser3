@@ -23,8 +23,8 @@ function pbSoldierDemo( docId )
 	this.spriteList = null;
 
 	// dat.GUI controlled variables and callbacks
-	this.gui = new dat.GUI();
-	var numCtrl = this.gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
+	// this.gui = new dat.GUI();
+	var numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
 	numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
 
 	// this.useBatch = false;
