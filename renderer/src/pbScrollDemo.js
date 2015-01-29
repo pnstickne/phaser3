@@ -19,11 +19,7 @@ function pbScrollDemo( docId )
 	this.tileSurface = null;
 	this.tileImage = null;
 	this.mapSprites = null;
-	this.scrollLayer = null;
-	this.scrollX = 0;
-	this.scrollY = 0;
-	this.dirX = 0;
-	this.dirY = 0;
+	this.scrollLayers = null;
 	this.mapWidth = 0;
 	this.mapHeight = 0;
 
@@ -88,11 +84,6 @@ pbScrollDemo.prototype.create = function()
 	this.tileMap = JSON.parse(tileMapJSON);
 
 	this.addSprites();
-
-	this.scrollX = 0;
-	this.scrollY = 0;
-	this.dirX = 1;
-	this.dirY = 1;
 };
 
 
@@ -141,17 +132,23 @@ pbScrollDemo.prototype.addSprites = function()
 	this.tileSurface.create(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, image);
 	this.tileSurface.isNPOT = true;
 
-	// create the scrolling layer
-	this.scrollLayer = new pbLayer();
-	this.scrollLayer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
-	rootLayer.addChild(this.scrollLayer);
+	// create the scrolling layers
+	this.scrollLayers = [];
+	for(var i = 0; i < 4; i++)
+	{
+		this.scrollLayers[i] = new pbLayer();
+		this.scrollLayers[i].create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
+		rootLayer.addChild(this.scrollLayers[i]);
+		this.scrollLayers[i].dirX = 1 / (i + 1);
+		this.scrollLayers[i].dirY = 1 - 1 / (i + 1);
+		// draw the tiles into the scrolling layer
+		this.drawMap(i);
+	}
 
-	// draw the tiles into the scrolling layer
-	this.drawMap();
 };
 
 
-pbScrollDemo.prototype.drawMap = function()
+pbScrollDemo.prototype.drawMap = function(_layer)
 {
 	// pre-calc pixel dimensions of map
 	this.mapWidth = this.tileMap.layers[0].width * this.tileMap.tilesets[0].tilewidth;
@@ -169,7 +166,7 @@ pbScrollDemo.prototype.drawMap = function()
 			if (tile !== 0)
 			{
 				this.mapSprites[y][x] = this.createTile(x * this.tileMap.tilesets[0].tilewidth, y * this.tileMap.tilesets[0].tileheight, tile - 1);
-				this.scrollLayer.addChild(this.mapSprites[y][x]);
+				this.scrollLayers[_layer].addChild(this.mapSprites[y][x]);
 			}
 		}
 	}
@@ -188,34 +185,37 @@ pbScrollDemo.prototype.createTile = function(_x, _y, _cell)
 
 pbScrollDemo.prototype.update = function()
 {
-	this.scrollX += this.dirX;
-	this.scrollY += this.dirY;
-
-	if (this.scrollX <= 0)
+	for(var i = 0, l = this.scrollLayers.length; i < l; i++)
 	{
-		this.scrollX = 0;
-		this.dirX = -this.dirX;
-	}
+		var sx = -(this.scrollLayers[i].x + this.scrollLayers[i].dirX);
+		var sy = -(this.scrollLayers[i].y + this.scrollLayers[i].dirY);
 
-	if (this.scrollX >= this.mapWidth - this.renderer.width)
-	{
-		this.scrollX = this.mapWidth - this.renderer.width - 1;
-		this.dirX = -this.dirX;
-	}
+		if (sx <= 0)
+		{
+			sx = 0;
+			this.scrollLayers[i].dirX = -this.scrollLayers[i].dirX;
+		}
 
-	if (this.scrollY <= 0)
-	{
-		this.scrollY = 0;
-		this.dirY = -this.dirY;
-	}
+		if (sx >= this.mapWidth - this.renderer.width)
+		{
+			sx = this.mapWidth - this.renderer.width - 1;
+			this.scrollLayers[i].dirX = -this.scrollLayers[i].dirX;
+		}
 
-	if (this.scrollY >= this.mapHeight - this.renderer.height)
-	{
-		this.scrollY = this.mapHeight - this.renderer.height - 1;
-		this.dirY = -this.dirY;
-	}
+		if (sy <= 0)
+		{
+			sy = 0;
+			this.scrollLayers[i].dirY = -this.scrollLayers[i].dirY;
+		}
 
-	this.scrollLayer.x = -this.scrollX;
-	this.scrollLayer.y = -this.scrollY;
+		if (sy >= this.mapHeight - this.renderer.height)
+		{
+			sy = this.mapHeight - this.renderer.height - 1;
+			this.scrollLayers[i].dirY = -this.scrollLayers[i].dirY;
+		}
+
+		this.scrollLayers[i].x = -sx;
+		this.scrollLayers[i].y = -sy;
+	}
 };
 
