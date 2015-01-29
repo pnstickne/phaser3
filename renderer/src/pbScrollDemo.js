@@ -20,6 +20,12 @@ function pbScrollDemo( docId )
 	this.tileImage = null;
 	this.mapSprites = null;
 	this.scrollLayer = null;
+	this.scrollX = 0;
+	this.scrollY = 0;
+	this.dirX = 0;
+	this.dirY = 0;
+	this.mapWidth = 0;
+	this.mapHeight = 0;
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
@@ -82,6 +88,11 @@ pbScrollDemo.prototype.create = function()
 	this.tileMap = JSON.parse(tileMapJSON);
 
 	this.addSprites();
+
+	this.scrollX = 0;
+	this.scrollY = 0;
+	this.dirX = 1;
+	this.dirY = 1;
 };
 
 
@@ -140,13 +151,12 @@ pbScrollDemo.prototype.addSprites = function()
 };
 
 
-pbScrollDemo.prototype.update = function()
-{
-};
-
-
 pbScrollDemo.prototype.drawMap = function()
 {
+	// pre-calc pixel dimensions of map
+	this.mapWidth = this.tileMap.layers[0].width * this.tileMap.tilesets[0].tilewidth;
+	this.mapHeight = this.tileMap.layers[0].height * this.tileMap.tilesets[0].tileheight;
+
 	this.mapSprites = [];
 	for(var y = 0; y < this.tileMap.layers[0].height; y++)
 	{
@@ -173,5 +183,39 @@ pbScrollDemo.prototype.createTile = function(_x, _y, _cell)
 	var spr = new pbSprite();
 	spr.create(img, _x, _y, 0.5, 0, 1, 1);
 	return spr;
+};
+
+
+pbScrollDemo.prototype.update = function()
+{
+	this.scrollX += this.dirX;
+	this.scrollY += this.dirY;
+
+	if (this.scrollX <= 0)
+	{
+		this.scrollX = 0;
+		this.dirX = -this.dirX;
+	}
+
+	if (this.scrollX >= this.mapWidth - this.renderer.width)
+	{
+		this.scrollX = this.mapWidth - this.renderer.width - 1;
+		this.dirX = -this.dirX;
+	}
+
+	if (this.scrollY <= 0)
+	{
+		this.scrollY = 0;
+		this.dirY = -this.dirY;
+	}
+
+	if (this.scrollY >= this.mapHeight - this.renderer.height)
+	{
+		this.scrollY = this.mapHeight - this.renderer.height - 1;
+		this.dirY = -this.dirY;
+	}
+
+	this.scrollLayer.x = -this.scrollX;
+	this.scrollLayer.y = -this.scrollY;
 };
 
