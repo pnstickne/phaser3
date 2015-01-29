@@ -1101,8 +1101,8 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 	this.handleTexture( surface.image, _list[0].image.tiling, surface.isNPOT );
 
 	// half width, half height (of source frame)
-	var wide = surface.cellWide * 0.5;
-	var high = surface.cellHigh * 0.5;
+	var wide = surface.cellWide;
+	var high = surface.cellHigh;
 
 	// TODO: generate warning if length is capped
 	var len = Math.min(_list.length, MAX_SPRITES);
@@ -1110,14 +1110,16 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
     var sa = this.drawingArray.subarray(0, len * (44 + 22) - 22);
 
+    var l, r, t, b;
 
 	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
 	for ( var i = -1, c = 0; ++i < len; c += 44 )
 	{
 		var obj = _list[i];
+		var img = obj.image;
 
 		// set up texture reference coordinates based on the image frame number
-		var cell = Math.floor(obj.image.cellFrame);
+		var cell = Math.floor(img.cellFrame);
 		var cx = cell % surface.cellsWide;
 		var cy = Math.floor(cell / surface.cellsWide);
 		var rect = surface.cellTextureBounds[cx][cy];
@@ -1153,21 +1155,29 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 		// l, t,		11,12
 		// r, b,		22,23
 		// r, t,		33,34
-		if (obj.image.corners)
+		if (img.corners)
 		{
-			var cnr = obj.image.corners;
+			var cnr = img.corners;
+			l = -wide * img.anchorX;
+			r = wide + l - 1;
+			t = -high * img.anchorY;
+			b = high + t - 1;
 			// object has corner offets (skewing/perspective etc)
-			sa[ c     ] = cnr.lbx * -wide; sa[ c + 1 ] = cnr.lby *  high;
-			sa[ c + 11] = cnr.ltx * -wide; sa[ c + 12] = cnr.lty * -high;
-			sa[ c + 22] = cnr.rbx *  wide; sa[ c + 23] = cnr.rby *  high;
-			sa[ c + 33] = cnr.rtx *  wide; sa[ c + 34] = cnr.rty * -high;
+			sa[ c     ] = cnr.lbx * l; sa[ c + 1 ] = cnr.lby * b;
+			sa[ c + 11] = cnr.ltx * l; sa[ c + 12] = cnr.lty * t;
+			sa[ c + 22] = cnr.rbx * r; sa[ c + 23] = cnr.rby * b;
+			sa[ c + 33] = cnr.rtx * r; sa[ c + 34] = cnr.rty * t;
 		}
 		else
 		{
-			sa[ c     ] = -wide; sa[ c + 1 ] =  high;
-			sa[ c + 11] = -wide; sa[ c + 12] = -high;
-			sa[ c + 22] =  wide; sa[ c + 23] =  high;
-			sa[ c + 33] =  wide; sa[ c + 34] = -high;
+			l = -wide * img.anchorX;
+			r = wide + l;
+			t = -high * img.anchorY;
+			b = high + t;
+			sa[ c     ] = l; sa[ c + 1 ] = b;
+			sa[ c + 11] = l; sa[ c + 12] = t;
+			sa[ c + 22] = r; sa[ c + 23] = b;
+			sa[ c + 33] = r; sa[ c + 34] = t;
 		}
 
 		// texture source position

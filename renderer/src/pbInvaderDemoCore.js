@@ -349,7 +349,7 @@ pbInvaderDemoCore.prototype.playerShoot = function()
 {
 	var b = this.bulletPool.pop();
 	b.x = this.player.x;
-	b.y = this.player.y;
+	b.y = this.player.y - b.image.surface.cellHigh;
 	this.layer.addChild(b);
 
 	this.bullets.push(b);
