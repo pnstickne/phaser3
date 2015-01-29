@@ -149,6 +149,10 @@ pbLayer.prototype.draw = function(_list)
  */
 pbLayer.prototype.addChild = function( _child )
 {
+	// TODO: debug only, catches hard to track error that can propagate down through multiple layers and sprites hierarchies
+	if (_child === undefined || _child === null)
+		alert("ERROR: pbLayer.addChild received an invalid _child", _child);
+
 	if ((_child instanceof pbLayer) || (_child instanceof pbSimpleLayer))
 	{
 		this.list.push( _child );

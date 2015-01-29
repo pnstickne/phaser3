@@ -70,7 +70,7 @@ pbBlankDemo.prototype.addSprites = function()
 	this.surface.create(0, 0, 1, 1, image);
 
 	var img = new pbImage();
-	img.create(this.renderer, this.surface, 0);
+	img.create(this.surface, 0);
 
 	this.spr = new pbSprite();
 	this.spr.create(img, 200, 200, 1.0, 0, 1.0, 1.0);

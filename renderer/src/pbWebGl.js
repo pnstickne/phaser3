@@ -588,7 +588,7 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 };
 
 
-pbWebGl.prototype.handleTexture = function( _image, _tiled, _npot )
+pbWebGl.prototype.handleTexture = function( _image, _tiling, _npot )
 {
 	// this _image is already the selected texture
 	if (this.currentTexture && this.currentTexture.image === _image)
@@ -628,7 +628,7 @@ pbWebGl.prototype.handleTexture = function( _image, _tiled, _npot )
 		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	    }
-	    else if (_tiled)
+	    else if (_tiling)
 	    {
 		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
 		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
