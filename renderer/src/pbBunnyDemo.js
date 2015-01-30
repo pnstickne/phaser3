@@ -21,9 +21,8 @@ function pbBunnyDemo( docId )
 	this.numSprites = 0;
 
 	// dat.GUI controlled variables and callbacks
-	this.gui = new dat.GUI();
-	var numCtrl = this.gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
-	numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
+	this.numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
+	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
@@ -58,7 +57,8 @@ pbBunnyDemo.prototype.destroy = function()
 {
 	console.log("pbBunnyDemo.destroy");
 
-	this.gui.destroy();
+	gui.remove(this.numCtrl);
+	
 	this.list = null;
 
 	// this.layer.destroy();
