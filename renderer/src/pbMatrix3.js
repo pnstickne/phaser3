@@ -168,7 +168,7 @@ pbMatrix3.fastMultiply = function( a, b )
 // e, f, 1
 // 
 // we can speed up the multiplication by skipping the 0 and 1 multiplication steps
-pbMatrix3.setFastMultiply = function( m, a, b )
+pbMatrix3.setFastMultiply = function( a, b )
 {
 	var a00 = a[         0 ];
 	var a01 = a[         1 ];
@@ -182,15 +182,14 @@ pbMatrix3.setFastMultiply = function( m, a, b )
 	var b11 = b[     3 + 1 ];
 	var b20 = b[ 2 * 3 + 0 ];
 	var b21 = b[ 2 * 3 + 1 ];
-	m[0] = a00 * b00 + a01 * b10;
-	m[1] = a00 * b01 + a01 * b11;
-	m[2] = 0;
-	m[3 + 0] = a10 * b00 + a11 * b10;
-	m[3 + 1] = a10 * b01 + a11 * b11;
-	m[3 + 2] = 0;
-	m[2 * 3 + 0] = a20 * b00 + a21 * b10 +       b20;
-	m[2 * 3 + 1] = a20 * b01 + a21 * b11 +       b21;
-	m[2 * 3 + 2] = 1;
+	a[0] = a00 * b00 + a01 * b10;
+	a[1] = a00 * b01 + a01 * b11;
+	a[2] = a[5] = 0;
+	a[3] = a10 * b00 + a11 * b10;
+	a[4] = a10 * b01 + a11 * b11;
+	a[6] = a20 * b00 + a21 * b10 + b20;
+	a[7] = a20 * b01 + a21 * b11 + b21;
+	a[8] = 1;
 };
 
 

@@ -93,7 +93,7 @@ pbSprite.prototype.update = function(_drawDictionary)
 	pbMatrix3.setTransform(this.transform, this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY);
 	// multiply with the transform matrix from my parent
 	if (this.parent && this.parent.transform)
-		pbMatrix3.setFastMultiply(this.transform, this.transform, this.parent.transform);
+		pbMatrix3.setFastMultiply(this.transform, this.parent.transform);
 	
 	// draw if this sprite has an image
 	if (this.image)
@@ -120,14 +120,22 @@ pbSprite.prototype.update = function(_drawDictionary)
 };
 
 
-pbSprite.prototype.simpleUpdate = function(_drawList)
+pbSprite.prototype.simpleUpdate = function(_drawList, _index)
 {
 	if (!this.alive)
 		return true;
 
 	// add this sprite to the drawList
-	_drawList.push( { x: this.x, y: this.y } );
+	// avoid creating new objects here, there may be hundreds of thousands of them per frame (reuse drawList from frame to frame)
+	var d = _drawList[_index];
+	if (d)
+	{
+		d.x = this.x;
+		d.y = this.y;
+		return true;
+	}
 
+	_drawList[_index] = { x: this.x, y: this.y };
 	return true;
 };
 

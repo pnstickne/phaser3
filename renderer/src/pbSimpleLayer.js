@@ -10,6 +10,7 @@ function pbSimpleLayer()
 	this.parent = null;
 	this.renderer = null;
 	this.surface = null;
+	this.drawList = null;
 }
 
 // pbSimpleLayer extends from the pbSprite prototype chain
@@ -25,6 +26,7 @@ pbSimpleLayer.prototype.create = function(_parent, _renderer, _x, _y, _surface)
 	// call the pbSprite create for this pbSimpleLayer
 	this.__super__.prototype.create.call(this, null, _x, _y);
 	this.surface = _surface;
+	this.drawList = [];
 };
 
 
@@ -35,12 +37,14 @@ pbSimpleLayer.prototype.destroy = function()
 	this.parent = null;
 	this.renderer = null;
 	this.surface = null;
+	this.drawList = null;
 };
 
 
 pbSimpleLayer.prototype.update = function(_dictionary)
 {
-	var drawList = [];
+	// avoid creating a new array each frame by reusing this.drawList and simply keeping track of where we are in it
+	var drawLength = 0;
 
 	if (!this.alive)
 		return true;
@@ -54,7 +58,7 @@ pbSimpleLayer.prototype.update = function(_dictionary)
 			var child = this.children[c];
 
 			// update this child
-			if (!child.simpleUpdate(drawList))
+			if (!child.simpleUpdate(this.drawList, drawLength++))
 			{
 				child.destroy();
 				this.removechildAt(c);
@@ -62,16 +66,16 @@ pbSimpleLayer.prototype.update = function(_dictionary)
 		}
 	}
 
-	if (drawList.length > 0)
-		this.draw(drawList);
+	if (drawLength > 0)
+		this.draw(this.drawList, drawLength);
 
 	return true;
 };
 
 
-pbSimpleLayer.prototype.draw = function(_list)
+pbSimpleLayer.prototype.draw = function(_list, _length)
 {
-	this.renderer.graphics.blitSimpleDrawImages( _list, this.surface );
+	this.renderer.graphics.blitSimpleDrawImages( _list, _length, this.surface );
 };
 
 

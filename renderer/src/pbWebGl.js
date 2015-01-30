@@ -821,7 +821,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 };
 
 
-pbWebGl.prototype.blitSimpleDrawImages = function( _list, _surface )
+pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface )
 {
 	if ( this.currentProgram !== this.blitShaderProgram )
 		this.currentProgram = this.setBlitProgram();
@@ -836,7 +836,7 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _surface )
 	var iHigh = 1.0 / screenHigh2;
 
 	// TODO: generate warning if length is capped
-	var len = Math.min(_list.length, MAX_SPRITES);
+	var len = Math.min(_listLength, MAX_SPRITES);
 
 	var scale = 1.0;
 	var wide = _surface.cellWide * scale * 0.5 / screenWide2;
