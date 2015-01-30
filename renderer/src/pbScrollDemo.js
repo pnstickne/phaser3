@@ -2,6 +2,10 @@
  *
  * pbScrollDemo.js - a scrolling tile world with multiple levels of parallax
  *
+ *
+ * TODO: non-scaled/skewed/rotated tile layers should be drawn using a faster render mode.
+ * (Not pbImage.isParticle because that can't handle tiles in the source image, it draws the whole thing)
+ * 
  */
 
 

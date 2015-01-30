@@ -109,9 +109,13 @@ pbMultiInstanceDemo.prototype.destroy = function()
 
 pbMultiInstanceDemo.prototype.update = function()
 {
-	for(var y = 0; y < this.numHigh; y++)
-		for(var x = 0; x < this.numWide; x++)
+	var y = this.numHigh;
+	while(y--)
+	{
+		var x = this.numWide;
+		while(x--)
 			this.cameras[y][x].update();
+	}
 
 	if (fps >= 60)
 		this.fps60++;

@@ -107,7 +107,8 @@ pbLayer.prototype.update = function(_dictionary)
 
 	// call update for all members of this layer
 	// (pbImage adds drawing data to the drawDictionary)
-	for(var i = this.list.length - 1; i >= 0; --i)
+	var i = this.list.length;
+	while(i--)
 	{
 		var member = this.list[i];
 

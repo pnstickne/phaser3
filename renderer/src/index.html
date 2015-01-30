@@ -64,6 +64,10 @@
     var docId = 'renderer-test';
     var demoName = null;
     
+    // after reading: http://www.sitepoint.com/google-closure-how-not-to-write-javascript/
+    var _undefinedCheck;
+    if (undefined !== _undefinedCheck) alert("'undefined' has been redefined which will screw up this script.");
+
     // fps counter
     var stats = null;
     stats = new Stats();

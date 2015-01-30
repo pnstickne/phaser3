@@ -276,7 +276,8 @@ pbInvaderDemoCore.prototype.update = function()
 
 	// update invaders
 	var invader;
-	for(var i = this.invaders.length - 1; i >= 0; --i)
+	var i = this.invaders.length;
+	while(i--)
 	{
 		invader = this.invaders[i];
 
@@ -358,7 +359,8 @@ pbInvaderDemoCore.prototype.playerShoot = function()
 
 pbInvaderDemoCore.prototype.playerBulletMove = function()
 {
-	for(var i = this.bullets.length - 1; i >= 0; --i)
+	var i = this.bullets.length;
+	while(i--)
 	{
 		var b = this.bullets[i];
 		b.y -= 8;
@@ -412,7 +414,8 @@ pbInvaderDemoCore.prototype.playerShootRocket = function()
 
 pbInvaderDemoCore.prototype.playerRocketMove = function()
 {
-	for(var i = this.rockets.length - 1; i >= 0; --i)
+	var i = this.rockets.length;
+	while(i--)
 	{
 		var b = this.rockets[i];
 
@@ -497,7 +500,8 @@ pbInvaderDemoCore.prototype.invaderBombMove = function()
 	this.nearest = null;
 	var nearDist2 = 0xffffffff;
 
-	for(var i = this.bombs.length - 1; i >= 0; --i)
+	var i = this.bombs.length;
+	while(i--)
 	{
 		var b = this.bombs[i];
 		b.y += b.vy;
@@ -553,7 +557,8 @@ pbInvaderDemoCore.prototype.addExplosion = function(_x, _y)
 
 pbInvaderDemoCore.prototype.updateExplosions = function()
 {
-	for(var i = this.explosions.length - 1; i >= 0; --i)
+	var i = this.explosions.length;
+	while(i--)
 	{
 		var explosion = this.explosions[i];
 		explosion.image.cellFrame += 0.2;
@@ -583,7 +588,8 @@ pbInvaderDemoCore.prototype.addSmoke = function(_x, _y)
 
 pbInvaderDemoCore.prototype.updateSmokes = function()
 {
-	for(var i = this.smokes.length - 1; i >= 0; --i)
+	var i = this.smokes.length;
+	while(i--)
 	{
 		var smoke = this.smokes[i];
 		smoke.image.cellFrame += 0.2;

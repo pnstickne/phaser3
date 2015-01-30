@@ -102,7 +102,8 @@ pbSprite.prototype.update = function(_drawDictionary)
 	if (this.children)
 	{
 		// for all of my child sprites
-		for(var c = this.children.length - 1; c >= 0; --c)
+		var c = this.children.length;
+		while(c--)
 		{
 			var child = this.children[c];
 
