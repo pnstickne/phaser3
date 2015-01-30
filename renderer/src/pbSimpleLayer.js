@@ -57,11 +57,20 @@ pbSimpleLayer.prototype.update = function(_dictionary)
 		{
 			var child = this.children[c];
 
-			// update this child
-			if (!child.simpleUpdate(this.drawList, drawLength++))
+			// avoid function call by in-lining the simpleUpdate contents here
+			if (child.alive)
 			{
-				child.destroy();
-				this.removechildAt(c);
+				var d = this.drawList[drawLength];
+				if (d)
+				{
+					d.x = child.x;
+					d.y = child.y;
+				}
+				else
+				{
+					this.drawList[drawLength] = { x: child.x, y: child.y };
+				}
+				drawLength++;
 			}
 		}
 	}
