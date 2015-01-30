@@ -15,11 +15,12 @@ function pbBunnyDemoNPOT( docId )
 
 	this.docId = docId;
 
+	this.fps60 = 0;
 	this.numSprites = 0;
+
 	// dat.GUI controlled variables and callbacks
-	this.gui = new dat.GUI();
-	var numCtrl = this.gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
-	numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
+	this.numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
+	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
@@ -42,6 +43,10 @@ pbBunnyDemoNPOT.prototype.create = function()
 	console.log("pbBunnyDemoNPOT.create");
 
 	this.list = [];
+
+	this.layer = new pbSimpleLayer();
+	this.layer.create(null, this.renderer, 0, 0, null);
+	rootLayer.addChild(this.layer);
 };
 
 
@@ -49,7 +54,7 @@ pbBunnyDemoNPOT.prototype.destroy = function()
 {
 	console.log("pbBunnyDemoNPOT.destroy");
 
-	this.gui.destroy();
+	gui.remove(this.numCtrl);
 	this.list = null;
 	this.surface.destroy();
 	this.surface = null;
@@ -78,6 +83,9 @@ pbBunnyDemoNPOT.prototype.addSprites = function(num)
 		this.surface = new pbSurface();
 		this.surface.create(0, 0, 1, 1, image);
 		this.surface.isNPOT = true;
+
+		// tell the layer what surface it will draw from
+		this.layer.surface = this.surface;
 	}
 
 	for(var i = 0; i < num; i++)
@@ -88,7 +96,7 @@ pbBunnyDemoNPOT.prototype.addSprites = function(num)
 
 		var spr = new pbSprite();
 		spr.create(img, 13, 37, 1.0, 0, 1.0, 1.0);
-		rootLayer.addChild(spr);
+		this.layer.addChild(spr);
 
 		this.list.push( { sprite:spr, vx:Math.random() * 10, vy:(Math.random() * 10) - 5 });
 	}
@@ -148,14 +156,23 @@ pbBunnyDemoNPOT.prototype.update = function()
 		}
 	}
 
-	if (fps > 59 && (this.renderer.frameCount & 7) === 0)
+	if (fps >= 60)
 	{
-	 	this.addSprites(500);
+		// don't add more until the fps has been at 60 for one second
+		if (this.fps60++ > 60)
+			// add more with a gradually increasing amount as the fps stays at 60
+	 		this.addSprites(Math.min(this.fps60, 250));
+	}
+	else
+	{
+		// fps dropped a little, reset counter
+		this.fps60 = 0;
 	}
 
-	if (fps > 0 && fps < 55)
+	if (fps > 0 && fps <= 57 && (this.renderer.frameCount & 15) === 0)
 	{
-	 	this.removeSprites(10);
+		// fps is too low, remove sprites... go faster if the fps is lower
+	 	this.removeSprites((58 - fps) * 16);
 	}
 };
 
