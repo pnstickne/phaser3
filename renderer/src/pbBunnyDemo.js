@@ -162,14 +162,14 @@ pbBunnyDemo.prototype.update = function()
 	}
 
 	if (this.list.length > 0)
-		this.renderer.graphics.blitSimpleDrawImages( this.list, this.surface );
+		this.renderer.graphics.blitSimpleDrawImages( this.list, this.list.length, this.surface );
 
 	if (fps >= 60)
 	{
 		// don't add more until the fps has been at 60 for one second
 		if (this.fps60++ > 60)
 			// add more with a gradually increasing amount as the fps stays at 60
-	 		this.addSprites(Math.min(this.fps60, 250));
+	 		this.addSprites(Math.min(this.fps60, 200));
 	}
 	else
 	{
@@ -177,10 +177,11 @@ pbBunnyDemo.prototype.update = function()
 		this.fps60 = 0;
 	}
 
-	if (fps > 0 && fps <= 57 && (this.renderer.frameCount & 15) === 0)
-	{
-		// fps is too low, remove sprites... go faster if the fps is lower
-	 	this.removeSprites((58 - fps) * 16);
-	}
+	// don't remove bunnies, we need to see if the GC is hitting
+	// if (fps > 0 && fps <= 57 && (this.renderer.frameCount & 15) === 0)
+	// {
+	// 	// fps is too low, remove sprites... go faster if the fps is lower
+	//  	this.removeSprites((58 - fps) * 16);
+	// }
 };
 
