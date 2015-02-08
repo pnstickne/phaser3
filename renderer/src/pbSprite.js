@@ -120,6 +120,7 @@ pbSprite.prototype.update = function(_drawDictionary)
 };
 
 
+/* deprecated... now using inline code in pbSimpleLayer.update for performance
 pbSprite.prototype.simpleUpdate = function(_drawList, _index)
 {
 	if (!this.alive)
@@ -138,6 +139,7 @@ pbSprite.prototype.simpleUpdate = function(_drawList, _index)
 	_drawList[_index] = { x: this.x, y: this.y };
 	return true;
 };
+*/
 
 
 pbSprite.prototype.kill = function()

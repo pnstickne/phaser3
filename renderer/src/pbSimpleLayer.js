@@ -57,7 +57,7 @@ pbSimpleLayer.prototype.update = function(_dictionary)
 		{
 			var child = this.children[c];
 
-			// avoid function call by in-lining the simpleUpdate contents here
+			// avoid function call by in-lining the pbSprite.simpleUpdate contents here
 			if (child.alive)
 			{
 				var d = this.drawList[drawLength];
