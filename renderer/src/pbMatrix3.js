@@ -6,6 +6,35 @@
 
 
 
+
+/*
+The following three code lines are from the gl-matrix project:
+
+Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+if(!GLMAT_ARRAY_TYPE) {
+    var GLMAT_ARRAY_TYPE = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
+}
+
+
+
 function pbMatrix3()
 {
 }
@@ -13,11 +42,17 @@ function pbMatrix3()
 
 pbMatrix3.makeTranslation = function( tx, ty )
 {
-	return [
-		     1,  0,  0,
-		     0,  1,  0,
-		    tx, ty,  1
-	];
+	var m = new GLMAT_ARRAY_TYPE(9);
+	m[0] = 1;
+	m[1] = 0;
+	m[2] = 0;
+	m[3] = 0;
+	m[4] = 1;
+	m[5] = 0;
+	m[6] = tx;
+	m[7] = ty;
+	m[8] = 1;
+	return m;
 };
 
 
@@ -25,21 +60,33 @@ pbMatrix3.makeRotation = function( angleInRadians )
 {
 	var c = Math.cos( angleInRadians );
 	var s = Math.sin( angleInRadians );
-	return [
-		     c, -s,  0,
-		     s,  c,  0,
-		     0,  0,  1
-	];
+	var m = new GLMAT_ARRAY_TYPE(9);
+	m[0] = c;
+	m[1] = -s;
+	m[2] = 0;
+	m[3] = s;
+	m[4] = c;
+	m[5] = 0;
+	m[6] = 0;
+	m[7] = 0;
+	m[8] = 1;
+	return m;
 };
 
 
 pbMatrix3.makeScale = function( sx, sy )
 {
-	return [
-		    sx,  0,  0,
-		     0, sy,  0,
-		     0,  0,  1
-	];
+	var m = new GLMAT_ARRAY_TYPE(9);
+	m[0] = sx;
+	m[1] = 0;
+	m[2] = 0;
+	m[3] = 0;
+	m[4] = sy;
+	m[5] = 0;
+	m[6] = 0;
+	m[7] = 0;
+	m[8] = 1;
+	return m;
 };
 
 
@@ -47,12 +94,17 @@ pbMatrix3.makeTransform = function(_x, _y, _angleInRadians, _scaleX, _scaleY)
 {
 	var c = Math.cos( _angleInRadians );
 	var s = Math.sin( _angleInRadians );
-
-	return [
-		c * _scaleX, -s * _scaleY, 0,
-		s * _scaleX, c * _scaleY, 0,
-		_x, _y, 1
-	];
+	var m = new GLMAT_ARRAY_TYPE(9);
+	m[0] = c * _scaleX;
+	m[1] = -s * _scaleY;
+	m[2] = 0;
+	m[3] = s * _scaleX;
+	m[4] = c * _scaleY;
+	m[5] = 0;
+	m[6] = _x;
+	m[7] = _y;
+	m[8] = 1;
+	return m;
 };
 
 
@@ -76,21 +128,33 @@ pbMatrix3.setTransform = function( _m, _x, _y, _angleInRadians, _scaleX, _scaleY
 pbMatrix3.makeProjection = function(width, height)
 {
 	// project coordinates into a 2x2 number range, starting at (-1, 1)
-	return [
-		    2 / width, 0, 0,
-		    0, -2 / height, 0,
-		    -1, 1, 1
-	];
+	var m = new GLMAT_ARRAY_TYPE(9);
+	m[0] = 2 / width;
+	m[1] = 0;
+	m[2] = 0;
+	m[3] = 0;
+	m[4] = -2 / height;
+	m[5] = 0;
+	m[6] = -1;
+	m[7] = 1;
+	m[8] = 1;
+	return m;
 };
 
 
 pbMatrix3.makeIdentity = function()
 {
-	return [
-		     1,  0,  0,
-		     0,  1,  0,
-		     0,  0,  1
-	];
+	var m = new GLMAT_ARRAY_TYPE(9);
+	m[0] = 1;
+	m[1] = 0;
+	m[2] = 0;
+	m[3] = 0;
+	m[4] = 1;
+	m[5] = 0;
+	m[6] = 0;
+	m[7] = 0;
+	m[8] = 1;
+	return m;
 };
 
 
@@ -114,17 +178,17 @@ pbMatrix3.matrixMultiply = function( a, b )
 	var b20 = b[ 2 * 3 + 0 ];
 	var b21 = b[ 2 * 3 + 1 ];
 	var b22 = b[ 2 * 3 + 2 ];
-	return [
-			a00 * b00 + a01 * b10 + a02 * b20,
-			a00 * b01 + a01 * b11 + a02 * b21,
-			a00 * b02 + a01 * b12 + a02 * b22,
-			a10 * b00 + a11 * b10 + a12 * b20,
-			a10 * b01 + a11 * b11 + a12 * b21,
-			a10 * b02 + a11 * b12 + a12 * b22,
-			a20 * b00 + a21 * b10 + a22 * b20,
-			a20 * b01 + a21 * b11 + a22 * b21,
-			a20 * b02 + a21 * b12 + a22 * b22
-	];
+	var m = new GLMAT_ARRAY_TYPE(9);
+	m[0] = a00 * b00 + a01 * b10 + a02 * b20;
+	m[1] = a00 * b01 + a01 * b11 + a02 * b21;
+	m[2] = a00 * b02 + a01 * b12 + a02 * b22;
+	m[3] = a10 * b00 + a11 * b10 + a12 * b20;
+	m[4] = a10 * b01 + a11 * b11 + a12 * b21;
+	m[5] = a10 * b02 + a11 * b12 + a12 * b22;
+	m[6] = a20 * b00 + a21 * b10 + a22 * b20;
+	m[7] = a20 * b01 + a21 * b11 + a22 * b21;
+	m[8] = a20 * b02 + a21 * b12 + a22 * b22;
+	return m;
 };
 
 
@@ -148,17 +212,17 @@ pbMatrix3.fastMultiply = function( a, b )
 	var b11 = b[     3 + 1 ];
 	var b20 = b[ 2 * 3 + 0 ];
 	var b21 = b[ 2 * 3 + 1 ];
-	return [
-			a00 * b00 + a01 * b10            ,
-			a00 * b01 + a01 * b11            ,
-			                                0,
-			a10 * b00 + a11 * b10 			 ,
-			a10 * b01 + a11 * b11            ,
-			                                0,
-			a20 * b00 + a21 * b10 +       b20,
-			a20 * b01 + a21 * b11 +       b21,
-			                                1
-	];
+	var m = new GLMAT_ARRAY_TYPE(9);
+	m[0] = a00 * b00 + a01 * b10;
+	m[1] = a00 * b01 + a01 * b11;
+	m[2] = 0;
+	m[3] = a10 * b00 + a11 * b10;
+	m[4] = a10 * b01 + a11 * b11;
+	m[5] = 0;
+	m[6] = a20 * b00 + a21 * b10 +       b20;
+	m[7] = a20 * b01 + a21 * b11 +       b21;
+	m[8] = 1;
+	return m;
 };
 
 
@@ -184,11 +248,11 @@ pbMatrix3.setFastMultiply = function( a, b )
 	var b21 = b[ 2 * 3 + 1 ];
 	a[0] = a00 * b00 + a01 * b10;
 	a[1] = a00 * b01 + a01 * b11;
-	a[2] = a[5] = 0;
 	a[3] = a10 * b00 + a11 * b10;
 	a[4] = a10 * b01 + a11 * b11;
 	a[6] = a20 * b00 + a21 * b10 + b20;
 	a[7] = a20 * b01 + a21 * b11 + b21;
+	a[2] = a[5] = 0;
 	a[8] = 1;
 };
 
