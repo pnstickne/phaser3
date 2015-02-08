@@ -719,10 +719,10 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 		r = wide + l;
 		t = -high * _image.anchorY;
 		b = high + t;
-		sa[ 0 ] = l; sa[ 1 ] = b;
-		sa[ 4 ] = l; sa[ 5 ] = t;
-		sa[ 8 ] = r; sa[ 9 ] = b;
-		sa[ 12] = r; sa[ 13] = t;
+		sa[ 0 ] = sa[ 4 ] = l;
+		sa[ 1 ] = sa[ 9 ] = b;
+		sa[ 8 ] = sa[ 12] = r;
+		sa[ 5 ] = sa[ 13] = t;
 	}
 
 	// texture source position
