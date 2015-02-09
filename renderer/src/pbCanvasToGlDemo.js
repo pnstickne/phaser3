@@ -18,7 +18,6 @@ function pbCanvasToGlDemo( docId )
 	this.list = null;
 
 	this.canvasSrc = null;
-	this.canvasDst = null;
 
 	this.renderer = new pbRenderer( this.docId, this.create, this.update, this );
 
@@ -86,7 +85,13 @@ pbCanvasToGlDemo.prototype.destroy = function()
 {
 	console.log("pbCanvasToGlDemo.destroy");
 
-	// TODO: destroy div, canvases, and clean up afterwards
+	// destroy div, canvases, and clean up afterwards
+	this.canvasSrc.parentNode.removeChild( this.canvasSrc );
+	this.ctxSrc = null;
+	if (this.div)
+		this.div.parentNode.removeChild( this.div );
+	
+	this.list = null;
 
 	if (this.renderer)
 		this.renderer.destroy();

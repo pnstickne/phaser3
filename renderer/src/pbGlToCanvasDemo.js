@@ -86,7 +86,18 @@ pbGlToCanvasDemo.prototype.destroy = function()
 {
 	console.log("pbGlToCanvasDemo.destroy");
 
-	// TODO: destroy div, canvases, and clean up afterwards
+	// destroy div, canvases, and clean up afterwards
+	this.canvasSrc.parentNode.removeChild( this.canvasSrc );
+	this.ctxSrc = null;
+	var c = this.list.length;
+	while(c--)
+	{
+		var obj = this.list[c];
+		obj.canvasDst.parentNode.removeChild( obj.canvasDst );
+	}
+	this.list = null;
+	if (this.div)
+		this.div.parentNode.removeChild( this.div );
 
 	if (this.renderer)
 		this.renderer.destroy();
