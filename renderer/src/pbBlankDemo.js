@@ -43,10 +43,12 @@ pbBlankDemo.prototype.destroy = function()
 {
 	console.log("pbBlankDemo.destroy");
 
-	this.surface.destroy();
+	if (this.surface)
+		this.surface.destroy();
 	this.surface = null;
 
-	this.renderer.destroy();
+	if (this.renderer)
+		this.renderer.destroy();
 	this.renderer = null;
 };
 
