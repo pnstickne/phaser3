@@ -175,6 +175,8 @@ function pbWebGl()
 	this.currentTexture = null;
 	this.positionBuffer = null;
 	this.onGPU = [];
+	this.canReadTexture = false;
+	this.fb = null;
 	// pre-allocate the this.drawingArray to avoid memory errors from fragmentation (seen on Chrome (debug Version 39.0.2171.71 m) after running 75000 sprite demo for ~15 seconds)
 	this.drawingArray = new Float32Array( MAX_SPRITES * (44 + 22) - 22 );
 }
@@ -1378,46 +1380,55 @@ pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transfor
 };
 
 
-// from http://www.html5rocks.com/en/tutorials/webgl/webgl_fundamentals/
-// and https://html.spec.whatwg.org/multipage/scripting.html#pixel-manipulation
-pbWebGl.prototype.getTextureToCanvas = function(_canvas)
+pbWebGl.prototype.prepareTextureForCanvas = function()
 {
-	// TODO: maybe wrap the pbRenderer webGl surface with a frame buffer to save this overhead... check if that will be flexible enough and doesn't impact speed
-	
 	// make a framebuffer
-	var fb = gl.createFramebuffer();
+	this.fb = gl.createFramebuffer();
 
 	// make this the current frame buffer
-	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
 
 	// attach the texture to the framebuffer.
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.currentTexture, 0);
 
 	// check if you can read from this type of texture.
-	var canRead = (gl.checkFramebufferStatus() == gl.FRAMEBUFFER_COMPLETE);
+	this.canReadTexture = (gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE);
+};
 
-	// Unbind the framebuffer
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-	if (canRead)
+// from http://www.html5rocks.com/en/tutorials/webgl/webgl_fundamentals/
+// and https://html.spec.whatwg.org/multipage/scripting.html#pixel-manipulation
+// and https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas
+pbWebGl.prototype.getTextureToCanvas = function(_ctx)
+{
+	if (this.canReadTexture && this.fb)
 	{
-	   // bind the framebuffer
-	   gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+		// make this the current frame buffer
+		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
 
-	   // read the pixels
-	   // TODO: check if readPixels can use the Uint8ClampedArray (the spec requests a Uint8Array, but ImageData needs the clamped version...)
-	   var buffer = new Uint8ClampedArray(_canvas.width * 4 * _canvas.height);
-	   gl.readPixels(0, 0, _canvas.width, _canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
+		// attach the texture to the framebuffer again (to update the contents)
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.currentTexture, 0);
 
-	   // transfer the pixel data into an ImageData object
-	   var imageData = new ImageData(buffer, _canvas.width, _canvas.height);
+		// get ImageData surface from the _canvas
+		var canvas = _ctx.canvas;
+		var imageData = _ctx.createImageData(canvas.width, canvas.height);
 
-	   // TODO: add the ImageData to the _canvas
+		// read the texture pixels into a typed array
+		var buf8 = new Uint8Array(imageData.data.length);
+		gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, buf8);
 
+		// copy the typed array data into the ImageData surface
+		var c = imageData.data.length;
+		while(c--)
+			imageData.data[c] = buf8[c];
 
-	   // Unbind the framebuffer
-	   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		// put the ImageData on the _canvas
+		_ctx.putImageData(imageData, 0, 0);
+
+		// unbind the framebuffer
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	}
+
 };
 
 
