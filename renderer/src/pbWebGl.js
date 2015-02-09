@@ -1280,6 +1280,8 @@ pbWebGl.prototype.scissor = function(_x, _y, _width, _height)
 // }
 
 
+// TODO: look into http://www.goocreate.com/learn/procedural-textures/
+
 pbWebGl.prototype.createTextureFromCanvas = function(_canvas)
 {
 //	var ctx = _canvas.getContext('2d');
@@ -1288,8 +1290,6 @@ pbWebGl.prototype.createTextureFromCanvas = function(_canvas)
 
 	var texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    // invert to align coordinate systems
-	//gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
     // clamp to permit NPOT textures, no MIP mapping
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -1300,6 +1300,7 @@ pbWebGl.prototype.createTextureFromCanvas = function(_canvas)
 
 	// activate the texture
     this.currentTexture = texture;
+    this.currentTexture.canvas = _canvas;
     gl.activeTexture( gl.TEXTURE0 );
 
    	// TODO: the rest of this stuff doesn't belong in this function...
@@ -1315,12 +1316,13 @@ pbWebGl.prototype.createTextureFromCanvas = function(_canvas)
 
 
 
-pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _transform, _z )
+pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transform, _z )
 {
 	if ( this.currentProgram !== this.imageShaderProgram )
 		this.currentProgram = this.setImageProgram();
 
-	this.createTextureFromCanvas(_canvas);
+	if ( _dirty || !this.currentTexture || this.currentTexture.canvas !== _canvas )
+		this.createTextureFromCanvas(_canvas);
 
 	// split off a small part of the big buffer, for a single display object
 	var sa = this.drawingArray.subarray(0, 16);
@@ -1374,6 +1376,51 @@ pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _transform, _z )
     // four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 };
+
+
+// from http://www.html5rocks.com/en/tutorials/webgl/webgl_fundamentals/
+// and https://html.spec.whatwg.org/multipage/scripting.html#pixel-manipulation
+pbWebGl.prototype.getTextureToCanvas = function(_canvas)
+{
+	// TODO: maybe wrap the pbRenderer webGl surface with a frame buffer to save this overhead... check if that will be flexible enough and doesn't impact speed
+	
+	// make a framebuffer
+	var fb = gl.createFramebuffer();
+
+	// make this the current frame buffer
+	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+
+	// attach the texture to the framebuffer.
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+	// check if you can read from this type of texture.
+	var canRead = (gl.checkFramebufferStatus() == gl.FRAMEBUFFER_COMPLETE);
+
+	// Unbind the framebuffer
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+	if (canRead)
+	{
+	   // bind the framebuffer
+	   gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+
+	   // read the pixels
+	   // TODO: check if readPixels can use the Uint8ClampedArray (the spec requests a Uint8Array, but ImageData needs the clamped version...)
+	   var buffer = new Uint8ClampedArray(_canvas.width * 4 * _canvas.height);
+	   gl.readPixels(0, 0, _canvas.width, _canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
+
+	   // transfer the pixel data into an ImageData object
+	   var imageData = new ImageData(buffer, _canvas.width, _canvas.height);
+
+	   // TODO: add the ImageData to the _canvas
+
+
+	   // Unbind the framebuffer
+	   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	}
+};
+
+
 
 
 // check if value is a power of two 

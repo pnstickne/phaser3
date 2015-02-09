@@ -14,6 +14,7 @@ function pbCanvasToGlDemo( docId )
 	var _this = this;
 	this.docId = docId;
 	this.count = 0;
+	this.value = undefined;
 
 	this.renderer = new pbRenderer( this.docId, this.create, this.update, this );
 
@@ -73,12 +74,15 @@ pbCanvasToGlDemo.prototype.update = function()
 {
 	// update the counter
 	this.count++;
+	var last = this.value;
+	this.value = Math.floor(this.count / 20);
 
 	// redraw the canvas text
 	this.ctx.fillStyle = "rgb(" + (this.count & 0xff) + "," + ((this.count >> 4) & 0xff) + ", 0)";
 	this.ctx.fillRect(0, 0, 300, 100);
+
 	this.ctx.fillStyle = "#ffffff";
-	this.ctx.fillText(Math.floor(this.count / 10), 150, 90, 300);
+	this.ctx.fillText(this.value, 150, 90, 300);
 
 	// move the webGl texture around
 	this.angleInRadians += 0.01;
@@ -87,7 +91,7 @@ pbCanvasToGlDemo.prototype.update = function()
 	this.scaleY = this.scaleX = (this.count / 500) % 2;
 	pbMatrix3.setTransform(this.transform, this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY);
 
-	// draw the canvas texture into a transformed webGl texture
-	this.renderer.graphics.drawCanvasWithTransform(this.canvas, this.transform, 1.0);
+	// draw the canvas texture into a transformed webGl texture, it will be marked as 'dirty' only when the text changes (not the background fill colour)
+	this.renderer.graphics.drawCanvasWithTransform(this.canvas, (last !== this.value), this.transform, 1.0);
 };
 
