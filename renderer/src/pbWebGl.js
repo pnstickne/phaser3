@@ -1279,3 +1279,117 @@ pbWebGl.prototype.scissor = function(_x, _y, _width, _height)
 // 	gl.clear(gl.DEPTH_BUFFER_BIT);
 // }
 
+
+pbWebGl.prototype.createTextureFromCanvas = function(_canvas)
+{
+//	var ctx = _canvas.getContext('2d');
+//	var p2width = nextHighestPowerOfTwo(_canvas.width);
+//	var p2height = nextHighestPowerOfTwo(_canvas.height);
+
+	var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    // invert to align coordinate systems
+	//gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+    // clamp to permit NPOT textures, no MIP mapping
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _canvas);
+
+	// activate the texture
+    this.currentTexture = texture;
+    gl.activeTexture( gl.TEXTURE0 );
+
+   	// TODO: the rest of this stuff doesn't belong in this function...
+   	gl.uniform1i( this.currentProgram.samplerUniform, 0 );
+
+	// create a buffer to transfer all the vertex position data through
+	this.positionBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+
+	// set up the projection matrix in the vertex shader
+	gl.uniformMatrix3fv( this.currentProgram.projectionUniform, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+};
+
+
+
+pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _transform, _z )
+{
+	if ( this.currentProgram !== this.imageShaderProgram )
+		this.currentProgram = this.setImageProgram();
+
+	this.createTextureFromCanvas(_canvas);
+
+	// split off a small part of the big buffer, for a single display object
+	var sa = this.drawingArray.subarray(0, 16);
+
+	// source rectangle
+	var rect = new pbRectangle(0, 0, 1, 1);
+
+	// half width, half height (of source frame)
+	var wide, high;
+	wide = _canvas.width;
+	high = _canvas.height;
+
+	var anchorX = 0.5;
+	var anchorY = 0.5;
+
+	// screen destination position
+	// l, b,		0,1
+	// l, t,		4,5
+	// r, b,		8,9
+	// r, t,		12,13
+	var l = -wide * anchorX;
+	var r = wide + l;
+	var t = -high * anchorY;
+	var b = high + t;
+	sa[ 0 ] = sa[ 4 ] = l;
+	sa[ 1 ] = sa[ 9 ] = b;
+	sa[ 8 ] = sa[ 12] = r;
+	sa[ 5 ] = sa[ 13] = t;
+
+	// texture source position
+	// x, b,		2,3
+	// x, y,		6,7
+	// r, b,		10,11
+	// r, y,		14,15
+	sa[ 2 ] = sa[ 6 ] = rect.x;
+	sa[ 3 ] = sa[ 11] = rect.y + rect.height;
+	sa[ 10] = sa[ 14] = rect.x + rect.width;
+	sa[ 7 ] = sa[ 15] = rect.y;
+
+    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
+
+	// send the transform matrix to the vector shader
+	gl.uniformMatrix3fv( this.currentProgram.matrixUniform, false, _transform );
+
+	// set the depth value
+   	gl.uniform1f( this.imageShaderProgram.zUniform, _z );
+
+	// point the position attribute at the last bound buffer
+    gl.vertexAttribPointer( this.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+
+    // four vertices per quad, one quad
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+};
+
+
+// check if value is a power of two 
+function isPowerOfTwo(x)
+{
+    return ((x & (x - 1)) === 0);
+}
+
+ 
+// return the next highest power of two from this value (keep the value if it is already a power of two)
+function nextHighestPowerOfTwo(x)
+{
+    --x;
+    for (var i = 1; i < 32; i <<= 1)
+    {
+        x = x | x >> i;
+    }
+    return x + 1;
+}
