@@ -1,6 +1,6 @@
 /**
  *
- * Demo showing use of the canvas to webgl API functions.
+ * Demo testing performance of the canvas to webgl transfer API functions.
  *
  */
 
@@ -15,6 +15,10 @@ function pbCanvasToGlDemo( docId )
 	this.docId = docId;
 	this.count = 0;
 	this.value = undefined;
+	this.list = null;
+
+	this.canvasSrc = null;
+	this.canvasDst = null;
 
 	this.renderer = new pbRenderer( this.docId, this.create, this.update, this );
 
@@ -31,42 +35,50 @@ pbCanvasToGlDemo.prototype.create = function()
 	this.div.id = 'canvasDiv';
 	document.body.appendChild(this.div);
 
+	this.makeCanvas(300, 100);
+
+	// initialise the demo variables
+	this.list = [];
+	for(var i = 0; i < 10; i++)
+	{
+		var obj =
+		{
+			x : Math.random() * this.renderer.width,
+			y : Math.random() * this.renderer.height,
+			vx : (Math.random() > 0.5 ? 1 : -1),
+			vy : (Math.random() > 0.5 ? 1 : -1),
+			angleInRadians : Math.random() * Math.PI * 2.0,
+			scale : Math.random() + 0.1,
+			scaleDir : (Math.random() > 0.5 ? 0.01 : -0.01)
+		};
+
+		obj.transform = pbMatrix3.makeTransform(obj.x, obj.y, obj.angleInRadians, obj.scale, obj.scale);
+		this.list.push(obj);
+	}
+
+};
+
+
+pbCanvasToGlDemo.prototype.makeCanvas = function(_wide, _high)
+{
+	// kill the old ones (if there are any yet)
+	if (this.canvasSrc)
+		this.canvasSrc.parentNode.removeChild( this.canvasSrc );
+
 	// make the source canvas with an initial text element
 	// this canvas will be copied to a webGl texture
 	this.canvasSrc = document.createElement('canvas');
-	this.canvasSrc.width = 300;
-	this.canvasSrc.height = 100;
-	this.canvasSrc.style.border = "1px solid";
+	this.canvasSrc.width = _wide;
+	this.canvasSrc.height = _high;
 	this.canvasSrc.id = "canvasSrc";
 	this.ctxSrc = this.canvasSrc.getContext("2d");
 	this.ctxSrc.font = "bold 100px Arial";
 	this.ctxSrc.fillStyle = "#ffffff";
-	this.ctxSrc.fillText("-", 150, 90, 300);
+	this.ctxSrc.fillText("-", _wide / 2, _high * 0.9, _wide);
 	this.ctxSrc.textAlign = "center";
 
-	// make the destination canvas that the webGl texture will be copied back to
-	this.canvasDst = document.createElement('canvas');
-	this.canvasDst.width = 300;
-	this.canvasDst.height = 100;
-	this.canvasDst.style.border = "1px solid";
-	this.canvasDst.id = "canvasDst";
-	this.ctxDst = this.canvasDst.getContext("2d");
-	this.ctxDst.fillStyle = "#ffffff";
-	this.ctxDst.fillRect(0, 0, 300, 100);
-
-	// append the canvases to the new div
+	// append the canvas to the new div
 	this.div.appendChild(this.canvasSrc);
-	this.div.appendChild(this.canvasDst);
-
-	// initialise the demo variables
-	this.x = 150;
-	this.y = 50;
-	this.angleInRadians = 0;
-	this.scaleX = 1;
-	this.scaleY = 1;
-
-	// prepare the webGl texture transform matrix
-	this.transform = pbMatrix3.makeTransform(this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY);
 };
 
 
@@ -95,31 +107,34 @@ pbCanvasToGlDemo.prototype.update = function()
 {
 	// update the counter and use it to occasionally change the displayed value
 	this.count++;
-	var last = this.value;
 	this.value = Math.floor(this.count / 60);
 
-	// redraw the source canvas every frame
+	// change the source canvas contents every frame
 	this.ctxSrc.fillStyle = "rgb(" + (this.count & 0xff) + "," + ((this.count >> 4) & 0xff) + ", 0)";
 	this.ctxSrc.fillRect(0, 0, 300, 100);
 	this.ctxSrc.fillStyle = "#ffffff";
 	this.ctxSrc.fillText(this.value, 150, 90, 300);
 
-	// move the webGl texture around
-	this.angleInRadians += 0.01;
-	this.x = this.count % this.renderer.width;
-	this.y = this.count % this.renderer.height;
-	this.scaleY = this.scaleX = (this.count / 500) % 2;
-	pbMatrix3.setTransform(this.transform, this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY);
+	// transfer data to GPU time test loop
+	var c = this.list.length;
+	while(c--)
+	{
+		var obj = this.list[c];
 
-	// draw the canvas texture into a transformed webGl texture
-	// it will be marked as 'dirty' only when the displayed value changes
-	this.renderer.graphics.drawCanvasWithTransform(this.canvasSrc, (last !== this.value), this.transform, 1.0);
+		// move the webGl texture around
+		obj.angleInRadians += 0.01;
+		obj.x += obj.vx;
+		if (obj.x <= 0 || obj.x >= this.renderer.width) obj.vx = -obj.vx;
+		obj.y += obj.vy;
+		if (obj.y <= 0 || obj.y >= this.renderer.height) obj.vy= -obj.vy;
+		obj.scale += obj.scaleDir;
+		if (obj.scale < 0.1 || obj.scale >= 2.0) obj.scaleDir = -obj.scaleDir;
 
-	// prepare the texture to be grabbed by attaching it to a frame buffer (once only)
-	if (!this.renderer.graphics.canReadTexture)
-		this.renderer.graphics.prepareTextureForCanvas();
+		// recalculate the transform matrix
+		pbMatrix3.setTransform(obj.transform, obj.x, obj.y, obj.angleInRadians, obj.scale, obj.scale);
 
-	// grab the webGl.currentTexture and draw it into the destination canvas as ImageData
-	this.renderer.graphics.getTextureToCanvas(this.ctxDst);
+		// draw the canvas texture into this transformed webGl texture every frame
+		this.renderer.graphics.drawCanvasWithTransform(this.canvasSrc, true, obj.transform, 1.0);
+	}
 };
 
