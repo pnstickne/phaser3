@@ -6,7 +6,6 @@
 
 
 var canvas = null;
-var ctx = null;
 var webGl = null;
 var rootLayer = null;
 
@@ -25,7 +24,6 @@ function pbRenderer(_docId, _bootCallback, _updateCallback, _context)
 
 	// globals
  	canvas = null;
- 	ctx = null;
  	webGl = null;
  	rootLayer = null;
 
@@ -75,7 +73,6 @@ pbRenderer.prototype.destroy = function()
 	this.context = null;
 
 	canvas = null;
-	ctx = null;
 	webGl = null;
 };
 
@@ -133,25 +130,22 @@ pbRenderer.prototype.createGraphics = function(_preferredRenderer)
 
 	this.width = canvas.width;
 	this.height = canvas.height;
+	this.graphics = null;
 	
 	if (_preferredRenderer === undefined || _preferredRenderer == 'webgl')
 	{
 		// try to get a webGL context
 		this.graphics = new pbWebGl();
-		ctx = this.graphics.initGL(canvas);
-	}
-	else
-	{
-		ctx = null;
+		if (!this.graphics.create(canvas))
+		{
+			this.graphics.destroy();
+			this.graphics = null;
+		}
 	}
 
-	if (ctx)
+	if (!this.graphics)
 	{
-		// webGl available and active
-	}
-	else
-	{
-		// revert to canvas '2d' if webGl is not available or it was requested in _preferredRenderer
+		// revert to canvas '2d' if webGl is not available or 'canvas' was requested in _preferredRenderer
 	 	ctx = canvas.getContext("2d");
 		this.graphics = new pbCanvas();
 	}

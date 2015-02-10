@@ -21,7 +21,7 @@ function pbBaseGraphics()
 }
 
 
-pbBaseGraphics.prototype.create = function(_docId, _preferredRenderer)
+pbBaseGraphics.prototype.create = function(_canvas)
 {
 	console.log( "pbBaseGraphics.create" );
 };
@@ -29,6 +29,7 @@ pbBaseGraphics.prototype.create = function(_docId, _preferredRenderer)
 
 pbBaseGraphics.prototype.destroy = function()
 {
+	console.log( "pbBaseGraphics.destroy" );
 	this.reset();
 };
 
