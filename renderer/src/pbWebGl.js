@@ -166,7 +166,7 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 	gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 2, gl.FLOAT, gl.FALSE, 0, 0 );
 
 	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgColorBuffer );
-	gl.vertexAttribPointer( this.shaders.currentProgram.color, 4, gl.FLOAT, gl.FALSE, 0, 0 );
+	gl.vertexAttribPointer( this.shaders.currentProgram.aColor, 4, gl.FLOAT, gl.FALSE, 0, 0 );
 
 	gl.drawArrays( gl.TRIANGLE_STRIP, 0, this.bgVertexBuffer.numPoints );
 };
@@ -322,7 +322,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
     gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
 
 	// send the transform matrix to the vector shader
-	gl.uniformMatrix3fv( this.shaders.currentProgram.matrixUniform, false, _transform );
+	gl.uniformMatrix3fv( this.shaders.currentProgram.uModelMatrix, false, _transform );
 
 	// set the depth value
    	gl.uniform1f( this.shaders.currentProgram.uZ, _z );
@@ -391,7 +391,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 	// matrix = pbMatrix3.fastMultiply(matrix, translationMatrix);
 
 	// send the matrix to the vector shader
-	gl.uniformMatrix3fv( this.shaders.currentProgram.matrixUniform, false, matrix );
+	gl.uniformMatrix3fv( this.shaders.currentProgram.uModelMatrix, false, matrix );
 
 	// set the depth value
    	gl.uniform1f( this.shaders.currentProgram.uZ, _z );
@@ -938,7 +938,7 @@ pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transfor
     gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
 
 	// send the transform matrix to the vector shader
-	gl.uniformMatrix3fv( this.shaders.currentProgram.matrixUniform, false, _transform );
+	gl.uniformMatrix3fv( this.shaders.currentProgram.uModelMatrix, false, _transform );
 
 	// set the depth value
    	gl.uniform1f( this.shaders.currentProgram.uZ, _z );
