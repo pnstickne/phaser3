@@ -889,13 +889,19 @@ pbWebGl.prototype.createTextureFromCanvas = function(_canvas)
 };
 
 
-
 pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transform, _z )
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
 
 	if ( _dirty || !this.currentTexture || this.currentTexture.canvas !== _canvas )
+	{
+		// create a webGl texture from the canvas
 		this.createTextureFromCanvas(_canvas);
+	    // reset the texture sampler uniform in the fragment shader
+	   	gl.uniform1i( this.shaders.currentProgram.uImageSampler, 0 );
+		// prepare the projection matrix in the vertex shader
+		gl.uniformMatrix3fv( this.shaders.currentProgram.uProjectionMatrix, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+	}
 
 	// split off a small part of the big buffer, for a single display object
 	var sa = this.drawingArray.subarray(0, 16);
