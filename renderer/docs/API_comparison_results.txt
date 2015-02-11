@@ -47,4 +47,5 @@ LibGDX:  https://github.com/libgdx/libgdx/wiki/Running-Demos
 
 PlayN:  TODO: look into this library, only read about it in passing today...
 
+Turbulenz:  TODO: check out the 2D elements of this API
 
