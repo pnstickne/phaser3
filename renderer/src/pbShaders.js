@@ -228,6 +228,8 @@ pbShaders.prototype.create = function()
 
 pbShaders.prototype.destroy = function()
 {
+	if (this.currentProgram)
+		this.clearProgram();
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
 	this.blitShaderProgram = null;
@@ -362,183 +364,25 @@ pbShaders.prototype.setProgram = function(_program)
 
 
 /**
+ * 
  * http://www.mjbshaw.com/2013/03/webgl-fixing-invalidoperation.html
  *
- * TODO: I'm really not sure if it's relevant as I'm not hot-swapping shaders yet...
  */
 pbShaders.prototype.clearProgram = function()
 {
-	switch(this.currentProgram)
+	// break links to all attributes and disable them
+	if (this.currentProgram.attributes)
 	{
-		case this.graphicsShaderProgram:
-			this.clearGraphicsProgram();
-			break;
-		case this.imageShaderProgram:
-			this.clearImageProgram();
-			break;
-		case this.blitShaderProgram:
-			this.clearBlitProgram();
-			break;
-		case this.batchImageShaderProgram:
-			this.clearBatchImageProgram();
-			break;
-		case this.rawBatchImageShaderProgram:
-			this.clearRawBatchImageProgram();
-			break;
+		for(var a in this.currentProgram.attributes)
+		{
+			if (this.currentProgram.attributes.hasOwnProperty(a))
+			{
+				var attribute = this.currentProgram.attributes[a];
+				gl.disableVertexAttribArray( this.currentProgram[attribute] );
+			}
+		}
 	}
+
 	this.currentProgram = null;
-};
-
-
-pbShaders.prototype.clearGraphicsProgram = function()
-{
-	//console.log( "pbShaders.clearGraphicsProgram" );
-
-	var program = this.graphicsShaderProgram;
-
-	program.aPosition = gl.getAttribLocation( program, "aPosition" );
-	gl.disableVertexAttribArray( program.aPosition );
-	program.color = gl.getAttribLocation( program, "color" );
-	gl.disableVertexAttribArray( program.color );
-};
-
-
-/*
-pbShaders.prototype.setImageProgram = function()
-{
-	// console.log( "pbShaders.setImageProgram" );
-
-	this.clearProgram();
-	
-	var program = this.imageShaderProgram;
-
-	gl.useProgram( program );
-
-	program.aPosition = gl.getAttribLocation( program, "aPosition" );
-	gl.enableVertexAttribArray( program.aPosition );
-
-	program.samplerUniform = gl.getUniformLocation( program, "uImageSampler" );
-	program.matrixUniform = gl.getUniformLocation( program, "uModelMatrix" );
-	program.projectionUniform = gl.getUniformLocation( program, "uProjectionMatrix" );
-	program.uZ = gl.getUniformLocation( program, "uZ" );
-
-	return program;
-};
-*/
-
-pbShaders.prototype.clearImageProgram = function()
-{
-	//console.log( "pbShaders.clearImageProgram" );
-
-	var program = this.imageShaderProgram;
-
-	program.aPosition = gl.getAttribLocation( program, "aPosition" );
-	gl.disableVertexAttribArray( program.aPosition );
-};
-
-/*
-pbShaders.prototype.setBlitProgram = function()
-{
-	this.clearProgram();
-	
-	var program = this.blitShaderProgram;
-
-	gl.useProgram( program );
-
-	program.aPosition = gl.getAttribLocation( program, "aPosition" );
-	gl.enableVertexAttribArray( program.aPosition );
-
-	return program;
-};
-*/
-
-pbShaders.prototype.clearBlitProgram = function()
-{
-	//console.log( "pbShaders.clearBlitProgram" );
-
-	var program = this.blitShaderProgram;
-
-	program.aPosition = gl.getAttribLocation( program, "aPosition" );
-	gl.disableVertexAttribArray( program.aPosition );
-};
-
-/*
-pbShaders.prototype.setBatchImageProgram = function()
-{
-	// console.log( "pbShaders.setBatchImageProgram" );
-
-	this.clearProgram();
-	
-	var program = this.batchImageShaderProgram;
-
-	gl.useProgram( program );
-
-	program.aPosition = gl.getAttribLocation( program, "aPosition" );
-	gl.enableVertexAttribArray( program.aPosition );
-	program.aTransform = gl.getAttribLocation( program, "aTransform" );
-	gl.enableVertexAttribArray( program.aTransform );
-	program.aTranslate = gl.getAttribLocation( program, "aTranslate" );
-	gl.enableVertexAttribArray( program.aTranslate );
-
-	program.samplerUniform = gl.getUniformLocation( program, "uImageSampler" );
-	program.projectionUniform = gl.getUniformLocation( program, "uProjectionMatrix" );
-
-	return program;
-};
-*/
-
-pbShaders.prototype.clearBatchImageProgram = function()
-{
-	//console.log( "pbShaders.clearBatchImageProgram" );
-
-	var program = this.batchImageShaderProgram;
-
-	program.aPosition = gl.getAttribLocation( program, "aPosition" );
-	gl.disableVertexAttribArray( program.aPosition );
-	program.aTransform = gl.getAttribLocation( program, "aTransform" );
-	gl.disableVertexAttribArray( program.aTransform );
-};
-
-/*
-pbShaders.prototype.setRawBatchImageProgram = function()
-{
-	// console.log( "pbShaders.setRawBatchImageProgram" );
-
-	this.clearProgram();
-	
-	var program = this.rawBatchImageShaderProgram;
-	gl.useProgram( program );
-
-	program.aPosition = gl.getAttribLocation( program, "aPosition" );
-	gl.enableVertexAttribArray( program.aPosition );
-	program.aModelMatrix0 = gl.getAttribLocation( program, "aModelMatrix0" );
-	gl.enableVertexAttribArray( program.aModelMatrix0 );
-	program.aModelMatrix1 = gl.getAttribLocation( program, "aModelMatrix1" );
-	gl.enableVertexAttribArray( program.aModelMatrix1 );
-	program.aModelMatrix2 = gl.getAttribLocation( program, "aModelMatrix2" );
-	gl.enableVertexAttribArray( program.aModelMatrix2 );
-
-	program.samplerUniform = gl.getUniformLocation( program, "uImageSampler" );
-	program.projectionUniform = gl.getUniformLocation( program, "uProjectionMatrix" );
-	program.uZ = gl.getUniformLocation( program, "uZ" );
-
-	return program;
-};
-*/
-
-pbShaders.prototype.clearRawBatchImageProgram = function()
-{
-	//console.log( "pbShaders.clearRawBatchImageProgram" );
-
-	var program = this.rawBatchImageShaderProgram;
-
-	program.aPosition = gl.getAttribLocation( program, "aPosition" );
-	gl.disableVertexAttribArray( program.aPosition );
-	program.aModelMatrix0 = gl.getAttribLocation( program, "aModelMatrix0" );
-	gl.disableVertexAttribArray( program.aModelMatrix0 );
-	program.aModelMatrix1 = gl.getAttribLocation( program, "aModelMatrix1" );
-	gl.disableVertexAttribArray( program.aModelMatrix1 );
-	program.aModelMatrix2 = gl.getAttribLocation( program, "aModelMatrix2" );
-	gl.disableVertexAttribArray( program.aModelMatrix2 );
 };
 
