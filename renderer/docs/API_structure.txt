@@ -15,7 +15,7 @@ pbBaseGraphics - base class (should not be directly instanciated) for all graphi
 
 pbWebGl - extends pbBaseGraphics, deals with all webGl drawing
 
-pbShaders - helper class for pbWebGl, handles shader programs
+pbWebGlShaders - helper class for pbWebGl, handles shader programs
 
 pbCanvas - extends pbBaseGraphics, will deal with all Canvas drawing
 

@@ -19,19 +19,17 @@ function pbWebGl()
 	this.bgVertexBuffer = null;
 	this.bgColorBuffer = null;
 	this.positionBuffer = null;
-	this.onGPU = [];
-	this.canReadTexture = false;
-	this.fb = null;
-	this.currentTexture = null;
 	// pre-allocate the this.drawingArray to avoid memory errors from fragmentation (seen on Chrome (debug Version 39.0.2171.71 m) after running 75000 sprite demo for ~15 seconds)
 	this.drawingArray = new Float32Array( MAX_SPRITES * (44 + 22) - 22 );
 }
+
 
 
 // pbWebGl extends from the pbBaseGraphics prototype chain
 pbWebGl.prototype = new pbBaseGraphics();
 // create property to store the class' parent
 pbWebGl.prototype.__super__ = pbBaseGraphics;		// http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
+
 
 
 pbWebGl.prototype.create = function( _canvas )
@@ -61,8 +59,12 @@ pbWebGl.prototype.create = function( _canvas )
 			return false;
 		}
 
+		// create the texture handler
+		this.textures = new pbWebGlTextures();
+		this.textures.create();
+
 		// create the shader handler
-		this.shaders = new pbShaders();
+		this.shaders = new pbWebGlShaders();
 		this.shaders.create();
 
 		// enable the depth buffer so we can order our sprites
@@ -95,12 +97,14 @@ pbWebGl.prototype.destroy = function()
 	if (this.shaders)
 		this.shaders.destroy();
 	this.shaders = null;
+
+	if (this.textures)
+		this.textures.destroy();
+	this.textures = null;
+
 	this.bgVertexBuffer = null;
 	this.bgColorBuffer = null;
-	this.currentTexture = null;
 	this.positionBuffer = null;
-	this.onGPU = null;
-	this.fb = null;
 	this.drawingArray = null;
 	gl = null;
 };
@@ -172,81 +176,21 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 };
 
 
-pbWebGl.prototype.handleTexture = function( _image, _tiling, _npot )
+pbWebGl.prototype.prepareGl = function()
 {
-	// this _image is already the selected texture
-	if (this.currentTexture && this.currentTexture.image === _image)
-		return;
-
-	var texture = null;
-
-	var index = this.onGPU.indexOf(_image);
-    if (index != -1)
-    {
-		// the _image is already on the GPU
-		texture = this.onGPU[index].gpuTexture;
-		// bind it to use it...
-	    gl.bindTexture(gl.TEXTURE_2D, texture);
-    }
-    else
-    {
-    	// upload it to the GPU
-	    var maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-	    if (_image.width > maxSize || _image.height > maxSize)
-	    {
-		    alert("ERROR: Texture size not supported by this video card!", _image.width, _image.height, " > ", maxSize);
-		    return;
-	    }
-
-		console.log( "pbWebGl.handleTexture uploading new texture : ", _image.width, "x", _image.height );
-
-	    // link the texture object to the image and vice-versa
-		texture = gl.createTexture();
-		texture.image = _image;
-		_image.gpuTexture = texture;
-
-	    gl.bindTexture(gl.TEXTURE_2D, texture);
-	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _image);
-	    if (_npot)
-	    {
-		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	    }
-	    else if (_tiling)
-	    {
-		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-		    gl.generateMipmap(gl.TEXTURE_2D);
-	    }
-    	else
-    	{
-		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-		    gl.generateMipmap(gl.TEXTURE_2D);
-    	}
-
-	    // remember that this texture has been uploaded
-	    this.onGPU.push(_image);
-	}
-
-	// activate the texture
-    this.currentTexture = texture;
-    gl.activeTexture( gl.TEXTURE0 );
-
-   	// TODO: the rest of this stuff doesn't belong in this function...
-   	gl.uniform1i( this.shaders.currentProgram.samplerUniform, 0 );
-
-	// create a buffer to transfer all the vertex position data through
+	// create a GL buffer to transfer all the vertex position data through
 	this.positionBuffer = gl.createBuffer();
+
+	// bind the buffer to the RAM resident positionBuffer
     gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
 
-	// set up the projection matrix in the vertex shader
-	gl.uniformMatrix3fv( this.shaders.currentProgram.uProjectionMatrix, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+	// reset the fragment shader sampler
+	if (this.shaders.currentProgram.samplerUniform)
+   		gl.uniform1i( this.shaders.currentProgram.samplerUniform, 0 );
+
+	// set up a projection matrix in the vertex shader
+	if (this.shaders.currentProgram.uProjectionMatrix)
+		gl.uniformMatrix3fv( this.shaders.currentProgram.uProjectionMatrix, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
 };
 
 
@@ -255,7 +199,8 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
 
 	var surface = _image.surface;
-	this.handleTexture( surface.image, _image.tiling, surface.isNPOT );
+	if (this.textures.prepare( surface.image, _image.tiling, surface.isNPOT ))
+		this.prepareGl();
 
 	// split off a small part of the big buffer, for a single display object
 	var sa = this.drawingArray.subarray(0, 16);
@@ -339,7 +284,8 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
 
-	this.handleTexture( _surface.image, null, _surface.isNPOT );
+	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+		this.prepareGl();
 
 	// split off a small part of the big buffer, for a single display object
 	var sa = this.drawingArray.subarray(0, 20);
@@ -410,7 +356,8 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface 
 {
 	this.shaders.setProgram(this.shaders.blitShaderProgram);
 
-	this.handleTexture( _surface.image, null, _surface.isNPOT );
+	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+		this.prepareGl();
 
 	var screenWide2 = gl.drawingBufferWidth * 0.5;
 	var screenHigh2 = gl.drawingBufferHeight * 0.5;
@@ -485,7 +432,8 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 {
 	this.shaders.setProgram(this.shaders.blitShaderProgram);
 
-	this.handleTexture( _surface.image, null, _surface.isNPOT );
+	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+		this.prepareGl();
 
 	var screenWide2 = gl.drawingBufferWidth * 0.5;
 	var screenHigh2 = gl.drawingBufferHeight * 0.5;
@@ -561,7 +509,8 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 {
 	this.shaders.setProgram(this.shaders.batchImageShaderProgram);
 
-	this.handleTexture( _surface.image, null, _surface.isNPOT );
+	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+		this.prepareGl();
 
 	// half width, half height (of source frame)
 	var wide = _surface.cellWide * 0.5;
@@ -695,7 +644,8 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 
 	this.shaders.setProgram(this.shaders.rawBatchImageShaderProgram);
 
-	this.handleTexture( surface.image, _list[0].image.tiling, surface.isNPOT );
+	if (this.textures.prepare( surface.image, _list[0].image.tiling, surface.isNPOT ))
+		this.prepareGl();
 
 	// half width, half height (of source frame)
 	var wide = surface.cellWide;
@@ -834,7 +784,7 @@ pbWebGl.prototype.reset = function()
     gl.bindBuffer( gl.ARRAY_BUFFER, null );
    	gl.bindTexture( gl.TEXTURE_2D, null );
    	this.shaders.clearProgram();
-	this.currentTexture = null;
+	this.textures.currentTexture = null;
 };
 
 
@@ -860,43 +810,14 @@ pbWebGl.prototype.scissor = function(_x, _y, _width, _height)
 // }
 
 
-// TODO: look into http://www.goocreate.com/learn/procedural-textures/
-
-pbWebGl.prototype.createTextureFromCanvas = function(_canvas)
-{
-//	var ctx = _canvas.getContext('2d');
-//	var p2width = nextHighestPowerOfTwo(_canvas.width);
-//	var p2height = nextHighestPowerOfTwo(_canvas.height);
-
-	var texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-
-    // clamp to permit NPOT textures, no MIP mapping
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _canvas);
-
-	// activate the texture
-    this.currentTexture = texture;
-    this.currentTexture.canvas = _canvas;
-    gl.activeTexture( gl.TEXTURE0 );
-
-	// create a buffer to transfer all the vertex position data through
-	this.positionBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
-};
-
-
 pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transform, _z )
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
 
-	if ( _dirty || !this.currentTexture || this.currentTexture.canvas !== _canvas )
+	if ( _dirty || !this.textures.currentTexture || this.textures.currentTexture.canvas !== _canvas )
 	{
 		// create a webGl texture from the canvas
-		this.createTextureFromCanvas(_canvas);
+		this.textures.createTextureFromCanvas(_canvas);
 	    // reset the texture sampler uniform in the fragment shader
 	   	gl.uniform1i( this.shaders.currentProgram.uImageSampler, 0 );
 		// prepare the projection matrix in the vertex shader
@@ -954,58 +875,6 @@ pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transfor
 
     // four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-};
-
-
-pbWebGl.prototype.prepareTextureForCanvas = function()
-{
-	// make a framebuffer
-	this.fb = gl.createFramebuffer();
-
-	// make this the current frame buffer
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
-
-	// attach the texture to the framebuffer.
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.currentTexture, 0);
-
-	// check if you can read from this type of texture.
-	this.canReadTexture = (gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE);
-};
-
-
-// from http://www.html5rocks.com/en/tutorials/webgl/webgl_fundamentals/
-// and https://html.spec.whatwg.org/multipage/scripting.html#pixel-manipulation
-// and https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas
-pbWebGl.prototype.getTextureToCanvas = function(_ctx)
-{
-	if (this.canReadTexture && this.fb)
-	{
-		// make this the current frame buffer
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
-
-		// attach the texture to the framebuffer again (to update the contents)
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.currentTexture, 0);
-
-		// get ImageData surface from the _canvas
-		var canvas = _ctx.canvas;
-		var imageData = _ctx.createImageData(canvas.width, canvas.height);
-
-		// read the texture pixels into a typed array
-		var buf8 = new Uint8Array(imageData.data.length);
-		gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, buf8);
-
-		// copy the typed array data into the ImageData surface
-		var c = imageData.data.length;
-		while(c--)
-			imageData.data[c] = buf8[c];
-
-		// put the ImageData on the _canvas
-		_ctx.putImageData(imageData, 0, 0);
-
-		// unbind the framebuffer
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	}
-
 };
 
 

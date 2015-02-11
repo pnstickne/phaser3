@@ -132,12 +132,12 @@ pbGlToCanvasDemo.prototype.update = function()
 	this.renderer.graphics.drawCanvasWithTransform(this.canvasSrc, (last !== this.value), this.transform, 1.0);
 
 	// prepare the texture to be grabbed by attaching it to a frame buffer (once only)
-	if (!this.renderer.graphics.canReadTexture)
-		this.renderer.graphics.prepareTextureForCanvas();
+	if (!this.renderer.graphics.textures.canReadTexture)
+		this.renderer.graphics.textures.prepareTextureForCanvas();
 
 	var c = this.list.length;
 	while(c--)
 		// grab the webGl.currentTexture and draw it into the destination canvas as ImageData
-		this.renderer.graphics.getTextureToCanvas(this.list[c].ctxDst);
+		this.renderer.graphics.textures.getTextureToCanvas(this.list[c].ctxDst);
 };
 

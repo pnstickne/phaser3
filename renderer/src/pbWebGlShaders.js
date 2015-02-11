@@ -1,6 +1,6 @@
 /**
  *
- * pbShaders.js - data and support code for webGl shaders
+ * pbWebGlShaders.js - data and support code for webGl shaders
  * 
  */
 
@@ -40,7 +40,7 @@ var blitShaderSources = {
 
 
 /**
- * imageShaderSources - shaders for image drawing including matrix transforms for scalex,scaley, rotation and translation
+ * imageShaderSources - shaders for single image drawing including matrix transforms for scalex,scaley, rotation and translation
  * @type {Array}
  */
 var imageShaderSources = {
@@ -77,7 +77,7 @@ var imageShaderSources = {
 
 
 /**
- * batchImageShaderSources - shaders for batch image drawing (fixed orientation and scale)
+ * batchImageShaderSources - shaders for batch image drawing
  * calculates the transform matrix from the values provided in the data buffer stream
  * @type {Array}
  */
@@ -198,7 +198,7 @@ var graphicsShaderSources = {
 
 
 
-function pbShaders()
+function pbWebGlShaders()
 {
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
@@ -209,7 +209,7 @@ function pbShaders()
 }
 
 
-pbShaders.prototype.create = function()
+pbWebGlShaders.prototype.create = function()
 {
 	// create the shader programs for each drawing mode
 	
@@ -226,7 +226,7 @@ pbShaders.prototype.create = function()
 };
 
 
-pbShaders.prototype.destroy = function()
+pbWebGlShaders.prototype.destroy = function()
 {
 	this.clearProgram();
 	this.graphicsShaderProgram = null;
@@ -238,7 +238,7 @@ pbShaders.prototype.destroy = function()
 };
 
 
-pbShaders.prototype._getShader = function( sources, typeString )
+pbWebGlShaders.prototype._getShader = function( sources, typeString )
 {
 	// work out which type it is
 	var type;
@@ -277,9 +277,9 @@ pbShaders.prototype._getShader = function( sources, typeString )
 
 
 // based on code in http://learningwebgl.com/
-pbShaders.prototype.createProgram = function( _source )
+pbWebGlShaders.prototype.createProgram = function( _source )
 {
-	console.log( "pbShaders.createProgram" );
+	console.log( "pbWebGlShaders.createProgram" );
 
 	// create a new shader program
 	var program = gl.createProgram();
@@ -297,7 +297,7 @@ pbShaders.prototype.createProgram = function( _source )
 	if ( !gl.getProgramParameter( program, gl.LINK_STATUS ) )
 	{
 		alert( "Could not create shader program: ", gl.getProgramInfoLog( program ) );
-		console.log( "pbShaders.createProgram ERROR: ", gl.getProgramInfoLog( program ), "\n", _source );
+		console.log( "pbWebGlShaders.createProgram ERROR: ", gl.getProgramInfoLog( program ), "\n", _source );
 		gl.deleteProgram( program );
 		program = null;
 		return null;
@@ -312,14 +312,14 @@ pbShaders.prototype.createProgram = function( _source )
 };
 
 
-pbShaders.prototype.setProgram = function(_program)
+pbWebGlShaders.prototype.setProgram = function(_program)
 {
 	if (this.currentProgram != _program)
 	{
 		// remove the old program
 		this.clearProgram();
 		
-		//console.log("pbShaders.setProgram", _program);
+		//console.log("pbWebGlShaders.setProgram", _program);
 		
 		// set the new program
 		this.currentProgram = _program;
@@ -367,7 +367,7 @@ pbShaders.prototype.setProgram = function(_program)
  * http://www.mjbshaw.com/2013/03/webgl-fixing-invalidoperation.html
  *
  */
-pbShaders.prototype.clearProgram = function()
+pbWebGlShaders.prototype.clearProgram = function()
 {
 	if (this.currentProgram)
 	{
