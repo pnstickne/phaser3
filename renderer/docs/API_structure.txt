@@ -1,0 +1,40 @@
+API Structure for Phaser 3 Renderer (pbRender system)
+11/02/2015
+
+This API and document are both "work in progress" and subject to complete and utter change at a moment's notice.
+All labels beginning with 'pb' will be changed before release to the public... it is highly likely the rest of the label may change too.
+
+
+pbRenderer - base class to create an instance of the renderer, has an update loop which handles redirection of the game logic to the demos/games
+
+pbRootTimer - system timer class for the RAF/setTimeout game clock and callback
+
+pbLoader - data loading manager, tell it to load a bunch of stuff then wait for the callback when it's all ready
+
+pbBaseGraphics - base class (should not be directly instanciated) for all graphics drawing modes
+
+pbWebGl - extends pbBaseGraphics, deals with all webGl drawing
+
+pbShaders - helper class for pbWebGl, handles shader programs
+
+pbCanvas - extends pbBaseGraphics, will deal with all Canvas drawing
+
+pbSprite - logical sprite holder with nested children (to build a sprite hierarchy), optional 'image' reference means it can have a visual representation
+
+pbLayer - extends pbSprite, layers are intended for use where graphics need to be separated by 'depth' (z-order).  Automatically groups all sprite children with common textures and batch draws them in those groups.
+
+pbSimpleLayer - extends pbSprite, highly simplified and limited version of a pbLayer, used for huge batches of very simple sprites
+
+pbImage - a pbSurface container with per-instance information attached, especially the current cell-frame number and drawing flags
+
+pbSurface - a raw texture surface as loaded by pbLoader, if the surface is a sprite sheet this is where the offsets are stored
+
+pbText - very limited bitmap text support functions
+
+pbTiles - currently unused
+
+pbMatrix3 - helper: homogenous matrix support functions for 2d coordinates and their transformations (NOTE: uses optimisations based on the homogenous nature of the matrices, not suitable for general matrix functionality)
+
+pbRectangle - helper: a rectangle object
+
+pbDictionary - helper: a dictionary which permits multiple values to be stored per key.  All values can be iterated individually or as a list for each key.  This is used by pbLayer to produce batches of sprites for rapid drawing.

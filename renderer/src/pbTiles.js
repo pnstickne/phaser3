@@ -20,10 +20,8 @@ pbTiles.prototype.create = function(jsonName)
 
 
 /**
- * Parse the JSON descriptor for this style of jigsaw
- * JSON contains the edge description as a list 'pointList' of coordinate/vector pairs which define Hermite curves
- *
- * The created 'description' object contains other information about the jigsaw generally.
+ * Parse the JSON descriptor for the tile data
+ * 
  * @param jsonName - the name of the JSON as loaded into Phaser
  */
 pbTiles.prototype.parseJSON = function(jsonName)
