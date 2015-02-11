@@ -119,6 +119,24 @@ pbWebGl.prototype.preRender = function()
 };
 
 
+pbWebGl.prototype.prepareGl = function()
+{
+	// create a GL buffer to transfer all the vertex position data through
+	this.positionBuffer = gl.createBuffer();
+
+	// bind the buffer to the RAM resident positionBuffer
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+
+	// reset the fragment shader sampler
+	if (this.shaders.currentProgram.samplerUniform)
+   		gl.uniform1i( this.shaders.currentProgram.samplerUniform, 0 );
+
+	// set up a projection matrix in the vertex shader
+	if (this.shaders.currentProgram.uProjectionMatrix)
+		gl.uniformMatrix3fv( this.shaders.currentProgram.uProjectionMatrix, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+};
+
+
 pbWebGl.prototype.fillStyle = function(_fillColor, _lineColor)
 {
 	this.fillColorRGBA = _fillColor;
@@ -132,6 +150,7 @@ pbWebGl.prototype.fillStyle = function(_fillColor, _lineColor)
 };
 
 
+// test for webgl drawing basics
 pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 {
 	// console.log( "pbWebGl.fillRect" );
@@ -176,26 +195,9 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 };
 
 
-pbWebGl.prototype.prepareGl = function()
-{
-	// create a GL buffer to transfer all the vertex position data through
-	this.positionBuffer = gl.createBuffer();
-
-	// bind the buffer to the RAM resident positionBuffer
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
-
-	// reset the fragment shader sampler
-	if (this.shaders.currentProgram.samplerUniform)
-   		gl.uniform1i( this.shaders.currentProgram.samplerUniform, 0 );
-
-	// set up a projection matrix in the vertex shader
-	if (this.shaders.currentProgram.uProjectionMatrix)
-		gl.uniformMatrix3fv( this.shaders.currentProgram.uProjectionMatrix, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
-};
-
-
 // TODO: third wave of pbWebGL optimisation... these drawing functions are tied to the shaders that support them, maybe set a currentProgram attribute callback?  Definitely need to move these out into their own files.
 
+// single image instances from pbLayer
 pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
@@ -282,6 +284,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 };
 
 
+// unused at present.  Draws a single image, sends the transform matrix as a uniform.
 pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle, _scale )
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
@@ -354,6 +357,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 
 // TODO: test variation of blitSimpleDrawImages that uses non-indexed triangle list instead of tri-strips... overhead of degenerate triangles might be greater than the extra vertex data, especially as the JS will become shorter/simpler too!
 
+// batch images, no transforms, pbSimpleLayer, pbBunnyDemo
 pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface )
 {
 	this.shaders.setProgram(this.shaders.blitShaderProgram);
@@ -430,6 +434,8 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface 
 };
 
 
+// pbImage.isParticle through pbLayer, sends four floats per vertex (x,y,u,v) to gl, no sprite sheet, pbBunnyDemoNPOT
+// TODO: don't need u,v stream if it's always 0 & 1 values
 pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 {
 	this.shaders.setProgram(this.shaders.blitShaderProgram);
@@ -507,6 +513,7 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 };
 
 
+// unused.  Sends tx,ty,sin,cos,sx,sy and u,v to gl.
 pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 {
 	this.shaders.setProgram(this.shaders.batchImageShaderProgram);
@@ -639,6 +646,7 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 };
 
 
+// pbLayer for batches.  Sends transform matrix elements to gl.
 // list objects: { image: pbImage, transform: pbMatrix3, z_order: Number }
 pbWebGl.prototype.rawBatchDrawImages = function( _list )
 {
@@ -812,6 +820,7 @@ pbWebGl.prototype.scissor = function(_x, _y, _width, _height)
 // }
 
 
+// pbCanvasToGlDemo and pbGlToCanvasDemo.  Uses imageShaderProgram to draw after transfering the canvas data to gl.
 pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transform, _z )
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
