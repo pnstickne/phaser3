@@ -318,7 +318,7 @@ pbShaders.prototype.setProgram = function(_program)
 		// remove the old program
 		this.clearProgram();
 		
-		console.log("pbShaders.setProgram", _program);
+		//console.log("pbShaders.setProgram", _program);
 		
 		// set the new program
 		this.currentProgram = _program;
@@ -392,7 +392,7 @@ pbShaders.prototype.clearProgram = function()
 
 pbShaders.prototype.clearGraphicsProgram = function()
 {
-	console.log( "pbShaders.clearGraphicsProgram" );
+	//console.log( "pbShaders.clearGraphicsProgram" );
 
 	var program = this.graphicsShaderProgram;
 
@@ -428,7 +428,7 @@ pbShaders.prototype.setImageProgram = function()
 
 pbShaders.prototype.clearImageProgram = function()
 {
-	console.log( "pbShaders.clearImageProgram" );
+	//console.log( "pbShaders.clearImageProgram" );
 
 	var program = this.imageShaderProgram;
 
@@ -454,7 +454,7 @@ pbShaders.prototype.setBlitProgram = function()
 
 pbShaders.prototype.clearBlitProgram = function()
 {
-	console.log( "pbShaders.clearBlitProgram" );
+	//console.log( "pbShaders.clearBlitProgram" );
 
 	var program = this.blitShaderProgram;
 
@@ -489,7 +489,7 @@ pbShaders.prototype.setBatchImageProgram = function()
 
 pbShaders.prototype.clearBatchImageProgram = function()
 {
-	console.log( "pbShaders.clearBatchImageProgram" );
+	//console.log( "pbShaders.clearBatchImageProgram" );
 
 	var program = this.batchImageShaderProgram;
 
@@ -528,7 +528,7 @@ pbShaders.prototype.setRawBatchImageProgram = function()
 
 pbShaders.prototype.clearRawBatchImageProgram = function()
 {
-	console.log( "pbShaders.clearRawBatchImageProgram" );
+	//console.log( "pbShaders.clearRawBatchImageProgram" );
 
 	var program = this.rawBatchImageShaderProgram;
 
