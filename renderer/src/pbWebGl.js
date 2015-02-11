@@ -194,6 +194,8 @@ pbWebGl.prototype.prepareGl = function()
 };
 
 
+// TODO: third wave of pbWebGL optimisation... these drawing functions are tied to the shaders that support them, maybe set a currentProgram attribute callback?  Definitely need to move these out into their own files.
+
 pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram);

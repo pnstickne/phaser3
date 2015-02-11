@@ -11,23 +11,25 @@ pbRootTimer - system timer class for the RAF/setTimeout game clock and callback
 
 pbLoader - data loading manager, tell it to load a bunch of stuff then wait for the callback when it's all ready
 
-pbBaseGraphics - base class (should not be directly instanciated) for all graphics drawing modes
+pbBaseGraphics - base class for all graphics drawing modes eg. webGl, canvas, etc (should not be directly instanciated)
 
 pbWebGl - extends pbBaseGraphics, deals with all webGl drawing
 
 pbWebGlShaders - helper class for pbWebGl, handles shader programs
 
+pbWebGlTextures - helper class for pbWebGl, handles textures on the GPU and getting them up and down from there
+
 pbCanvas - extends pbBaseGraphics, will deal with all Canvas drawing
 
 pbSprite - logical sprite holder with nested children (to build a sprite hierarchy), optional 'image' reference means it can have a visual representation
 
-pbLayer - extends pbSprite, layers are intended for use where graphics need to be separated by 'depth' (z-order).  Automatically groups all sprite children with common textures and batch draws them in those groups.
+pbLayer - extends pbSprite, layers are intended for use where graphics need to be separated by 'depth' (z-order).  Automatically groups all sprite children with common textures and batch draws them in those groups.  Layers may contain sub-layers using a separate hierarchy to the pbSprite extended one.
 
-pbSimpleLayer - extends pbSprite, highly simplified and limited version of a pbLayer, used for huge batches of very simple sprites
+pbSimpleLayer - extends pbSprite, highly simplified and limited version of a pbLayer, used for speed when processing huge batches of very simple sprites eg. particle systems
 
-pbImage - a pbSurface container with per-instance information attached, especially the current cell-frame number and drawing flags
+pbImage - a pbSurface container with per-instance information attached, in particular the current cell-frame number and drawing flags
 
-pbSurface - a raw texture surface as loaded by pbLoader, if the surface is a sprite sheet this is where the offsets are stored
+pbSurface - a raw texture surface as loaded by pbLoader, if the surface is a sprite sheet the sprite offsets are stored here
 
 pbText - very limited bitmap text support functions
 
@@ -37,4 +39,4 @@ pbMatrix3 - helper: homogenous matrix support functions for 2d coordinates and t
 
 pbRectangle - helper: a rectangle object
 
-pbDictionary - helper: a dictionary which permits multiple values to be stored per key.  All values can be iterated individually or as a list for each key.  This is used by pbLayer to produce batches of sprites for rapid drawing.
+pbDictionary - helper: a dictionary which permits multiple values to be stored per key.  All values can be iterated individually or as a list for each key.  This is used by pbLayer to produce batches of sprites for rapid drawing, by grouping them according to their source textures.
