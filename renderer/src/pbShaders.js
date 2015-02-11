@@ -228,8 +228,7 @@ pbShaders.prototype.create = function()
 
 pbShaders.prototype.destroy = function()
 {
-	if (this.currentProgram)
-		this.clearProgram();
+	this.clearProgram();
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
 	this.blitShaderProgram = null;
@@ -370,19 +369,22 @@ pbShaders.prototype.setProgram = function(_program)
  */
 pbShaders.prototype.clearProgram = function()
 {
-	// break links to all attributes and disable them
-	if (this.currentProgram.attributes)
+	if (this.currentProgram)
 	{
-		for(var a in this.currentProgram.attributes)
+		// break links to all attributes and disable them
+		if (this.currentProgram.attributes)
 		{
-			if (this.currentProgram.attributes.hasOwnProperty(a))
+			for(var a in this.currentProgram.attributes)
 			{
-				var attribute = this.currentProgram.attributes[a];
-				gl.disableVertexAttribArray( this.currentProgram[attribute] );
+				if (this.currentProgram.attributes.hasOwnProperty(a))
+				{
+					var attribute = this.currentProgram.attributes[a];
+					gl.disableVertexAttribArray( this.currentProgram[attribute] );
+				}
 			}
 		}
-	}
 
-	this.currentProgram = null;
+		this.currentProgram = null;
+	}
 };
 
