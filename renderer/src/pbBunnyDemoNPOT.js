@@ -64,7 +64,6 @@ pbBunnyDemoNPOT.prototype.destroy = function()
 	if (this.renderer)
 		this.renderer.destroy();
 	this.renderer = null;
-
 };
 
 
@@ -126,7 +125,8 @@ pbBunnyDemoNPOT.prototype.removeSprites = function(num)
 
 pbBunnyDemoNPOT.prototype.update = function()
 {
-	for(var i = 0, l = this.list.length; i < l; i++)
+	var i = this.list.length;
+	while(i--)
 	{
 		var obj = this.list[i];
 		var spr = obj.sprite;

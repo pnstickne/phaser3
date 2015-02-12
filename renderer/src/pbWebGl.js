@@ -514,7 +514,7 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 
 
 // pbImage.isParticle through pbLayer, sends Points to gl, no sprite sheet, pbBunnyDemoNPOT
-pbWebGl.prototype.blitDrawImagesPoint = function( _list, _surface )
+pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 {
 	this.shaders.setProgram(this.shaders.blitShaderPointProgram);
 
@@ -535,15 +535,14 @@ pbWebGl.prototype.blitDrawImagesPoint = function( _list, _surface )
 	}
 
 	// TODO: generate warning if length is capped
-	var len = Math.min(_list.length, MAX_SPRITES);
+	var len = Math.min(_listLength, MAX_SPRITES);
 
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
     var buffer = this.drawingArray.subarray(0, len * 2 * 2);
 	for ( var i = -1, c = 0; ++i < len; c += 2 )
 	{
-		var t = _list[ i ].transform;
-		buffer[ c     ] = t[6];
-		buffer[ c + 1 ] = t[7];
+		buffer[ c     ] = _list[i].x;
+		buffer[ c + 1 ] = _list[i].y;
 	}
 
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );

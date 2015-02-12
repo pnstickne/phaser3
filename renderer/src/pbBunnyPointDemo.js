@@ -44,8 +44,8 @@ pbBunnyPointDemo.prototype.create = function()
 
 	this.list = [];
 
-	this.layer = new pbLayer();
-	this.layer.create(rootLayer, this.renderer, 0, 0, 0, 0, 1.0, 1.0);
+	this.layer = new pbSimpleLayer();
+	this.layer.create(null, this.renderer, 0, 0, null);
 	rootLayer.addChild(this.layer);
 };
 
@@ -55,17 +55,18 @@ pbBunnyPointDemo.prototype.destroy = function()
 	console.log("pbBunnyPointDemo.destroy");
 
 	gui.remove(this.numCtrl);
+	this.list = null;
 
 	this.layer.destroy();
 	this.layer = null;
 
-	this.list = null;
-	this.surface.destroy();
+	if (this.surface)
+		this.surface.destroy();
 	this.surface = null;
 
-	this.renderer.destroy();
+	if (this.renderer)
+		this.renderer.destroy();
 	this.renderer = null;
-
 };
 
 
@@ -87,6 +88,9 @@ pbBunnyPointDemo.prototype.addSprites = function(num)
 		this.surface = new pbSurface();
 		this.surface.create(0, 0, 1, 1, image);
 		this.surface.isNPOT = true;
+		
+		// tell the layer what surface it will draw from
+		this.layer.surface = this.surface;
 	}
 
 	for(var i = 0; i < num; i++)

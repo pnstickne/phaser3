@@ -133,8 +133,7 @@ pbLayer.prototype.draw = function(_list)
 	}
 	else if (obj.image.isParticle)
 	{
-		this.renderer.graphics.blitDrawImagesPoint( _list, obj.image.surface );
-//		this.renderer.graphics.blitDrawImages( _list, obj.image.surface );
+		this.renderer.graphics.blitDrawImages( _list, obj.image.surface );
 	}
 	else
 	{
