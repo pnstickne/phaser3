@@ -5,9 +5,57 @@
  */
 
 
+// TODO: move actual shader code out into new files?  Look into other ways to represent the shader code.
+
 /**
- * blitShaderPointSources - experiment using glPoint to position sprites
- *
+ * blitShaderPointAnimSources - uses glPoint to set position and expands it to provide space for square textures
+ * No rotation, no skew.  Limited scaling.  Animation (specify the top left corner in the source texture).
+ * 
+*/
+var blitShaderPointAnimSources = {
+	fragment:
+		"  precision mediump float;" +
+		"  uniform sampler2D uImageSampler;" +
+		"  varying mediump vec2 texSize;" +
+		"  varying mediump vec2 texCoord;" +
+		"  void main () {" +
+		"    mediump vec2 coord = texCoord + (gl_PointCoord * texSize);" +
+		"    gl_FragColor = texture2D(uImageSampler, coord);" +
+		"  }",
+
+	vertex:
+		"  precision mediump float;" +
+		"  attribute vec2 aPosition;" +
+		"  attribute vec2 aTextureCoord;" +
+		"  uniform float uSize;" +
+		"  uniform vec2 uTextureSize;" +
+		"  uniform mat3 uProjectionMatrix;" +
+		"  varying mediump vec2 texSize;" +
+		"  varying mediump vec2 texCoord;" +
+		"  void main() {" +
+		"    gl_PointSize = uSize;" +
+		"    vec3 pos = vec3(aPosition, 1);" +
+		"    gl_Position = vec4(uProjectionMatrix * pos, 1);" +
+		"    texCoord = aTextureCoord;" +
+		"    texSize = uTextureSize;" +
+		"  }",
+
+	attributes:
+		[ "aPosition", "aTextureCoord" ],
+
+	uniforms:
+		[ "uProjectionMatrix", "uSize", "uTextureSize" ],
+
+	sampler:
+		"uImageSampler"
+};
+
+
+/**
+ * blitShaderPointSources - uses glPoint to set position and expands it to provide space for square textures
+ * No rotation, no animation, no skew.  Limited scaling.
+ * Very fast.
+ * 
  */
 var blitShaderPointSources = {
 	fragment:
@@ -238,16 +286,19 @@ var graphicsShaderSources = {
 
 function pbWebGlShaders()
 {
+	// TODO: change this into a list
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
 	this.blitShaderProgram = null;
 	this.blitShaderPointProgram = null;
+	this.blitShaderPointAnimProgram = null;
 	this.batchImageShaderProgram = null;
 	this.rawBatchImageShaderProgram = null;
 	this.currentProgram = null;
 }
 
 
+// TODO: add a 'register' method which is called to add only the shader programs we're going to actually use for a given demo
 pbWebGlShaders.prototype.create = function()
 {
 	// create the shader programs for each drawing mode
@@ -261,11 +312,13 @@ pbWebGlShaders.prototype.create = function()
 	// batch processing
 	this.blitShaderProgram = this.createProgram( blitShaderSources );
 	this.blitShaderPointProgram = this.createProgram( blitShaderPointSources );
+	this.blitShaderPointAnimProgram = this.createProgram( blitShaderPointAnimSources );
 	this.batchImageShaderProgram = this.createProgram( batchImageShaderSources );
 	this.rawBatchImageShaderProgram = this.createProgram( rawBatchImageShaderSources );
 };
 
 
+// TODO: use the list of registered shaders
 pbWebGlShaders.prototype.destroy = function()
 {
 	this.clearProgram();
@@ -273,6 +326,7 @@ pbWebGlShaders.prototype.destroy = function()
 	this.imageShaderProgram = null;
 	this.blitShaderProgram = null;
 	this.blitShaderPointProgram = null;
+	this.blitShaderPointAnimProgram = null;
 	this.batchImageShaderProgram = null;
 	this.rawBatchImageShaderProgram = null;
 	this.currentProgram = null;
@@ -317,7 +371,7 @@ pbWebGlShaders.prototype._getShader = function( sources, typeString )
 };
 
 
-// based on code in http://learningwebgl.com/
+// based on code from http://learningwebgl.com/
 pbWebGlShaders.prototype.createProgram = function( _source )
 {
 	console.log( "pbWebGlShaders.createProgram" );
