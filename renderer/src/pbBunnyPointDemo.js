@@ -124,7 +124,8 @@ pbBunnyPointDemo.prototype.removeSprites = function(num)
 
 pbBunnyPointDemo.prototype.update = function()
 {
-	for(var i = 0, l = this.list.length; i < l; i++)
+	var i = this.list.length;
+	while(i--)
 	{
 		var obj = this.list[i];
 		var spr = obj.sprite;

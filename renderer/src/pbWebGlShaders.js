@@ -13,26 +13,31 @@ var blitShaderPointSources = {
 	fragment:
 		"  precision mediump float;" +
 		"  uniform sampler2D uImageSampler;" +
+		"  varying mediump vec2 texSize;" +
 		"  void main () {" +
-		"    gl_FragColor = texture2D(uImageSampler, gl_PointCoord);" +
+		"    mediump vec2 coord = gl_PointCoord * texSize;" +
+		"    gl_FragColor = texture2D(uImageSampler, coord);" +
 		"  }",
 
 	vertex:
 		"  precision mediump float;" +
 		"  attribute vec2 aPosition;" +
 		"  uniform float uSize;" +
+		"  uniform vec2 uTextureSize;" +
 		"  uniform mat3 uProjectionMatrix;" +
+		"  varying mediump vec2 texSize;" +
 		"  void main() {" +
 		"    gl_PointSize = uSize;" +
 		"    vec3 pos = vec3(aPosition, 1);" +
 		"    gl_Position = vec4(uProjectionMatrix * pos, 1);" +
+		"    texSize = uTextureSize;" +
 		"  }",
 
 	attributes:
 		[ "aPosition" ],
 
 	uniforms:
-		[ "uProjectionMatrix", "uSize" ],
+		[ "uProjectionMatrix", "uSize", "uTextureSize" ],
 
 	sampler:
 		"uImageSampler"

@@ -521,8 +521,17 @@ pbWebGl.prototype.blitDrawImagesPoint = function( _list, _surface )
 	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
 	{
 		this.prepareGl();
+		var max = Math.max(_surface.cellWide, _surface.cellHigh);
+		// set the size of the 'point' (it's square)
 		if (this.shaders.currentProgram.uSize)
-			gl.uniform1f( this.shaders.currentProgram.uSize, 32 );
+		{
+			gl.uniform1f( this.shaders.currentProgram.uSize, max );
+		}
+		// set the dimensions of the actual texture (can be rectangular)
+		if (this.shaders.currentProgram.uTextureSize)
+		{
+			gl.uniform2f( this.shaders.currentProgram.uTextureSize, max / _surface.cellWide, max / _surface.cellHigh );
+		}
 	}
 
 	// TODO: generate warning if length is capped
