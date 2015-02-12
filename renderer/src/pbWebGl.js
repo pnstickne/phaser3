@@ -207,7 +207,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 		this.prepareGl();
 
 	// split off a small part of the big buffer, for a single display object
-	var sa = this.drawingArray.subarray(0, 16);
+	var buffer = this.drawingArray.subarray(0, 16);
 
 	// set up the animation frame
 	var cell = Math.floor(_image.cellFrame);
@@ -241,10 +241,10 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 		t = -high * _image.anchorY;
 		b = high + t;
 		// object has corner offets (skewing/perspective etc)
-		sa[ 0 ] = cnr.lbx * l; sa[ 1 ] = cnr.lby * b;
-		sa[ 4 ] = cnr.ltx * l; sa[ 5 ] = cnr.lty * t;
-		sa[ 8 ] = cnr.rbx * r; sa[ 9 ] = cnr.rby * b;
-		sa[ 12] = cnr.rtx * r; sa[ 13] = cnr.rty * t;
+		buffer[ 0 ] = cnr.lbx * l; buffer[ 1 ] = cnr.lby * b;
+		buffer[ 4 ] = cnr.ltx * l; buffer[ 5 ] = cnr.lty * t;
+		buffer[ 8 ] = cnr.rbx * r; buffer[ 9 ] = cnr.rby * b;
+		buffer[ 12] = cnr.rtx * r; buffer[ 13] = cnr.rty * t;
 	}
 	else
 	{
@@ -252,10 +252,10 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 		r = wide + l;
 		t = -high * _image.anchorY;
 		b = high + t;
-		sa[ 0 ] = sa[ 4 ] = l;
-		sa[ 1 ] = sa[ 9 ] = b;
-		sa[ 8 ] = sa[ 12] = r;
-		sa[ 5 ] = sa[ 13] = t;
+		buffer[ 0 ] = buffer[ 4 ] = l;
+		buffer[ 1 ] = buffer[ 9 ] = b;
+		buffer[ 8 ] = buffer[ 12] = r;
+		buffer[ 5 ] = buffer[ 13] = t;
 	}
 
 	// texture source position
@@ -263,12 +263,12 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 	// x, y,		6,7
 	// r, b,		10,11
 	// r, y,		14,15
-	sa[ 2 ] = sa[ 6 ] = rect.x;
-	sa[ 3 ] = sa[ 11] = rect.y + rect.height;
-	sa[ 10] = sa[ 14] = rect.x + rect.width;
-	sa[ 7 ] = sa[ 15] = rect.y;
+	buffer[ 2 ] = buffer[ 6 ] = rect.x;
+	buffer[ 3 ] = buffer[ 11] = rect.y + rect.height;
+	buffer[ 10] = buffer[ 14] = rect.x + rect.width;
+	buffer[ 7 ] = buffer[ 15] = rect.y;
 
-    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 
 	// send the transform matrix to the vector shader
 	gl.uniformMatrix3fv( this.shaders.currentProgram.uModelMatrix, false, _transform );
@@ -293,7 +293,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 		this.prepareGl();
 
 	// split off a small part of the big buffer, for a single display object
-	var sa = this.drawingArray.subarray(0, 20);
+	var buffer = this.drawingArray.subarray(0, 20);
 
 	// half width, half height (of source frame)
 	var wide = _surface.cellWide * 0.5;
@@ -314,22 +314,22 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 	// l, t,		4,5
 	// r, b,		8,9
 	// r, t,		12,13
-	sa[ 0 ] = sa[ 4 ] = -wide;
-	sa[ 1 ] = sa[ 9 ] =  high;
-	sa[ 8 ] = sa[ 12] =  wide;
-	sa[ 5 ] = sa[ 13] = -high;
+	buffer[ 0 ] = buffer[ 4 ] = -wide;
+	buffer[ 1 ] = buffer[ 9 ] =  high;
+	buffer[ 8 ] = buffer[ 12] =  wide;
+	buffer[ 5 ] = buffer[ 13] = -high;
 
 	// texture source position
 	// 0, 0,		2,3
 	// 0, 1,		6,7
 	// 1, 0,		10,11
 	// 1, 1,		14,15
-	sa[ 2 ] = sa[ 6 ] = tex_x;
-	sa[ 3 ] = sa[ 11] = tex_b;
-	sa[ 10] = sa[ 14] = tex_r;
-	sa[ 7 ] = sa[ 15] = tex_y;
+	buffer[ 2 ] = buffer[ 6 ] = tex_x;
+	buffer[ 3 ] = buffer[ 11] = tex_b;
+	buffer[ 10] = buffer[ 14] = tex_r;
+	buffer[ 7 ] = buffer[ 15] = tex_y;
 
-    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 
 	// TODO: most of these are semi-static, cache them
 	var matrix = pbMatrix3.makeTransform(_x, _y, _angle, _scale, _scale);
@@ -513,9 +513,9 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 };
 
 
-// called when pbSimpleLayer.setDrawCall is directed to pbSimpleLayer.drawPoint
+// called when pbSimpleLayer.setDrawingFunctions is directed to pbSimpleLayer.drawPoint
 // sends points directly to gl from the source array (no further JS looping required)
-// draws _surface at the point locations, extremely quickly
+// draws the whole of _surface at the point locations, extremely quickly
 pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 {
 	this.shaders.setProgram(this.shaders.blitShaderPointProgram);
@@ -547,6 +547,40 @@ pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 };
 
 
+// sends points and texture locations to gl
+// draws a single animation frame from _surface at the point locations, very quickly
+pbWebGl.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surface )
+{
+	this.shaders.setProgram(this.shaders.blitShaderPointAnimProgram);
+
+	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+	{
+		this.prepareGl();
+		var max = Math.max(_surface.cellWide, _surface.cellHigh);
+		// set the size of the 'point' (it's square)
+		if (this.shaders.currentProgram.uSize)
+		{
+			gl.uniform1f( this.shaders.currentProgram.uSize, max );
+		}
+		// set the dimensions of the actual texture (can be rectangular)
+		if (this.shaders.currentProgram.uTextureSize)
+		{
+			gl.uniform2f( this.shaders.currentProgram.uTextureSize, 1 / _surface.cellsWide, 1 / _surface.cellsHigh );
+		}
+	}
+
+	// TODO: generate warning if length is capped
+	var len = Math.min(_listLength, MAX_SPRITES * 4);
+
+	// make a buffer view of the _list which is only as long as we need
+    var buffer = _list.subarray(0, len);
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
+    gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 2, gl.FLOAT, false, 2 * 4, 0 * 4 );
+    gl.vertexAttribPointer( this.shaders.currentProgram.aTextureCoord, 2, gl.FLOAT, false, 2 * 4, 2 * 4 );
+    gl.drawArrays(gl.POINTS, 0, len / 4);
+};
+
+
 // TODO: turns out we can use multiple bindBuffers instead of interleaving the data... give it a test for speed!  (I suspect this will cause additional stalls when transmitting the data)
     // gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
     // gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
@@ -573,7 +607,7 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 	var len = Math.min(_list.length, MAX_SPRITES);
 
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
-    var sa = this.drawingArray.subarray(0, len * (44 + 22) - 22);
+    var buffer = this.drawingArray.subarray(0, len * (44 + 22) - 22);
 
 	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig (chrome)!
 	for ( var i = -1, c = 0; ++i < len; c += 44 )
@@ -602,36 +636,36 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 			// degenerate triangle: repeat the last vertex and the next vertex
 			// 
 			// screen destination position
-			sa[ c     ] = sa[ c - 44 + 33 ];
-			sa[ c + 1 ] = sa[ c - 44 + 34 ];
-			sa[ c + 11] = -wide;
-			sa[ c + 12] =  high;
+			buffer[ c     ] = buffer[ c - 44 + 33 ];
+			buffer[ c + 1 ] = buffer[ c - 44 + 34 ];
+			buffer[ c + 11] = -wide;
+			buffer[ c + 12] =  high;
 
 			// rotation cos & sin components
-			sa[ c + 2 ] = sa[c - 44 + 35];
-			sa[ c + 3 ] = sa[c - 44 + 36];
-			sa[ c + 15] = tex_x;
-			sa[ c + 16] = tex_y;
+			buffer[ c + 2 ] = buffer[c - 44 + 35];
+			buffer[ c + 3 ] = buffer[c - 44 + 36];
+			buffer[ c + 15] = tex_x;
+			buffer[ c + 16] = tex_y;
 
 			// rotation cos & sin components
-			sa[ c + 4 ] = sa[c - 44 + 37];
-			sa[ c + 5 ] = sa[c - 44 + 38];
-			sa[ c + 15] = cos;
-			sa[ c + 16] = sin;
+			buffer[ c + 4 ] = buffer[c - 44 + 37];
+			buffer[ c + 5 ] = buffer[c - 44 + 38];
+			buffer[ c + 15] = cos;
+			buffer[ c + 16] = sin;
 
 			// scaling sx & sy components
-			sa[ c + 6 ] = sa[ c - 44 + 39];
-			sa[ c + 7 ] = sa[ c - 44 + 40];
-			sa[ c + 17] = scale;
-			sa[ c + 18] = scale;
+			buffer[ c + 6 ] = buffer[ c - 44 + 39];
+			buffer[ c + 7 ] = buffer[ c - 44 + 40];
+			buffer[ c + 17] = scale;
+			buffer[ c + 18] = scale;
 
 			// world translation
-			sa[ c + 8 ] = sa[c - 44 + 41];
-			sa[ c + 9 ] = sa[c - 44 + 42];
-			sa[ c + 10] = sa[c - 44 + 43];
-			sa[ c + 19] = x;
-			sa[ c + 20] = y;
-			sa[ c + 21] = z;
+			buffer[ c + 8 ] = buffer[c - 44 + 41];
+			buffer[ c + 9 ] = buffer[c - 44 + 42];
+			buffer[ c + 10] = buffer[c - 44 + 43];
+			buffer[ c + 19] = x;
+			buffer[ c + 20] = y;
+			buffer[ c + 21] = z;
 
 			c += 22;
 		}
@@ -641,47 +675,47 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 		// l, t,		11,12
 		// r, b,		22,23
 		// r, t,		33,34
-		sa[ c     ] = sa[ c + 11] = -wide;		// l
-		sa[ c + 1 ] = sa[ c + 23] =  high;		// b
-		sa[ c + 22] = sa[ c + 33] =  wide;		// r
-		sa[ c + 12] = sa[ c + 34] = -high;		// t
+		buffer[ c     ] = buffer[ c + 11] = -wide;		// l
+		buffer[ c + 1 ] = buffer[ c + 23] =  high;		// b
+		buffer[ c + 22] = buffer[ c + 33] =  wide;		// r
+		buffer[ c + 12] = buffer[ c + 34] = -high;		// t
 
 		// texture source position
 		// l, b,		2,3
 		// l, t,		13,14
 		// r, b,		24,25
 		// r, t,		35,36
-		sa[ c + 2 ] = sa[ c + 13] = tex_x;		// l
-		sa[ c + 3 ] = sa[ c + 25] = tex_y;		// b
-		sa[ c + 24] = sa[ c + 35] = tex_r;		// r
-		sa[ c + 14] = sa[ c + 36] = tex_b;		// t
+		buffer[ c + 2 ] = buffer[ c + 13] = tex_x;		// l
+		buffer[ c + 3 ] = buffer[ c + 25] = tex_y;		// b
+		buffer[ c + 24] = buffer[ c + 35] = tex_r;		// r
+		buffer[ c + 14] = buffer[ c + 36] = tex_b;		// t
 
 		// rotation cos & sin components
 		//  4, 5
 		// 15,16
 		// 26,27
 		// 37,38
-		sa[ c + 4 ] = sa[ c + 15] = sa[ c + 26] = sa[ c + 37] = cos;
-		sa[ c + 5 ] = sa[ c + 16] = sa[ c + 27] = sa[ c + 38] = sin;
+		buffer[ c + 4 ] = buffer[ c + 15] = buffer[ c + 26] = buffer[ c + 37] = cos;
+		buffer[ c + 5 ] = buffer[ c + 16] = buffer[ c + 27] = buffer[ c + 38] = sin;
 
 		// scaling sx & sy components
 		//  6, 7
 		// 17,18
 		// 28,29
 		// 39,40
-		sa[ c + 6 ] = sa[ c + 17] = sa[ c + 28] = sa[ c + 39] = scale;
-		sa[ c + 7 ] = sa[ c + 18] = sa[ c + 29] = sa[ c + 40] = scale;
+		buffer[ c + 6 ] = buffer[ c + 17] = buffer[ c + 28] = buffer[ c + 39] = scale;
+		buffer[ c + 7 ] = buffer[ c + 18] = buffer[ c + 29] = buffer[ c + 40] = scale;
 
 		// world translation
-		sa[ c + 8 ] = sa[ c + 19] = sa[ c + 30] = sa[ c + 41] = x;
-		sa[ c + 9 ] = sa[ c + 20] = sa[ c + 31] = sa[ c + 42] = y;
+		buffer[ c + 8 ] = buffer[ c + 19] = buffer[ c + 30] = buffer[ c + 41] = x;
+		buffer[ c + 9 ] = buffer[ c + 20] = buffer[ c + 31] = buffer[ c + 42] = y;
 
 		// world depth (0 = front, 1 = back)
-		sa[ c + 10] = sa[ c + 21] = sa[ c + 32] = sa[ c + 43] = z;
+		buffer[ c + 10] = buffer[ c + 21] = buffer[ c + 32] = buffer[ c + 43] = z;
 	}
 
 	// point the attributes at the buffer (stride and offset are in bytes, there are 4 bytes per gl.FLOAT)
-    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 	gl.vertexAttribPointer( this.shaders.currentProgram.aPosition , 4, gl.FLOAT, false, 11 * 4, 0 * 4 );
 	gl.vertexAttribPointer( this.shaders.currentProgram.aTransform, 4, gl.FLOAT, false, 11 * 4, 4 * 4 );
 	gl.vertexAttribPointer( this.shaders.currentProgram.aTranslate, 3, gl.FLOAT, false, 11 * 4, 8 * 4 );
@@ -709,7 +743,7 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 	var len = Math.min(_list.length, MAX_SPRITES);
 
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
-    var sa = this.drawingArray.subarray(0, len * (44 + 22) - 22);
+    var buffer = this.drawingArray.subarray(0, len * (44 + 22) - 22);
 
     var l, r, t, b;
 
@@ -736,17 +770,17 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 			// degenerate triangle: repeat the last vertex and the next vertex
 			// 
 			// screen destination position
-			sa[ c     ] = sa[ c - 44 + 33 ];
-			sa[ c + 1 ] = sa[ c - 44 + 34 ];
+			buffer[ c     ] = buffer[ c - 44 + 33 ];
+			buffer[ c + 1 ] = buffer[ c - 44 + 34 ];
 
 			// last transform matrix
-			sa[ c + 4 ] = sa[ c + 4  - 44 ];
-			sa[ c + 5 ] = sa[ c + 5  - 44 ];
-			sa[ c + 6 ] = sa[ c + 6  - 44 ];
-			sa[ c + 7 ] = sa[ c + 7  - 44 ];
-			sa[ c + 8 ] = sa[ c + 8  - 44 ];
-			sa[ c + 9 ] = sa[ c + 9  - 44 ];
-			sa[ c + 10] = sa[ c + 10 - 44 ];
+			buffer[ c + 4 ] = buffer[ c + 4  - 44 ];
+			buffer[ c + 5 ] = buffer[ c + 5  - 44 ];
+			buffer[ c + 6 ] = buffer[ c + 6  - 44 ];
+			buffer[ c + 7 ] = buffer[ c + 7  - 44 ];
+			buffer[ c + 8 ] = buffer[ c + 8  - 44 ];
+			buffer[ c + 9 ] = buffer[ c + 9  - 44 ];
+			buffer[ c + 10] = buffer[ c + 10 - 44 ];
 
 			c += 22;
 		}
@@ -764,10 +798,10 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 			t = -high * img.anchorY;
 			b = high + t;
 			// object has corner offets (skewing/perspective etc)
-			sa[ c     ] = cnr.lbx * l; sa[ c + 1 ] = cnr.lby * b;
-			sa[ c + 11] = cnr.ltx * l; sa[ c + 12] = cnr.lty * t;
-			sa[ c + 22] = cnr.rbx * r; sa[ c + 23] = cnr.rby * b;
-			sa[ c + 33] = cnr.rtx * r; sa[ c + 34] = cnr.rty * t;
+			buffer[ c     ] = cnr.lbx * l; buffer[ c + 1 ] = cnr.lby * b;
+			buffer[ c + 11] = cnr.ltx * l; buffer[ c + 12] = cnr.lty * t;
+			buffer[ c + 22] = cnr.rbx * r; buffer[ c + 23] = cnr.rby * b;
+			buffer[ c + 33] = cnr.rtx * r; buffer[ c + 34] = cnr.rty * t;
 		}
 		else
 		{
@@ -775,10 +809,10 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 			r = wide + l;
 			t = -high * img.anchorY;
 			b = high + t;
-			sa[ c     ] = l; sa[ c + 1 ] = b;
-			sa[ c + 11] = l; sa[ c + 12] = t;
-			sa[ c + 22] = r; sa[ c + 23] = b;
-			sa[ c + 33] = r; sa[ c + 34] = t;
+			buffer[ c     ] = l; buffer[ c + 1 ] = b;
+			buffer[ c + 11] = l; buffer[ c + 12] = t;
+			buffer[ c + 22] = r; buffer[ c + 23] = b;
+			buffer[ c + 33] = r; buffer[ c + 34] = t;
 		}
 
 		// texture source position
@@ -786,10 +820,10 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 		// l, t,		13,14
 		// r, b,		24,25
 		// r, t,		35,36
-		sa[ c + 2 ] = sa[ c + 13] = tex_x;		// l
-		sa[ c + 3 ] = sa[ c + 25] = tex_b;		// b
-		sa[ c + 24] = sa[ c + 35] = tex_r;		// r
-		sa[ c + 14] = sa[ c + 36] = tex_y;		// t
+		buffer[ c + 2 ] = buffer[ c + 13] = tex_x;		// l
+		buffer[ c + 3 ] = buffer[ c + 25] = tex_b;		// b
+		buffer[ c + 24] = buffer[ c + 35] = tex_r;		// r
+		buffer[ c + 14] = buffer[ c + 36] = tex_y;		// t
 
 
 		if ( i > 0 )
@@ -797,33 +831,33 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 			// next transform matrix for degenerate triangle preceding this entry
 
 			// destination corner (left, bottom)
-			sa[ c - 22 + 11] = sa[ c     ];
-			sa[ c - 22 + 12] = sa[ c + 1 ];
+			buffer[ c - 22 + 11] = buffer[ c     ];
+			buffer[ c - 22 + 12] = buffer[ c + 1 ];
 
 			// model matrix and z_order
-			sa[ c - 22 + 15 ] = sa[ c + 4 ] = sa[ c + 15] = sa[ c + 26] = sa[ c + 37] = obj.transform[0];
-			sa[ c - 22 + 16 ] = sa[ c + 5 ] = sa[ c + 16] = sa[ c + 27] = sa[ c + 38] = obj.transform[1];
-			sa[ c - 22 + 17 ] = sa[ c + 6 ] = sa[ c + 17] = sa[ c + 28] = sa[ c + 39] = obj.transform[3];
-			sa[ c - 22 + 18 ] = sa[ c + 7 ] = sa[ c + 18] = sa[ c + 29] = sa[ c + 40] = obj.transform[4];
-			sa[ c - 22 + 19 ] = sa[ c + 8 ] = sa[ c + 19] = sa[ c + 30] = sa[ c + 41] = obj.transform[6];
-			sa[ c - 22 + 20 ] = sa[ c + 9 ] = sa[ c + 20] = sa[ c + 31] = sa[ c + 42] = obj.transform[7];
-			sa[ c - 22 + 21 ] = sa[ c + 10] = sa[ c + 21] = sa[ c + 32] = sa[ c + 43] = obj.z_order;
+			buffer[ c - 22 + 15 ] = buffer[ c + 4 ] = buffer[ c + 15] = buffer[ c + 26] = buffer[ c + 37] = obj.transform[0];
+			buffer[ c - 22 + 16 ] = buffer[ c + 5 ] = buffer[ c + 16] = buffer[ c + 27] = buffer[ c + 38] = obj.transform[1];
+			buffer[ c - 22 + 17 ] = buffer[ c + 6 ] = buffer[ c + 17] = buffer[ c + 28] = buffer[ c + 39] = obj.transform[3];
+			buffer[ c - 22 + 18 ] = buffer[ c + 7 ] = buffer[ c + 18] = buffer[ c + 29] = buffer[ c + 40] = obj.transform[4];
+			buffer[ c - 22 + 19 ] = buffer[ c + 8 ] = buffer[ c + 19] = buffer[ c + 30] = buffer[ c + 41] = obj.transform[6];
+			buffer[ c - 22 + 20 ] = buffer[ c + 9 ] = buffer[ c + 20] = buffer[ c + 31] = buffer[ c + 42] = obj.transform[7];
+			buffer[ c - 22 + 21 ] = buffer[ c + 10] = buffer[ c + 21] = buffer[ c + 32] = buffer[ c + 43] = obj.z_order;
 		}
 		else
 		{
 			// model matrix and z_order (no degenerate triangle preceeds the first triangle in the strip)
-			sa[ c + 4 ] = sa[ c + 15] = sa[ c + 26] = sa[ c + 37] = obj.transform[0];
-			sa[ c + 5 ] = sa[ c + 16] = sa[ c + 27] = sa[ c + 38] = obj.transform[1];
-			sa[ c + 6 ] = sa[ c + 17] = sa[ c + 28] = sa[ c + 39] = obj.transform[3];
-			sa[ c + 7 ] = sa[ c + 18] = sa[ c + 29] = sa[ c + 40] = obj.transform[4];
-			sa[ c + 8 ] = sa[ c + 19] = sa[ c + 30] = sa[ c + 41] = obj.transform[6];
-			sa[ c + 9 ] = sa[ c + 20] = sa[ c + 31] = sa[ c + 42] = obj.transform[7];
-			sa[ c + 10] = sa[ c + 21] = sa[ c + 32] = sa[ c + 43] = obj.z_order;
+			buffer[ c + 4 ] = buffer[ c + 15] = buffer[ c + 26] = buffer[ c + 37] = obj.transform[0];
+			buffer[ c + 5 ] = buffer[ c + 16] = buffer[ c + 27] = buffer[ c + 38] = obj.transform[1];
+			buffer[ c + 6 ] = buffer[ c + 17] = buffer[ c + 28] = buffer[ c + 39] = obj.transform[3];
+			buffer[ c + 7 ] = buffer[ c + 18] = buffer[ c + 29] = buffer[ c + 40] = obj.transform[4];
+			buffer[ c + 8 ] = buffer[ c + 19] = buffer[ c + 30] = buffer[ c + 41] = obj.transform[6];
+			buffer[ c + 9 ] = buffer[ c + 20] = buffer[ c + 31] = buffer[ c + 42] = obj.transform[7];
+			buffer[ c + 10] = buffer[ c + 21] = buffer[ c + 32] = buffer[ c + 43] = obj.z_order;
 		}
 	}
 
 	// point the attributes at the buffer (stride and offset are in bytes, there are 4 bytes per gl.FLOAT)
-    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 	gl.vertexAttribPointer( this.shaders.currentProgram.aPosition,     4, gl.FLOAT, false, 11 * 4,  0 * 4 );
 	gl.vertexAttribPointer( this.shaders.currentProgram.aModelMatrix0, 2, gl.FLOAT, false, 11 * 4,  4 * 4 );
 	gl.vertexAttribPointer( this.shaders.currentProgram.aModelMatrix1, 2, gl.FLOAT, false, 11 * 4,  6 * 4 );
@@ -880,7 +914,7 @@ pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transfor
 	}
 
 	// split off a small part of the big buffer, for a single display object
-	var sa = this.drawingArray.subarray(0, 16);
+	var buffer = this.drawingArray.subarray(0, 16);
 
 	// source rectangle
 	var rect = new pbRectangle(0, 0, 1, 1);
@@ -902,22 +936,22 @@ pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transfor
 	var r = wide + l;
 	var t = -high * anchorY;
 	var b = high + t;
-	sa[ 0 ] = sa[ 4 ] = l;
-	sa[ 1 ] = sa[ 9 ] = b;
-	sa[ 8 ] = sa[ 12] = r;
-	sa[ 5 ] = sa[ 13] = t;
+	buffer[ 0 ] = buffer[ 4 ] = l;
+	buffer[ 1 ] = buffer[ 9 ] = b;
+	buffer[ 8 ] = buffer[ 12] = r;
+	buffer[ 5 ] = buffer[ 13] = t;
 
 	// texture source position
 	// x, b,		2,3
 	// x, y,		6,7
 	// r, b,		10,11
 	// r, y,		14,15
-	sa[ 2 ] = sa[ 6 ] = rect.x;
-	sa[ 3 ] = sa[ 11] = rect.y + rect.height;
-	sa[ 10] = sa[ 14] = rect.x + rect.width;
-	sa[ 7 ] = sa[ 15] = rect.y;
+	buffer[ 2 ] = buffer[ 6 ] = rect.x;
+	buffer[ 3 ] = buffer[ 11] = rect.y + rect.height;
+	buffer[ 10] = buffer[ 14] = rect.x + rect.width;
+	buffer[ 7 ] = buffer[ 15] = rect.y;
 
-    gl.bufferData( gl.ARRAY_BUFFER, sa, gl.STATIC_DRAW );
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 
 	// send the transform matrix to the vector shader
 	gl.uniformMatrix3fv( this.shaders.currentProgram.uModelMatrix, false, _transform );

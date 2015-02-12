@@ -1,6 +1,6 @@
 /**
  *
- * Bunny Mark
+ * Bunny Mark - takes direct control of the rendering process for maximum speed
  *
  * TODO: optimise the pbSprite, pbImage and pbLayer code to close the distance between this and pbBunnyDemoNPOT
  * 
@@ -44,10 +44,6 @@ pbBunnyDemo.prototype.create = function()
 {
 	console.log("pbBunnyDemo.create");
 
-	//this.layer = new pbSimpleLayer();
-	//this.layer.create(null, 0, 0, null, this.renderer);
-	//rootLayer.addChild(this.layer);
-
 	this.list = [];
 	this.addSprites(100);
 };
@@ -60,9 +56,6 @@ pbBunnyDemo.prototype.destroy = function()
 	gui.remove(this.numCtrl);
 	
 	this.list = null;
-
-	// this.layer.destroy();
-	// this.layer = null;
 
 	this.surface.destroy();
 	this.surface = null;
@@ -95,14 +88,6 @@ pbBunnyDemo.prototype.addSprites = function(num)
 
 	for(var i = 0; i < num; i++)
 	{
-		// var img = new pbImage();
-		// img.create(this.renderer, this.surface, 0, 26 / 32 * 0.5, 37.0 / 64.0);
-		// img.isParticle = true;			// use fast batch drawing, object doesn't rotate
-
-		// var spr = new pbSprite();
-		// spr.create(img, 13, 37, 1.0, 0, 1.0, 1.0);
-		// this.layer.addChild(spr);
-
 		// this.list.push( { sprite:spr, vx:Math.random() * 10, vy:(Math.random() * 10) - 5 });
 		this.list.push( { x:13, y:37, vx:Math.random() * 10, vy:(Math.random() * 10) - 5 });
 	}
@@ -115,12 +100,6 @@ pbBunnyDemo.prototype.removeSprites = function(num)
 {
 	for( var i = 0; i < num; i++ )
 	{
-		// if (this.list.length > 0)
-		// {
-		// 	var obj = this.list[this.list.length - 1];
-		// 	obj.sprite.destroy();
-		// }
-
 		this.list.pop();
 	}
 	this.numSprites = this.list.length;

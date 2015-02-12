@@ -48,8 +48,8 @@ pbBunnyPointDemo.prototype.create = function()
 	this.layer = new pbSimpleLayer();
 	this.layer.create(null, this.renderer, 0, 0, null);
 
-	// set the pbSimpleLayer drawing function to call the GL_POINT style sprite drawing function
-	this.layer.setDrawCall(this.layer.drawPoint);
+	// set the pbSimpleLayer to call the GL_POINT style sprite drawing function and a data preparation function for XY coordinates only
+	this.layer.setDrawingFunctions( this.layer.prepareXY, this.layer.drawPoint );
 
 	rootLayer.addChild(this.layer);
 };

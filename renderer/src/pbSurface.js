@@ -23,8 +23,8 @@ function pbSurface()
 
 pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageData)
 {
-	if (_wide == 0) _wide = _imageData.width;
-	if (_high == 0) _high = _imageData.height;
+	if (_wide === 0) _wide = _imageData.width;
+	if (_high === 0) _high = _imageData.height;
 
 	this.cellWide = _wide;
 	this.cellHigh = _high;
@@ -37,6 +37,7 @@ pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageDa
 	var texWide = 1.0 / (this.image.width / this.cellWide);
 	var texHigh = 1.0 / (this.image.height / this.cellHigh);
 
+	// TODO: change cellTextureBounds into a linear list indexed only by pbImage.cellFrame... faster, and more logical when sprites are not grid aligned!
 	this.cellTextureBounds = [];
 	for(var x = 0; x < this.cellsWide; x++)
 	{
