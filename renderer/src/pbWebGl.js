@@ -373,7 +373,7 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface 
 	var iHigh = 1.0 / screenHigh2;
 
 	// TODO: generate warning if length is capped
-	var len = Math.min(_listLength, MAX_SPRITES);
+	var len = Math.min(_listLength, MAX_SPRITES * 2);
 
 	var scale = 1.0;
 	var wide = _surface.cellWide * scale * 0.5 / screenWide2;
@@ -386,14 +386,14 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface 
     var buffer = this.drawingArray.subarray(0, len * 24 - 8);
 
 	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
-	for ( var i = -1, c = 0; ++i < len; c += 16 )
+	for ( var i = -2, c = 0; (i += 2) < len; c += 16 )
 	{
-		var x = _list[i].x * iWide - 1;
-		var y = 1 - _list[i].y * iHigh;
+		var x = _list[i] * iWide - 1;
+		var y = 1 - _list[i + 1] * iHigh;
 		var l = x - wide;
 		var b = y + high;
 
-		if ( i > 0 )
+		if ( c > 0 )
 		{
 			// degenerate triangle: repeat the last vertex
 			buffer[ c     ] = old_r;
@@ -430,7 +430,7 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface 
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
     gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
 
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, len / 2 * 6 - 2);		// four vertices per sprite plus two degenerate points
 };
 
 
@@ -513,7 +513,9 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 };
 
 
-// pbImage.isParticle through pbLayer, sends Points to gl, no sprite sheet, pbBunnyDemoNPOT
+// called when pbSimpleLayer.setDrawCall is directed to pbSimpleLayer.drawPoint
+// sends points directly to gl from the source array (no further JS looping required)
+// draws _surface at the point locations, extremely quickly
 pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 {
 	this.shaders.setProgram(this.shaders.blitShaderPointProgram);
@@ -535,19 +537,13 @@ pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 	}
 
 	// TODO: generate warning if length is capped
-	var len = Math.min(_listLength, MAX_SPRITES);
+	var len = Math.min(_listLength, MAX_SPRITES * 2);
 
-	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
-    var buffer = this.drawingArray.subarray(0, len * 2 * 2);
-	for ( var i = -1, c = 0; ++i < len; c += 2 )
-	{
-		buffer[ c     ] = _list[i].x;
-		buffer[ c + 1 ] = _list[i].y;
-	}
-
+	// make a buffer view of the _list which is only as long as we need
+    var buffer = _list.subarray(0, len);
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
     gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 2, gl.FLOAT, false, 0, 0 );
-    gl.drawArrays(gl.POINTS, 0, len * 2);
+    gl.drawArrays(gl.POINTS, 0, len / 2);
 };
 
 

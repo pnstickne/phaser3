@@ -11,6 +11,7 @@ function pbSimpleLayer()
 	this.renderer = null;
 	this.surface = null;
 	this.drawList = null;
+	this.drawCall = null;
 }
 
 // pbSimpleLayer extends from the pbSprite prototype chain
@@ -26,7 +27,9 @@ pbSimpleLayer.prototype.create = function(_parent, _renderer, _x, _y, _surface)
 	// call the pbSprite create for this pbSimpleLayer
 	this.__super__.prototype.create.call(this, null, _x, _y);
 	this.surface = _surface;
-	this.drawList = [];
+	this.drawList = new Float32Array(MAX_SPRITES * 2);
+	// default to the safer (slower?) of the two drawing functions
+	this.drawCall = this.draw;
 };
 
 
@@ -43,7 +46,7 @@ pbSimpleLayer.prototype.destroy = function()
 
 pbSimpleLayer.prototype.update = function(_dictionary)
 {
-	// avoid creating a new array each frame by reusing this.drawList and simply keeping track of where we are in it
+	// avoid creating a new array each frame by reusing this.drawList and simply keeping track of where we are up to in it
 	var drawLength = 0;
 
 	if (!this.alive)
@@ -52,40 +55,53 @@ pbSimpleLayer.prototype.update = function(_dictionary)
 	if (this.children)
 	{
 		// for all of my child sprites
-		var c = this.children.length;
+		var c = Math.min(this.children.length, MAX_SPRITES);
 		while(c--)
 		{
 			var child = this.children[c];
 
-			// avoid function call by in-lining the pbSprite.simpleUpdate contents here
+			// add sprite location to drawList
 			if (child.alive)
 			{
-				var d = this.drawList[drawLength];
-				if (d)
-				{
-					d.x = child.x;
-					d.y = child.y;
-				}
-				else
-				{
-					this.drawList[drawLength] = { x: child.x, y: child.y };
-				}
-				drawLength++;
+				this.drawList[drawLength++] = child.x;
+				this.drawList[drawLength++] = child.y;
 			}
 		}
 	}
 
+	// call to draw all sprites in the drawList
 	if (drawLength > 0)
-		this.draw(this.drawList, drawLength);
+		this.drawCall.call(this, drawLength);
 
 	return true;
 };
 
 
-pbSimpleLayer.prototype.draw = function(_list, _length)
+/**
+ * draw using blitSimpleDrawImages 
+ * (sends a tri-strip for all quads in the batch to the GPU, standard stuff, very reliable, moderately heavy CPU overhead in the data preparation)
+ *
+ * @param  {[type]} _length [description]
+ *
+ * @return {[type]}         [description]
+ */
+pbSimpleLayer.prototype.draw = function(_length)
 {
-//	this.renderer.graphics.blitSimpleDrawImages( _list, _length, this.surface );
-	this.renderer.graphics.blitDrawImagesPoint( _list, _length, this.surface );
+	this.renderer.graphics.blitSimpleDrawImages( this.drawList, _length, this.surface );
+};
+
+
+/**
+ * draw using blitDrawImagesPoint
+ * (uses an enlarged GL_POINT to specify a draw region in the vertex shader - cannot rotate, must be square, may have compatibility issues on old hardware, however it's fast and very light CPU for the data preparation)
+ *
+ * @param  {[type]} _length [description]
+ *
+ * @return {[type]}         [description]
+ */
+pbSimpleLayer.prototype.drawPoint = function(_length)
+{
+	this.renderer.graphics.blitDrawImagesPoint( this.drawList, _length, this.surface );
 };
 
 
@@ -105,5 +121,11 @@ pbSimpleLayer.prototype.addChild = function( _child )
 	{
 		console.log("ERROR: can ONLY addChild a pbSprite to a pbSimpleLayer!");
 	}
+};
+
+
+pbSimpleLayer.prototype.setDrawCall = function( _drawCall )
+{
+	this.drawCall = _drawCall;
 };
 
