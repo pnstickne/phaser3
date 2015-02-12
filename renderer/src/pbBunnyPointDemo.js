@@ -24,7 +24,7 @@ function pbBunnyPointDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "../img/bunny.png" );
+	this.spriteImg = this.loader.loadImage( "../img/bunny_32x32.png" );
 
 	console.log( "pbBunnyPointDemo c'tor exit" );
 }
@@ -44,8 +44,13 @@ pbBunnyPointDemo.prototype.create = function()
 
 	this.list = [];
 
+	// create a pbSimpleLayer to display the bunnies rapidly with minimum overhead
 	this.layer = new pbSimpleLayer();
 	this.layer.create(null, this.renderer, 0, 0, null);
+
+	// set the pbSimpleLayer drawing function to call the GL_POINT style sprite drawing function
+	this.layer.setDrawCall(this.layer.drawPoint);
+
 	rootLayer.addChild(this.layer);
 };
 
