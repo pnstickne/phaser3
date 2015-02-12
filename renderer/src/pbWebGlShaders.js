@@ -5,6 +5,39 @@
  */
 
 
+/**
+ * blitShaderPointSources - experiment using glPoint to position sprites
+ *
+ */
+var blitShaderPointSources = {
+	fragment:
+		"  precision mediump float;" +
+		"  uniform sampler2D uImageSampler;" +
+		"  void main () {" +
+		"    gl_FragColor = texture2D(uImageSampler, gl_PointCoord);" +
+		"  }",
+
+	vertex:
+		"  precision mediump float;" +
+		"  attribute vec2 aPosition;" +
+		"  uniform float uSize;" +
+		"  uniform mat3 uProjectionMatrix;" +
+		"  void main() {" +
+		"    gl_PointSize = uSize;" +
+		"    vec3 pos = vec3(aPosition, 1);" +
+		"    gl_Position = vec4(uProjectionMatrix * pos, 1);" +
+		"  }",
+
+	attributes:
+		[ "aPosition" ],
+
+	uniforms:
+		[ "uProjectionMatrix", "uSize" ],
+
+	sampler:
+		"uImageSampler"
+};
+
 
 /**
  * blitShaderSources - shaders for image blitting 
@@ -203,6 +236,7 @@ function pbWebGlShaders()
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
 	this.blitShaderProgram = null;
+	this.blitShaderPointProgram = null;
 	this.batchImageShaderProgram = null;
 	this.rawBatchImageShaderProgram = null;
 	this.currentProgram = null;
@@ -221,6 +255,7 @@ pbWebGlShaders.prototype.create = function()
 
 	// batch processing
 	this.blitShaderProgram = this.createProgram( blitShaderSources );
+	this.blitShaderPointProgram = this.createProgram( blitShaderPointSources );
 	this.batchImageShaderProgram = this.createProgram( batchImageShaderSources );
 	this.rawBatchImageShaderProgram = this.createProgram( rawBatchImageShaderSources );
 };
@@ -232,6 +267,7 @@ pbWebGlShaders.prototype.destroy = function()
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
 	this.blitShaderProgram = null;
+	this.blitShaderPointProgram = null;
 	this.batchImageShaderProgram = null;
 	this.rawBatchImageShaderProgram = null;
 	this.currentProgram = null;

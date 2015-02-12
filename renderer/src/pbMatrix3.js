@@ -132,9 +132,11 @@ pbMatrix3.makeProjection = function(width, height)
 	m[0] = 2 / width;
 	m[1] = 0;
 	m[2] = 0;
+
 	m[3] = 0;
 	m[4] = -2 / height;
 	m[5] = 0;
+	
 	m[6] = -1;
 	m[7] = 1;
 	m[8] = 1;

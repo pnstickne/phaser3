@@ -1,15 +1,15 @@
 /**
  *
- * Bunny Mark
+ * Bunny Mark - using Point based sprite rendering
  *
  */
 
 
 
 // created while the data is loading (preloader)
-function pbBunnyDemoNPOT( docId )
+function pbBunnyPointDemo( docId )
 {
-	console.log( "pbBunnyDemoNPOT c'tor entry" );
+	console.log( "pbBunnyPointDemo c'tor entry" );
 
 	var _this = this;
 
@@ -26,58 +26,59 @@ function pbBunnyDemoNPOT( docId )
 	this.loader = new pbLoader( this.allLoaded, this );
 	this.spriteImg = this.loader.loadImage( "../img/bunny.png" );
 
-	console.log( "pbBunnyDemoNPOT c'tor exit" );
+	console.log( "pbBunnyPointDemo c'tor exit" );
 }
 
 
-pbBunnyDemoNPOT.prototype.allLoaded = function()
+pbBunnyPointDemo.prototype.allLoaded = function()
 {
-	console.log( "pbBunnyDemoNPOT.allLoaded" );
+	console.log( "pbBunnyPointDemo.allLoaded" );
 
 	this.renderer = new pbRenderer( this.docId, this.create, this.update, this );
 };
 
 
-pbBunnyDemoNPOT.prototype.create = function()
+pbBunnyPointDemo.prototype.create = function()
 {
-	console.log("pbBunnyDemoNPOT.create");
+	console.log("pbBunnyPointDemo.create");
 
 	this.list = [];
 
-	this.layer = new pbSimpleLayer();
-	this.layer.create(null, this.renderer, 0, 0, null);
+	this.layer = new pbLayer();
+	this.layer.create(rootLayer, this.renderer, 0, 0, 0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.layer);
 };
 
 
-pbBunnyDemoNPOT.prototype.destroy = function()
+pbBunnyPointDemo.prototype.destroy = function()
 {
-	console.log("pbBunnyDemoNPOT.destroy");
+	console.log("pbBunnyPointDemo.destroy");
 
 	gui.remove(this.numCtrl);
-	this.list = null;
 
-	if (this.surface)
-		this.surface.destroy();
+	this.layer.destroy();
+	this.layer = null;
+
+	this.list = null;
+	this.surface.destroy();
 	this.surface = null;
 
-	if (this.renderer)
-		this.renderer.destroy();
+	this.renderer.destroy();
 	this.renderer = null;
 
 };
 
 
-pbBunnyDemoNPOT.prototype.restart = function()
+pbBunnyPointDemo.prototype.restart = function()
 {
-	console.log("pbBunnyDemoNPOT.restart");
+	console.log("pbBunnyPointDemo.restart");
 	
 	this.destroy();
 	this.create();
 };
 
 
-pbBunnyDemoNPOT.prototype.addSprites = function(num)
+pbBunnyPointDemo.prototype.addSprites = function(num)
 {
 	// create animation data and set destination for movement
 	if (!this.surface)
@@ -86,9 +87,6 @@ pbBunnyDemoNPOT.prototype.addSprites = function(num)
 		this.surface = new pbSurface();
 		this.surface.create(0, 0, 1, 1, image);
 		this.surface.isNPOT = true;
-
-		// tell the layer what surface it will draw from
-		this.layer.surface = this.surface;
 	}
 
 	for(var i = 0; i < num; i++)
@@ -108,7 +106,7 @@ pbBunnyDemoNPOT.prototype.addSprites = function(num)
 };
 
 
-pbBunnyDemoNPOT.prototype.removeSprites = function(num)
+pbBunnyPointDemo.prototype.removeSprites = function(num)
 {
 	for( var i = 0; i < num; i++ )
 	{
@@ -124,7 +122,7 @@ pbBunnyDemoNPOT.prototype.removeSprites = function(num)
 };
 
 
-pbBunnyDemoNPOT.prototype.update = function()
+pbBunnyPointDemo.prototype.update = function()
 {
 	for(var i = 0, l = this.list.length; i < l; i++)
 	{

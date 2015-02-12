@@ -434,8 +434,8 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface 
 };
 
 
-// pbImage.isParticle through pbLayer, sends four floats per vertex (x,y,u,v) to gl, no sprite sheet, pbBunnyDemoNPOT
-// TODO: don't need u,v stream if it's always 0 & 1 values
+// currently unused in demos.  pbImage.isParticle through pbLayer, sends four floats per vertex (x,y,u,v) to gl, no sprite sheet
+// TODO: don't need u,v stream if it's always 0 & 1 values??
 pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 {
 	this.shaders.setProgram(this.shaders.blitShaderProgram);
@@ -511,6 +511,46 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points
 };
+
+
+// pbImage.isParticle through pbLayer, sends Points to gl, no sprite sheet, pbBunnyDemoNPOT
+pbWebGl.prototype.blitDrawImagesPoint = function( _list, _surface )
+{
+	this.shaders.setProgram(this.shaders.blitShaderPointProgram);
+
+	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+	{
+		this.prepareGl();
+		if (this.shaders.currentProgram.uSize)
+			gl.uniform1f( this.shaders.currentProgram.uSize, 32 );
+	}
+
+	// TODO: generate warning if length is capped
+	var len = Math.min(_list.length, MAX_SPRITES);
+
+	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
+    var buffer = this.drawingArray.subarray(0, len * 2 * 2);
+	for ( var i = -1, c = 0; ++i < len; c += 2 )
+	{
+		var t = _list[ i ].transform;
+		buffer[ c     ] = t[6];
+		buffer[ c + 1 ] = t[7];
+	}
+
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
+    gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 2, gl.FLOAT, false, 0, 0 );
+    gl.drawArrays(gl.POINTS, 0, len * 2);
+};
+
+
+// TODO: turns out we can use multiple bindBuffers instead of interleaving the data... give it a test for speed!  (I suspect this will cause additional stalls when transmitting the data)
+    // gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    // gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
+    // gl.enableVertexAttribArray(colorLoc);
+    // gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
+    // gl.vertexAttribPointer(vertLoc, 2, gl.FLOAT, false, 0, 0);
+    // gl.enableVertexAttribArray(vertLoc);
+    // gl.drawArrays(gl.POINTS, 0, numPoints);
 
 
 // unused.  Sends tx,ty,sin,cos,sx,sy and u,v to gl.
