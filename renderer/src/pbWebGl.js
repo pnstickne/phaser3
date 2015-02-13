@@ -653,8 +653,8 @@ pbWebGl.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surfa
 	// make a buffer view of the _list which is only as long as we need
     var buffer = _list.subarray(0, len);
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 2, gl.FLOAT, false, 2 * 4, 0 * 4 );
-    gl.vertexAttribPointer( this.shaders.currentProgram.aTextureCoord, 2, gl.FLOAT, false, 2 * 4, 2 * 4 );
+    gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 2, gl.FLOAT, false, 4 * 4, 0 * 4 );
+    gl.vertexAttribPointer( this.shaders.currentProgram.aTextureCoord, 2, gl.FLOAT, false, 4 * 4, 2 * 4 );
     gl.drawArrays(gl.POINTS, 0, len / 4);
 };
 
