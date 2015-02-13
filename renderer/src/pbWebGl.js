@@ -434,6 +434,84 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface 
 };
 
 
+// batch images, no transforms
+// _list contains objects with an .x and .y property
+pbWebGl.prototype.blitListDirect = function( _list, _listLength, _surface )
+{
+	this.shaders.setProgram(this.shaders.blitShaderProgram);
+
+	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+		this.prepareGl();
+
+	var screenWide2 = gl.drawingBufferWidth * 0.5;
+	var screenHigh2 = gl.drawingBufferHeight * 0.5;
+
+	// calculate inverse to avoid division in loop
+	var iWide = 1.0 / screenWide2;
+	var iHigh = 1.0 / screenHigh2;
+
+	// TODO: generate warning if length is capped
+	var len = Math.min(_listLength, MAX_SPRITES);
+
+	var scale = 1.0;
+	var wide = _surface.cellWide * scale * 0.5 / screenWide2;
+	var high = _surface.cellHigh * scale * 0.5 / screenHigh2;
+
+	var old_t;
+	var old_r;
+
+	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
+    var buffer = this.drawingArray.subarray(0, len * 24 - 8);
+
+	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
+	for ( var i = -1, c = 0; ++i < len; c += 16 )
+	{
+		var x = _list[i].x * iWide - 1;
+		var y = 1 - _list[i].y * iHigh;
+		var l = x - wide;
+		var b = y + high;
+
+		if ( i > 0 )
+		{
+			// degenerate triangle: repeat the last vertex
+			buffer[ c     ] = old_r;
+			buffer[ c + 1 ] = old_t;
+		 	// repeat the next vertex
+			buffer[ c + 4 ] = l;
+		 	buffer[ c + 5 ] = b;
+		 	// texture coordinates are unused
+			//buffer[ c + 2 ] = buffer[ c + 3 ] = buffer[ c + 6 ] = buffer[ c + 7 ] = 0;
+			c += 8;
+		}
+
+		// screen destination position
+		// l, b,		0,1
+		// l, t,		4,5
+		// r, b,		8,9
+		// r, t,		12,13
+
+		buffer[ c     ] = buffer[ c + 4 ] = l;
+		buffer[ c + 1 ] = buffer[ c + 9 ] = b;
+		buffer[ c + 8 ] = buffer[ c + 12] = old_r = x + wide;
+		buffer[ c + 5 ] = buffer[ c + 13] = old_t = y - high;
+
+		// texture source position
+		// 0, 0,		2,3
+		// 0, 1,		6,7
+		// 1, 0,		10,11
+		// 1, 1,		14,15
+		buffer[ c + 2 ] = buffer[ c + 6] = buffer[ c + 3 ] = buffer[ c + 11] = 0;
+		buffer[ c + 10] = buffer[ c + 14] = buffer[ c + 7 ] = buffer[ c + 15] = 1;
+	}
+
+
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
+    gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points
+};
+
+
 // currently unused in demos.  pbImage.isParticle through pbLayer, sends four floats per vertex (x,y,u,v) to gl, no sprite sheet
 // TODO: don't need u,v stream if it's always 0 & 1 values??
 pbWebGl.prototype.blitDrawImages = function( _list, _surface )

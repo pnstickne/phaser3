@@ -83,12 +83,10 @@ pbBunnyDemo.prototype.addSprites = function(num)
 		var image = this.loader.getFile( this.spriteImg );
 		this.surface = new pbSurface();
 		this.surface.create(0, 0, 1, 1, image);
-		// this.layer.surface = this.surface;
 	}
 
 	for(var i = 0; i < num; i++)
 	{
-		// this.list.push( { sprite:spr, vx:Math.random() * 10, vy:(Math.random() * 10) - 5 });
 		this.list.push( { x:13, y:37, vx:Math.random() * 10, vy:(Math.random() * 10) - 5 });
 	}
 
@@ -141,7 +139,7 @@ pbBunnyDemo.prototype.update = function()
 	}
 
 	if (this.list.length > 0)
-		this.renderer.graphics.blitSimpleDrawImages( this.list, this.list.length, this.surface );
+		this.renderer.graphics.blitListDirect( this.list, this.list.length, this.surface );
 
 	if (fps >= 60)
 	{
