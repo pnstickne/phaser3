@@ -803,8 +803,9 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 };
 
 
-// pbLayer for batches.  Sends transform matrix elements to gl.
-// list objects: { image: pbImage, transform: pbMatrix3, z_order: Number }
+// Used by pbLayer for multiple sprite instances which are not particles
+// Sends transform matrix elements to gl.
+// _list object format: { image: pbImage, transform: pbMatrix3, z_order: Number }
 pbWebGl.prototype.rawBatchDrawImages = function( _list )
 {
 	var surface = _list[0].image.surface;
