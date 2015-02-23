@@ -120,28 +120,6 @@ pbSprite.prototype.update = function(_drawDictionary)
 };
 
 
-/* deprecated... now using inline code in pbSimpleLayer.update for performance
-pbSprite.prototype.simpleUpdate = function(_drawList, _index)
-{
-	if (!this.alive)
-		return true;
-
-	// add this sprite to the drawList
-	// avoid creating new objects here, there may be hundreds of thousands of them per frame (reuse drawList from frame to frame)
-	var d = _drawList[_index];
-	if (d)
-	{
-		d.x = this.x;
-		d.y = this.y;
-		return true;
-	}
-
-	_drawList[_index] = { x: this.x, y: this.y };
-	return true;
-};
-*/
-
-
 pbSprite.prototype.kill = function()
 {
 	this.alive = false;
