@@ -172,7 +172,7 @@ pbRenderer.prototype.update = function()
 	if (rootLayer)
 	{
 		// the rootLayer update will iterate the entire display list
-		rootLayer.update(this);
+		rootLayer.update();
 	}
 
 	stats.end();
