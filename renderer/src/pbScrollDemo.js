@@ -48,7 +48,7 @@ pbScrollDemo.prototype.allLoaded = function()
 {
 	console.log( "pbScrollDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
 };
 
 

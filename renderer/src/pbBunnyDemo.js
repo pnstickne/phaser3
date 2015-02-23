@@ -36,7 +36,7 @@ pbBunnyDemo.prototype.allLoaded = function()
 {
 	console.log( "pbBunnyDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
 };
 
 

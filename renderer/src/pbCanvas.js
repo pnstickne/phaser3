@@ -52,26 +52,25 @@ pbCanvas.prototype.destroy = function()
 
 pbCanvas.prototype.preRender = function()
 {
-	// clear canvas here
+	// clear canvas before drawing contents
 	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 };
 
 
+// currently unused
 pbCanvas.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, _angle, _scale)
 {
-	// currently unused
 	alert("ERROR: Canvas graphic mode does not yet extend drawImage from pbBaseGraphics!");
 };
 
 
+// used by pbLayer for single sprite drawing
 pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
 {
 	var srf = _image.surface;
 	var img = srf.image;
 
-
-	// TODO: store scale in pbMatrix3 when it's set to avoid sqrt here... how best to deal with matrix multiplication for transform tree though?
-	// TODO: or use the Pixi style matrix which is always kept as the elements so at least I don't need to extract from array
+	// TODO: use the Pixi style 'object' matrix which is kept as elements so I don't need to extract from array.. after speed tests vs the glMatrix approach!
 	var a = _transform[0];
 	var b = _transform[3];
 	var c = _transform[1];
@@ -79,15 +78,21 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 	var e = _transform[6];
 	var f = _transform[7];
 
+	// TODO: store scale in pbMatrix3 when it's set to avoid sqrt here... how best to deal with matrix multiplication for transform tree though?
 	// var sx = Math.sqrt(a * a + b * b);
 	// var sy = Math.sqrt(c * c + d * d);	
 	var w = srf.cellWide;		// * sx;
 	var h = srf.cellHigh;		// * sy;  TODO: I think this scale factor should be required but it works without... try with some larger images to check
 
+	// TODO: 'fullScreen' flag... stretch to fit
+	// TODO: apply skew factors if set
+	// TODO: animation frame selection and extraction from the sprite-sheet
+
 	this.ctx.save();
 	this.ctx.transform(a, b, c, d, e, f);
 	this.ctx.drawImage(img, -w * _image.anchorX, -h * _image.anchorY);
 	this.ctx.restore();
+
 
 	// // set up the animation frame
 	// var cell = Math.floor(_image.cellFrame);
@@ -147,9 +152,6 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 	// buffer[ 3 ] = buffer[ 11] = rect.y + rect.height;
 	// buffer[ 10] = buffer[ 14] = rect.x + rect.width;
 	// buffer[ 7 ] = buffer[ 15] = rect.y;
-
-	// // used by pbLayer for single sprite drawing
-	// alert("ERROR: Canvas graphic mode does not yet extend drawImageWithTransform from pbBaseGraphics!");
 };
 
 
@@ -157,6 +159,7 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 // list objects: { image: pbImage, transform: pbMatrix3, z_order: Number }
 pbCanvas.prototype.rawBatchDrawImages = function(_list)
 {
+	// can't batch in Canvas mode, feed them to drawImageWithTransform one at a time
 	var c = _list.length;
 	while(c--)
 	{
@@ -166,10 +169,16 @@ pbCanvas.prototype.rawBatchDrawImages = function(_list)
 };
 
 
+// used by pbLayer for multiple sprite instances which have the particle flag set
 pbCanvas.prototype.blitDrawImages = function(_list, _surface)
 {
-	// used by pbLayer for multiple sprite instances which have the particle flag set
-	alert("ERROR: Canvas graphic mode does not yet extend blitDrawImages from pbBaseGraphics!");
+	// can't batch in Canvas mode, feed them to drawImageWithTransform one at a time
+	var c = _list.length;
+	while(c--)
+	{
+		var s = _list[c];
+		this.drawImageWithTransform(s.image, s.transform, s.z_order);
+	}
 };
 
 
@@ -187,7 +196,7 @@ pbCanvas.prototype.reset = function()
 
 pbCanvas.prototype.scissor = function(_x, _y, _width, _height)
 {
-	// TODO: can Canvas handle AABB clipping?
+	// TODO: can Canvas handle AABB clipping?  Ignoring this initially but will need to either support it or throw an error/warning.
 };
 
 
