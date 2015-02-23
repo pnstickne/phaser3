@@ -167,10 +167,10 @@ pbBunnyPointDemo.prototype.update = function()
 		}
 	}
 
-	if (fps >= 60)
+	if (fps >= 59)
 	{
 		// don't add more until the fps has been at 60 for one second
-		if (this.fps60++ > 60)
+		if (this.fps60++ > 60 && fps >= 60)
 			// add more with a gradually increasing amount as the fps stays at 60
 	 		this.addSprites(Math.min(this.fps60, 200));
 	}
