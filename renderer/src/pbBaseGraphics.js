@@ -116,54 +116,82 @@ pbBaseGraphics.prototype.colorStringToRGBA = function(hex)
 
 
 /**
- * The graphics drawing interface dummy functions, these must all be overridden.
+ * The graphics drawing interface dummy functions, these must all be overridden (or unused).
  */
 
 
 pbBaseGraphics.prototype.preRender = function()
 {
-	alert("ERROR: the selected graphic mode does not extend preRender from pbBaseGraphics!")
+	alert("ERROR: the selected graphic mode does not extend preRender from pbBaseGraphics!");
 };
-
 
 pbBaseGraphics.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, _angle, _scale)
 {
-	alert("ERROR: the selected graphic mode does not extend drawImage from pbBaseGraphics!")
+	alert("ERROR: the selected graphic mode does not extend drawImage from pbBaseGraphics!");
 };
-
 
 pbBaseGraphics.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
 {
-	alert("ERROR: the selected graphic mode does not extend drawImageWithTransform from pbBaseGraphics!")
+	alert("ERROR: the selected graphic mode does not extend drawImageWithTransform from pbBaseGraphics!");
 };
-
 
 pbBaseGraphics.prototype.blitDrawImages = function(_list, _surface)
 {
-	alert("ERROR: the selected graphic mode does not extend blitDrawImages from pbBaseGraphics!")
+	alert("ERROR: the selected graphic mode does not extend blitDrawImages from pbBaseGraphics!");
 };
-
 
 pbBaseGraphics.prototype.batchDrawImages = function(_list, _surface)
 {
-	alert("ERROR: the selected graphic mode does not extend batchDrawImages from pbBaseGraphics!")
+	alert("ERROR: the selected graphic mode does not extend batchDrawImages from pbBaseGraphics!");
 };
-
 
 pbBaseGraphics.prototype.rawBatchDrawImages = function(_list)
 {
-	alert("ERROR: the selected graphic mode does not extend rawBatchDrawImages from pbBaseGraphics!")
+	alert("ERROR: the selected graphic mode does not extend rawBatchDrawImages from pbBaseGraphics!");
 };
-
 
 pbBaseGraphics.prototype.reset = function()
 {
-	alert("ERROR: the selected graphic mode does not extend reset from pbBaseGraphics!")
+	alert("ERROR: the selected graphic mode does not extend reset from pbBaseGraphics!");
 };
-
 
 pbBaseGraphics.prototype.scissor = function(_x, _y, _width, _height)
 {
-	alert("ERROR: the selected graphic mode does not extend scissor from pbBaseGraphics!")
+	alert("ERROR: the selected graphic mode does not extend scissor from pbBaseGraphics!");
+};
+
+pbBaseGraphics.prototype.fillStyle = function(_fillColor, _lineColor)
+{
+	alert("ERROR: the selected graphic mode does not fillStyle scissor from pbBaseGraphics!");
+};
+
+pbBaseGraphics.prototype.fillRect = function( x, y, wide, high, color )
+{
+	alert("ERROR: the selected graphic mode does not extend fillRect from pbBaseGraphics!");
+};
+
+pbBaseGraphics.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface )
+{
+	alert("ERROR: the selected graphic mode does not extend blitSimpleDrawImages from pbBaseGraphics!");
+};
+
+pbBaseGraphics.prototype.blitListDirect = function( _list, _listLength, _surface )
+{
+	alert("ERROR: the selected graphic mode does not extend blitListDirect from pbBaseGraphics!");
+};
+
+pbBaseGraphics.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
+{
+	alert("ERROR: the selected graphic mode does not extend blitDrawImagesPoint from pbBaseGraphics!");
+};
+
+pbBaseGraphics.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surface )
+{
+	alert("ERROR: the selected graphic mode does not extend blitDrawImagesPointAnim from pbBaseGraphics!");
+};
+
+pbBaseGraphics.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transform, _z )
+{
+	alert("ERROR: the selected graphic mode does not extend drawCanvasWithTransform from pbBaseGraphics!");
 };
 
