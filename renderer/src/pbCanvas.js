@@ -53,7 +53,7 @@ pbCanvas.prototype.destroy = function()
 pbCanvas.prototype.preRender = function()
 {
 	// clear canvas here
-	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	//this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 };
 
 
@@ -66,11 +66,28 @@ pbCanvas.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, _angle
 
 pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
 {
-	var img = _image.surface.image;
+	var srf = _image.surface;
+	var img = srf.image;
+
+
 	// TODO: store scale in pbMatrix3 when it's set to avoid sqrt here... how best to deal with matrix multiplication for transform tree though?
-	var sx = Math.sqrt(_transform[0] * _transform[0] + _transform[3] * _transform[3]);
-	var sy = Math.sqrt(_transform[1] * _transform[1] + _transform[4] * _transform[4]);
-	this.ctx.drawImage(img, _transform[6], _transform[7], sx * _image.surface.cellWide, sy * _image.surface.cellHigh);
+	// TODO: or use the Pixi style matrix which is always kept as the elements so at least I don't need to extract from array
+	var a = _transform[0];
+	var b = _transform[3];
+	var c = _transform[1];
+	var d = _transform[4];
+	var e = _transform[6];
+	var f = _transform[7];
+
+	// var sx = Math.sqrt(a * a + b * b);
+	// var sy = Math.sqrt(c * c + d * d);	
+	var w = srf.cellWide;		// * sx;
+	var h = srf.cellHigh;		// * sy;  TODO: I think this scale factor should be required but it works without... try with some larger images to check
+
+	this.ctx.save();
+	this.ctx.transform(a, b, c, d, e, f);
+	this.ctx.drawImage(img, -w * _image.anchorX, -h * _image.anchorY);
+	this.ctx.restore();
 
 	// // set up the animation frame
 	// var cell = Math.floor(_image.cellFrame);
