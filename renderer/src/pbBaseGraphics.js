@@ -23,7 +23,7 @@ function pbBaseGraphics()
 
 pbBaseGraphics.prototype.create = function(_canvas)
 {
-	console.log( "pbBaseGraphics.create" );
+	alert("ERROR: the selected graphic mode does not extend create from pbBaseGraphics!");
 };
 
 

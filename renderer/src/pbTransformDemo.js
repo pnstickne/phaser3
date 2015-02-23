@@ -27,7 +27,7 @@ pbTransformDemo.prototype.allLoaded = function()
 {
 	console.log( "pbTransformDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 

@@ -34,7 +34,7 @@ pbBunnyDemoNPOT.prototype.allLoaded = function()
 {
 	console.log( "pbBunnyDemoNPOT.allLoaded" );
 
-	this.renderer = new pbRenderer( this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 

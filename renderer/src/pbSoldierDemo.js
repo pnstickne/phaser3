@@ -44,7 +44,7 @@ pbSoldierDemo.prototype.allLoaded = function()
 {
 	console.log( "pbSoldierDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 

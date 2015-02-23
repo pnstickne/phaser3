@@ -12,7 +12,7 @@ var rootLayer = null;
 
 // TODO: split RAF timer out of here and into it's own object, including updateCallback etc???
 
-function pbRenderer(_docId, _bootCallback, _updateCallback, _context)
+function pbRenderer(_renderMode, _docId, _bootCallback, _updateCallback, _context)
 {
 	console.log("pbRenderer c'tor entry");
 
@@ -38,7 +38,7 @@ function pbRenderer(_docId, _bootCallback, _updateCallback, _context)
 	// boot callback
 	var _this = this;
     this._onBoot = function () {
-        	return _this.boot();
+        	return _this.boot(_renderMode);
     	};
     if (document.readyState === 'complete' || document.readyState === 'interactive')
     {
@@ -77,7 +77,7 @@ pbRenderer.prototype.destroy = function()
 };
 
 
-pbRenderer.prototype.boot = function()
+pbRenderer.prototype.boot = function(_renderMode)
 {
     if (this.isBooted)
     {
@@ -101,7 +101,7 @@ pbRenderer.prototype.boot = function()
     this.isBooted = true;
 
 	// create the drawing system interface
-	this.createGraphics();
+	this.createGraphics(_renderMode);
 
 	// create the rootLayer container for all graphics
 	rootLayer = new pbLayer();
@@ -145,9 +145,13 @@ pbRenderer.prototype.createGraphics = function(_preferredRenderer)
 
 	if (!this.graphics)
 	{
-		// revert to canvas '2d' if webGl is not available or 'canvas' was requested in _preferredRenderer
-	 	ctx = canvas.getContext("2d");
+		// final case fallback, try canvas '2d'
 		this.graphics = new pbCanvas();
+		if (!this.graphics.create(canvas))
+		{
+			this.graphics.destroy();
+			this.graphics = null;
+		}
 	}
 };
 

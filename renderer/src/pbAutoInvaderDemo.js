@@ -47,7 +47,7 @@ pbAutoInvaderDemo.prototype.allLoaded = function()
 	console.log( "pbAutoInvaderDemo.allLoaded" );
 
 	// callback to this.create when ready, callback to this.update once every frame
-	this.renderer = new pbRenderer( this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
