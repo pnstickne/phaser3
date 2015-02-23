@@ -77,6 +77,8 @@ pbSimpleLayer.prototype.update = function(_dictionary)
 pbSimpleLayer.prototype.prepareXY = function()
 {
 	var drawLength = 0;
+	var x = this.x;
+	var y = this.y;
 
 	// for all of my child sprites
 	var c = Math.min(this.children.length, MAX_SPRITES);
@@ -87,8 +89,8 @@ pbSimpleLayer.prototype.prepareXY = function()
 		// add sprite location to drawList
 		if (child.alive)
 		{
-			this.drawList[drawLength++] = child.x;
-			this.drawList[drawLength++] = child.y;
+			this.drawList[drawLength++] = child.x + x;
+			this.drawList[drawLength++] = child.y + y;
 		}
 	}
 	
@@ -104,6 +106,8 @@ pbSimpleLayer.prototype.prepareXY = function()
 pbSimpleLayer.prototype.prepareXYUV = function()
 {
 	var drawLength = 0;
+	var x = this.x;
+	var y = this.y;
 
 	// for all of my child sprites
 	var c = Math.min(this.children.length, MAX_SPRITES);
@@ -114,8 +118,8 @@ pbSimpleLayer.prototype.prepareXYUV = function()
 		// add sprite location to drawList
 		if (child.alive)
 		{
-			this.drawList[drawLength++] = child.x;
-			this.drawList[drawLength++] = child.y;
+			this.drawList[drawLength++] = child.x + x;
+			this.drawList[drawLength++] = child.y + y;
 			var cx = child.image.cellFrame % this.surface.cellsWide;
 			var cy = Math.floor(child.image.cellFrame / this.surface.cellsWide);
 			var r = this.surface.cellTextureBounds[cx][cy];
