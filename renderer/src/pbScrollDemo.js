@@ -17,7 +17,10 @@ function pbScrollDemo( docId )
 
 	var _this = this;
 
-	this.numLayers = 8;
+	this.numLayers = 2;
+	// dat.GUI controlled variables and callbacks
+	this.numCtrl = gui.add(this, "numLayers").min(0).max(MAX_SPRITES).step(250).listen();
+	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numLayers = 2; _this.restart(); });
 
 	this.docId = docId;
 	this.tileMap = null;
@@ -27,6 +30,7 @@ function pbScrollDemo( docId )
 	this.scrollLayers = null;
 	this.mapWidth = 0;
 	this.mapHeight = 0;
+	this.fps60 = 0;
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
@@ -88,13 +92,15 @@ pbScrollDemo.prototype.create = function()
 	// version: number
 	this.tileMap = JSON.parse(tileMapJSON);
 
-	this.addSprites();
+	this.createSurfaces();
 };
 
 
 pbScrollDemo.prototype.destroy = function()
 {
 	console.log("pbScrollDemo.destroy");
+
+	gui.remove(this.numCtrl);
 
 	this.renderer.destroy();
 	this.renderer = null;
@@ -128,19 +134,19 @@ pbScrollDemo.prototype.restart = function()
 };
 
 
-pbScrollDemo.prototype.addSprites = function()
+pbScrollDemo.prototype.createSurfaces = function()
 {
-	console.log("pbScrollDemo.addSprites");
+	console.log("pbScrollDemo.createSurfaces");
 
 	// the background image (tiled and stretched to fill the whole viewport)
 	var image = this.loader.getFile( this.bgImg );
 	var surface = new pbSurface();
 	surface.create(0, 0, 1, 1, image);
-	// tiled background to fill the width of the screen...
 	surface.cellTextureBounds[0][0].width = this.renderer.width / surface.cellWide;
 	var img = new pbImage();
 	img.create(surface, 0, 0, 0, true, false);
 	this.bgSpr = new pbSprite();
+
 	// scale the tiled background to compensate for the extra drawn width from tiling
 	// TODO: create a simple API to fix surface and sprite scaling, or add a separate variable to handle tiling properly
 	this.bgSpr.create(img, 0, 0, 1.0, 0, this.renderer.width / surface.cellWide, this.renderer.height / surface.cellHigh);
@@ -152,19 +158,31 @@ pbScrollDemo.prototype.addSprites = function()
 	this.tileSurface.create(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, image);
 	this.tileSurface.isNPOT = true;
 
+	// create all the scrolling layers to draw from the tileSurface
+	this.createLayers(this.tileSurface);
+};
+
+
+pbScrollDemo.prototype.createLayers = function(_surface)
+{
 	// create the scrolling layers
 	this.scrollLayers = [];
 	for(var i = 0; i < this.numLayers; i++)
-	{
-		this.scrollLayers[i] = new pbLayer();
-		this.scrollLayers[i].create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
-		rootLayer.addChild(this.scrollLayers[i]);
-		this.scrollLayers[i].dirX = 1 / (i + 1);
-		this.scrollLayers[i].dirY = 1 - 1 / (i + 1);
-		// draw the tiles into the scrolling layer
-		this.drawMap(i);
-	}
+		this.addLayer(_surface);
+};
 
+
+pbScrollDemo.prototype.addLayer = function(_surface)
+{
+	var layer = new pbLayer();
+	layer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
+	rootLayer.addChild(layer);
+	var i = this.scrollLayers.length;
+	layer.dirX = 1 / (i + 1);
+	layer.dirY = 1 - 1 / (i + 1);
+	// draw map tiles into the new layer
+	this.drawMap(layer);
+	this.scrollLayers.push(layer);
 };
 
 
@@ -185,8 +203,9 @@ pbScrollDemo.prototype.drawMap = function(_layer)
 			// 0 tile number is empty space, all other tile numbers are +1 their actual index position in the tile texture
 			if (tile !== 0)
 			{
-				this.mapSprites[y][x] = this.createTile(x * this.tileMap.tilesets[0].tilewidth, y * this.tileMap.tilesets[0].tileheight, tile - 1);
-				this.scrollLayers[_layer].addChild(this.mapSprites[y][x]);
+				var s = this.createTile(x * this.tileMap.tilesets[0].tilewidth, y * this.tileMap.tilesets[0].tileheight, tile - 1);
+				_layer.addChild(s);
+				this.mapSprites[y][x] = s;
 			}
 		}
 	}
@@ -237,5 +256,31 @@ pbScrollDemo.prototype.update = function()
 		this.scrollLayers[i].x = -sx;
 		this.scrollLayers[i].y = -sy;
 	}
+
+	// rough fps balancing by adjusting the number of layers, attempts to find the maximum possible at > 57 fps
+	if (fps >= 59)
+	{
+		// don't add more until the fps has been at 60 for one second
+		if (this.fps60++ > 60 && fps >= 60)
+		{
+			// add more with a gradually increasing amount as the fps stays at 60
+	 		this.addLayer(this.tileSurface);
+	 		this.numLayers = this.scrollLayers.length;
+	 		// delay before adding any more
+			this.fps60 = 0;
+		}
+	}
+	else
+	{
+		// fps dropped a little, reset counter
+		this.fps60 = 0;
+
+		// if (fps > 0 && fps <= 57 && (this.renderer.frameCount & 15) === 0)
+		// {
+		//  	// fps is too low, remove sprites... more when the fps is lower
+		//   	this.removeSprites((58 - fps) * 16);
+		// }
+	}
+
 };
 
