@@ -43,10 +43,17 @@ pbCanvas.prototype.create = function( _canvas )
 };
 
 
+pbCanvas.prototype.destroy = function()
+{
+	this.canvas = null;
+	this.ctx = null;
+};
+
+
 pbCanvas.prototype.preRender = function()
 {
 	// clear canvas here
-	this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 };
 
 
@@ -60,7 +67,10 @@ pbCanvas.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, _angle
 pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
 {
 	var img = _image.surface.image;
-	this.ctx.drawImage(img, _transform[6], _transform[7]);
+	// TODO: store scale in pbMatrix3 when it's set to avoid sqrt here... how best to deal with matrix multiplication for transform tree though?
+	var sx = Math.sqrt(_transform[0] * _transform[0] + _transform[3] * _transform[3]);
+	var sy = Math.sqrt(_transform[1] * _transform[1] + _transform[4] * _transform[4]);
+	this.ctx.drawImage(img, _transform[6], _transform[7], sx * _image.surface.cellWide, sy * _image.surface.cellHigh);
 
 	// // set up the animation frame
 	// var cell = Math.floor(_image.cellFrame);
