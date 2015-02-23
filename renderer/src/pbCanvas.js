@@ -53,7 +53,7 @@ pbCanvas.prototype.destroy = function()
 pbCanvas.prototype.preRender = function()
 {
 	// clear canvas here
-	//this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 };
 
 

@@ -70,7 +70,7 @@ pbTransformDemo.prototype.addSprites = function()
 	this.surface.create(0, 0, 1, 1, image);
 
 	var img = new pbImage();
-	img.create(this.surface, 0, 0.5, 0.5);		// anchorY = 1.0 - make movement appear more complex
+	img.create(this.surface, 0, 0.5, 1.0);		// anchorY = 1.0 - make movement appear more complex
 
 	this.dirx = 2;
 	this.spr = new pbSprite();
