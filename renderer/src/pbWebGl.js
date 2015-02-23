@@ -358,6 +358,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 // TODO: test variation of blitSimpleDrawImages that uses non-indexed triangle list instead of tri-strips... overhead of degenerate triangles might be greater than the extra vertex data, especially as the JS will become shorter/simpler too!
 
 // batch images, no transforms, pbSimpleLayer, pbBunnyDemo
+// requires _list to be alternately x and y coordinate values
 pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface )
 {
 	this.shaders.setProgram(this.shaders.blitShaderProgram);
