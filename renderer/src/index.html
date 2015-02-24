@@ -113,13 +113,13 @@
     var guiContainer = document.getElementById('gui');
     guiContainer.appendChild(gui.domElement);
 
-    // let the user select a rendering mode
+    // let the user select a rendering mode, listen to see if the demos change the selection
     var pickRenderer = gui.add(this, "useRenderer",
         {
             webgl: "webgl",
             canvas: "canvas"
         }
-    );
+    ).listen();
     pickRenderer.onFinishChange(
         function(value)
         {
@@ -139,6 +139,7 @@
             }
         }
     );
+
 
     // let the user select a demo to view
     var pickDemo = gui.add(this, "demoName",
