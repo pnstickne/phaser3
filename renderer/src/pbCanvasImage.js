@@ -34,11 +34,6 @@ pbCanvasImage.prototype.constructor = pbCanvasImage;
 pbCanvasImage.prototype.__super__ = pbBaseImage;
 
 
-pbCanvasImage.prototype.preUpdate = function()
-{
-};
-
-
 pbCanvasImage.prototype.draw = function(_list, _transform, _z_order)
 {
 	_list.push(  { surface: this.surface, image: this, transform: _transform, z_order: _z_order } );

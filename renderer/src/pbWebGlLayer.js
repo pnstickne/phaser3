@@ -34,7 +34,7 @@ pbWebGlLayer.prototype.__super__ = pbBaseLayer;
 
 pbWebGlLayer.prototype.create = function(_parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
 {
-	console.log("pbWebGlLayer.create", _x, _y);
+	// console.log("pbWebGlLayer.create", _x, _y);
 	
 	// call the pbBaseLayer create for this pbWebGlLayer
 	this.super(pbWebGlLayer, 'create', _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY);
@@ -65,7 +65,7 @@ pbWebGlLayer.prototype.update = function(_dictionary)
 	this.drawDictionary.clear();
 
 	// call the pbBaseLayer update for this pbWebGlLayer to access the child hierarchy
-	this.super(pbWebGlLayer, 'update');
+	this.super(pbWebGlLayer, 'update', this.drawDictionary);
 
 	if (this.clip)
 	{

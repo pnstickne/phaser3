@@ -113,7 +113,7 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 		w = srf.cellWide * sx;
 		h = srf.cellHigh * sy;
 		// part of a sprite sheet, use 9 parameter drawImage call
-		this.ctx.drawImage(img, rect.x * img.width, rect.y * img.height, rect.width * img.width, rect.height * img.height, e, f, w, h);
+		this.ctx.drawImage(img, rect.x * img.width, rect.y * img.height, rect.width * img.width, rect.height * img.height, e - w * _image.anchorX, f - h * _image.anchorY, w, h);
 	}
 };
 

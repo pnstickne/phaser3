@@ -23,16 +23,10 @@ pbCanvasLayer.prototype.__super__ = pbBaseLayer;
 
 
 
-pbCanvasLayer.prototype.create = function(_parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
-{
-	this.super(pbCanvasLayer, 'create', _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY);
-	this.drawList = [];
-};
-
-
 pbCanvasLayer.prototype.update = function()
 {
-	//console.log("pbCanvasLayer.update");
+	// console.log("pbCanvasLayer.update");
+	this.drawList = [];
 
 	// call the pbBaseLayer update for this pbCanvasLayer to access the child hierarchy
 	this.super(pbCanvasLayer, 'update', this.drawList);

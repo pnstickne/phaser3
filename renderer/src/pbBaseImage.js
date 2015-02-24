@@ -53,11 +53,6 @@ pbBaseImage.prototype.destroy = function()
 };
 
 
-pbBaseImage.prototype.preUpdate = function()
-{
-};
-
-
 // allow this class to be extended
 // permits multiple levels of inheritance 	http://jsfiddle.net/ZWZP6/2/  
 // improvement over original answer at 		http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript

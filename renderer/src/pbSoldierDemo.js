@@ -53,7 +53,7 @@ pbSoldierDemo.prototype.create = function()
 	console.log("pbSoldierDemo.create");
 
 	this.targetx = 0;
-	this.targety = 600 - 20
+	this.targety = 600 - 20;
 
 	this.spriteList = [];
 };
