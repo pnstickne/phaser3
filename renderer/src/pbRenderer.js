@@ -41,7 +41,10 @@ function pbRenderer(_renderMode, _docId, _bootCallback, _updateCallback, _gameCo
     canvas.setAttribute('id', this.docId);
     canvas.setAttribute('width', 800);
     canvas.setAttribute('height', 600);
-    document.body.appendChild(canvas);
+    canvas.setAttribute('style', 'border: none');
+    // NOTE: canvas performance seems heavily dependent on the Node order of it's parent, it needs to be first!
+	var guiContainer = document.getElementById('gui');    
+    document.body.insertBefore(canvas, guiContainer);
 
 	// boot callback
 	var _this = this;
