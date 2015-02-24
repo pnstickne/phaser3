@@ -137,7 +137,7 @@ pbBaseLayer.prototype.removeChild = function( _child )
 	else
 	{
 		// call the super.removeChild function
-		this.super(pbBaseLayer, 'removeChild', this, _child);
+		this.super(pbBaseLayer, 'removeChild', _child);
 	}
 };
 
