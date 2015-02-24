@@ -229,7 +229,10 @@ pbCanvas.prototype.blitListDirect = function( _list, _listLength, _surface )
 	var h = _surface.cellWide * 0.5;
 	while(c--)
 	{
-		this.ctx.drawImage(_surface.image, _list[c].x - w, _list[c].y - h);
+		// round to integer positions for faster rendering
+		var x = (0.5 + _list[c].x - w) | 0;
+		var y = (0.5 + _list[c].y - h) | 0;
+		this.ctx.drawImage(_surface.image, x, y);
 	}
 };
 
