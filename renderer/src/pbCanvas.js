@@ -123,6 +123,14 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 pbCanvas.prototype.rawBatchDrawImages = function(_list)
 {
 	// can't batch in Canvas mode, feed them to drawImageWithTransform one at a time
+
+	// http://blog.vjeux.com/2009/javascript/speed-up-javascript-sort.html
+	// var save = Object.prototype.toString;
+	// Object.prototype.toString = function () { return this.z_order; };		// TODO: z_order needs to be a string of fixed length
+	// _list.sort();
+	// Object.prototype.toString = save;
+	_list.sort(function(a,b) { return a.z_order - b.z_order; });
+
 	var c = _list.length;
 	while(c--)
 	{
