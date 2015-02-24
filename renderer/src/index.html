@@ -60,17 +60,17 @@
 
 <body>
 
-    <canvas id="renderer-test" style="border: none;" width="800" height="600"></canvas>
-
     <div id="gui"></div>
 
 <script type="text/javascript">
 
 /**
  * NOTE: use of the 'pb' prefix on all classes in this test bed is essential for renaming class references without ambiguity.
- * During development it is expected that class names, hierarchies and inter-relationships will change frequently as we feel our way to the final structure.
+ * During development it is expected that class names, hierarchies and inter-relationships will change frequently as we grow towards the final structure.
  */
+
     var demo;
+    var demoName;
     var docId = 'renderer-test';
     var demoName = null;
     var whichRenderer = 'canvas';           // which renderer do all of the demos use today?  valid values: undefined, 'webgl', 'canvas'
@@ -97,6 +97,34 @@
     var guiContainer = document.getElementById('gui');
     guiContainer.appendChild(gui.domElement);
 
+    // let the user select a rendering mode
+    var pickRenderer = gui.add(this, "whichRenderer",
+        {
+            webgl: "webgl",
+            canvas: "canvas"
+        }
+    );
+    pickRenderer.onFinishChange(
+        function(value)
+        {
+            console.log("\nChanging renderer mode...", value);
+
+            // destroy any running demo, which should also destroy the renderer it created
+            if (demo)
+            {
+                demo.destroy();
+                demo = null;
+            }
+
+            // start the same demo again
+            if (demoName && window[demoName])
+            {
+                demo = new window[demoName](docId);
+            }
+        }
+    );
+
+    // let the use select a demo to view
     var pickDemo = gui.add(this, "demoName",
         {
             none: null,
@@ -119,6 +147,8 @@
     pickDemo.onFinishChange(
         function(value)
         {
+            console.log("Changing demo...", value);
+
             if (demo)
             {
                 demo.destroy();
@@ -129,8 +159,12 @@
             {
                 demo = new window[value](docId);
             }
+
+            // remember the selected demo name
+            demoName = value;
         }
     );
+
 
 </script>
 

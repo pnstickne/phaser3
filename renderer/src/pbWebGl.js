@@ -38,16 +38,24 @@ pbWebGl.prototype.create = function( _canvas )
 	if ( window.WebGLRenderingContext )
 	{
 		console.log( "pbWebGl.initGl" );
+		
 		try
 		{
-			//gl = canvas.getContext( "webgl" );
 			gl = _canvas.getContext( "webgl", { alpha: false } );
 			if (!gl)	// support IE11, lagging behind as usual
 				gl = _canvas.getContext( "experimental-webgl", { alpha: false } );
 		}
 		catch ( e )
 		{
-			alert( "WebGL initialisation error: ", e.message );
+			console.log( "WebGL initialisation error:\n", e.message );
+			alert( "WebGL initialisation error:\n", e.message );
+			return false;
+		}
+
+		if (!gl)
+		{
+			console.log( "WebGL did not initialise!");
+			alert( "WebGL did not initialise!");
 			return false;
 		}
 
@@ -106,6 +114,7 @@ pbWebGl.prototype.destroy = function()
 	this.bgColorBuffer = null;
 	this.positionBuffer = null;
 	this.drawingArray = null;
+
 	gl = null;
 };
 

@@ -37,6 +37,7 @@ pbCanvas.prototype.create = function( _canvas )
 
 		if (this.ctx)
 			return true;
+
 		alert( "Canvas Error: unable to getContext('2d')");
 	}
 	return false;
@@ -45,15 +46,16 @@ pbCanvas.prototype.create = function( _canvas )
 
 pbCanvas.prototype.destroy = function()
 {
-	this.canvas = null;
 	this.ctx = null;
+	this.canvas = null;
 };
 
 
 pbCanvas.prototype.preRender = function()
 {
 	// clear canvas before drawing contents
-	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	this.ctx.fillStyle = '#000010';
+	this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 };
 
 

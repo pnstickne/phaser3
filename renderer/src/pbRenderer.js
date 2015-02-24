@@ -12,7 +12,9 @@ var rootLayer = null;
 
 // TODO: split RAF timer out of here and into it's own object, including updateCallback etc???
 
-function pbRenderer(_renderMode, _docId, _bootCallback, _updateCallback, _context)
+// Turns out it's impossible to change the 'primary context' of a canvas... http://stackoverflow.com/questions/7293778/switch-canvas-context
+
+function pbRenderer(_renderMode, _docId, _bootCallback, _updateCallback, _gameContext)
 {
 	console.log("pbRenderer c'tor entry");
 
@@ -20,10 +22,9 @@ function pbRenderer(_renderMode, _docId, _bootCallback, _updateCallback, _contex
 	this.docId = _docId;
 	this.bootCallback = _bootCallback;
 	this.updateCallback = _updateCallback;
-	this.context = _context;
+	this.gameContext = _gameContext;
 
 	// globals
- 	canvas = null;
  	webGl = null;
  	rootLayer = null;
 
@@ -34,6 +35,13 @@ function pbRenderer(_renderMode, _docId, _bootCallback, _updateCallback, _contex
 
 	// drawing system
 	this.graphics = null;
+
+	// create a canvas surface
+    canvas = document.createElement('canvas');
+    canvas.setAttribute('id', this.docId);
+    canvas.setAttribute('width', 800);
+    canvas.setAttribute('height', 600);
+    document.body.appendChild(canvas);
 
 	// boot callback
 	var _this = this;
@@ -56,6 +64,8 @@ function pbRenderer(_renderMode, _docId, _bootCallback, _updateCallback, _contex
 
 pbRenderer.prototype.destroy = function()
 {
+	console.log("pbRenderer.destroy");
+
 	if (this.rootTimer)
 		this.rootTimer.destroy();
 	this.rootTimer = null;
@@ -69,11 +79,13 @@ pbRenderer.prototype.destroy = function()
 	rootLayer = null;
 
 	this.updateCallback = null;
+	this.gameContext = null;
 	this.bootCallback = null;
-	this.context = null;
 
-	canvas = null;
 	webGl = null;
+
+	canvas.parentNode.removeChild(canvas);
+	canvas = null;
 };
 
 
@@ -108,7 +120,7 @@ pbRenderer.prototype.boot = function(_renderMode)
 	rootLayer.create(null, this, 0, 0, 0, 0, 1, 1);
 
     // call the boot callback now the renderer is ready
-    this.bootCallback.call(this.context);
+    this.bootCallback.call(this.gameContext);
 
     // start the update looping
 	this.rootTimer = new pbRootTimer();
@@ -125,13 +137,22 @@ pbRenderer.prototype.boot = function(_renderMode)
  */
 pbRenderer.prototype.createGraphics = function(_preferredRenderer)
 {
-	// set the global canvas variable
-	canvas = document.getElementById(this.docId);
+	console.log("pbRenderer.createGraphics");
 
+	// reset the canvas (erase its contents and set all properties to defaults)
+	canvas.width = canvas.width;
+
+	// useful stuff held local to renderer
 	this.width = canvas.width;
 	this.height = canvas.height;
 	this.graphics = null;
 	
+	//
+	// try to get the renderer set up
+	// TODO: all drawing modes should be tried in a predetermined order with optional preference respected
+	// currently: 'webgl', 'canvas'
+	//
+
 	if (_preferredRenderer === undefined || _preferredRenderer == 'webgl')
 	{
 		// try to get a webGL context
@@ -166,7 +187,7 @@ pbRenderer.prototype.update = function()
 	this.graphics.preRender();
 
 	// update game logic
-	this.updateCallback.call(this.context);
+	this.updateCallback.call(this.gameContext);
 
 	// update all object transforms then draw everything
 	if (rootLayer)
