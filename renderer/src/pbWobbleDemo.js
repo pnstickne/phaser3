@@ -98,7 +98,7 @@ pbWobbleDemo.prototype.addSprites = function()
 		this.grid[y] = [];
 		for(x = 0; x < this.surface.cellsWide; x++)
 		{
-			var img = new pbImage();
+			var img = new imageClass();
 			img.create(this.surface, c);
 
 			var cx = x * this.surface.cellWide + this.surface.cellWide * 0.5;

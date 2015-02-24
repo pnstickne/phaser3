@@ -88,7 +88,7 @@ pbSprite.prototype.destroy = function()
 
 pbSprite.prototype.update = function(_drawDictionary)
 {
-	console.log("pbSprite.update");
+	//console.log("pbSprite.update");
 
 	if (!this.alive)
 		return true;
@@ -140,6 +140,9 @@ pbSprite.prototype.addChild = function(_child)
 {
 	if (!this.children)
 		this.children = [];
+
+	console.log("pbSprite.addChild", this.children.length);
+	
 	this.children.push(_child);
 	_child.parent = this;
 };
@@ -184,7 +187,7 @@ pbSprite.prototype.removeChildAt = function(_index)
 // improvement over original answer at 		http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
 pbSprite.prototype.super = function(clazz, functionName)
 {
-	console.log("pbSprite.super", functionName);
+	//console.log("pbSprite.super", functionName);
     var args = Array.prototype.slice.call(arguments, 2);
     clazz.prototype.__super__.prototype[functionName].apply(this, args);
 };

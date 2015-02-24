@@ -166,6 +166,7 @@ pbRenderer.prototype.createGraphics = function(_preferredRenderer)
 			// got one, now set up the support
 			useRenderer = 'webgl';
 			layerClass = pbWebGlLayer;
+			imageClass = pbWebGlImage;
 			return;
 		}
 		this.graphics.destroy();
@@ -181,6 +182,7 @@ pbRenderer.prototype.createGraphics = function(_preferredRenderer)
 			// got one, now set up the support
 			useRenderer = 'canvas';
 			layerClass = pbCanvasLayer;
+			imageClass = pbCanvasImage;
 			return;
 		}
 		this.graphics.destroy();

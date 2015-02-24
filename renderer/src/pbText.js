@@ -50,7 +50,7 @@ pbText.prototype.addLine = function(_text, _x, _y, _gap)
 	for(var i = 0, l = _text.length; i < l; i++)
 	{
 		var c = _text.charCodeAt(i) - this.firstAscii;
-		var img = new pbImage();
+		var img = new imageClass();
 		img.create(this.surface, c);
 
 		// TODO: layers are not correctly depth separated: If this UI layer 'z' is not lower than it's parent layer, the text will appear behind that layer's sprite children

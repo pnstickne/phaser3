@@ -7,10 +7,11 @@
 
 function pbCanvasLayer()
 {
-	this.list = null;
-	this.parent = null;
-	this.renderer = null;
-	this.clip = null;
+	this.super(pbCanvasLayer, 'constructor');
+	// this.parent = null;
+	// this.renderer = null;
+	// this.clip = null;
+	this.drawList = null;
 }
 
 // pbCanvasLayer extends from the pbBaseLayer prototype chain
@@ -21,12 +22,20 @@ pbCanvasLayer.prototype.constructor = pbCanvasLayer;
 pbCanvasLayer.prototype.__super__ = pbBaseLayer;
 
 
+
+pbCanvasLayer.prototype.create = function(_parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
+{
+	this.super(pbCanvasLayer, 'create', _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY);
+	this.drawList = [];
+};
+
+
 pbCanvasLayer.prototype.update = function()
 {
-	console.log("pbCanvasLayer.update");
+	//console.log("pbCanvasLayer.update");
 
 	// call the pbBaseLayer update for this pbCanvasLayer to access the child hierarchy
-	this.super(pbCanvasLayer, 'update');
+	this.super(pbCanvasLayer, 'update', this.drawList);
 
 	if (this.clip)
 	{
@@ -40,8 +49,8 @@ pbCanvasLayer.prototype.update = function()
 	}
 
 	// draw all of the queued objects
-	if (this.list && this.list.length > 0)
-		this.draw(this.list);
+	if (this.drawList && this.drawList.length > 0)
+		this.draw(this.drawList);
 
 	// call update for all members of this layer
 	var i = this.list.length;

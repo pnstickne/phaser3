@@ -143,7 +143,7 @@ pbScrollDemo.prototype.createSurfaces = function()
 	var surface = new pbSurface();
 	surface.create(0, 0, 1, 1, image);
 	surface.cellTextureBounds[0][0].width = this.renderer.width / surface.cellWide;
-	var img = new pbImage();
+	var img = new imageClass();
 	img.create(surface, 0, 0, 0, true, false);
 	this.bgSpr = new pbSprite();
 
@@ -214,7 +214,7 @@ pbScrollDemo.prototype.drawMap = function(_layer)
 
 pbScrollDemo.prototype.createTile = function(_x, _y, _cell)
 {
-	var img = new pbImage();
+	var img = new imageClass();
 	img.create(this.tileSurface, _cell, 0, 0, false, false);
 	var spr = new pbSprite();
 	spr.create(img, _x, _y, 0.5, 0, 1, 1);

@@ -7,6 +7,8 @@
 
 function pbBaseLayer()
 {
+	this.super(pbBaseLayer, 'constructor');
+
 	this.list = null;
 	this.parent = null;
 	this.renderer = null;
@@ -25,15 +27,15 @@ pbBaseLayer.prototype.create = function(_parent, _renderer, _x, _y, _z, _angleIn
 {
 	console.log("pbBaseLayer.create", _x, _y);
 	
+	// call the pbSprite create for this pbBaseLayer
+	this.super(pbBaseLayer, 'create', null, _x, _y, _z, _angleInRadians, _scaleX, _scaleY);
+	
 	// TODO: add pass-through option so that layers can choose not to inherit their parent's transforms and will use the rootLayer transform instead
-	 
 	// TODO: pbBaseLayer is rotating around it's top-left corner (because there's no width/height and no anchor point??)
 
 	this.renderer = _renderer;
 
 	this.parent = _parent;
-	// call the pbSprite create for this pbBaseLayer
-	this.super(pbBaseLayer, 'create', null, _x, _y, _z, _angleInRadians, _scaleX, _scaleY);
 	this.list = [];
 };
 
@@ -64,11 +66,11 @@ pbBaseLayer.prototype.destroy = function()
 };
 
 
-pbBaseLayer.prototype.update = function()
+pbBaseLayer.prototype.update = function(_drawList)
 {
-	console.log("pbBaseLayer.update");
+	//console.log("pbBaseLayer.update");
 	// call the pbSprite update for this pbBaseLayer to access the child hierarchy
-	this.super(pbBaseLayer, 'update');
+	this.super(pbBaseLayer, 'update', _drawList);
 };
 
 
@@ -99,11 +101,13 @@ pbBaseLayer.prototype.draw = function(_list)
  */
 pbBaseLayer.prototype.addChild = function( _child )
 {
+	console.log("pbBaseLayer.addChild", this.list.length);
+
 	// TODO: debug only, catches hard to track error that can propagate down through multiple layers and sprites hierarchies
 	if (_child === undefined || _child === null)
 		alert("ERROR: pbBaseLayer.addChild received an invalid _child", _child);
 
-	if ((_child instanceof pbBaseLayer) || (_child instanceof pbSimpleLayer))
+	if ((_child instanceof pbBaseLayer) || (_child instanceof pbCanvasLayer) || (_child instanceof pbWebGlLayer) || (_child instanceof pbSimpleLayer))
 	{
 		this.list.push( _child );
 		_child.parent = this;
@@ -111,14 +115,16 @@ pbBaseLayer.prototype.addChild = function( _child )
 	else
 	{
 		// call the super.addChild function
-		this.super(pbBaseLayer, 'addChild', this, _child);
+		this.super(pbBaseLayer, 'addChild', _child);
 	}
 };
 
 
 pbBaseLayer.prototype.removeChild = function( _child )
 {
-	if ((_child instanceof pbBaseLayer) || (_child instanceof pbSimpleLayer))
+	console.log("pbBaseLayer.removeChild", this.list.length);
+
+	if ((_child instanceof pbBaseLayer) || (_child instanceof pbCanvasLayer) || (_child instanceof pbWebGlLayer) || (_child instanceof pbSimpleLayer))
 	{
 		if (!this.list) return;
 		var index = this.list.indexOf(_child);

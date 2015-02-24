@@ -108,7 +108,7 @@ pbSoldierDemo.prototype.addSprites = function(num)
 
 		// unique image holder per soldier (permits individual animation)
 		var frames = 0;
-		var img = new pbImage();
+		var img = new imageClass();
 		if (i % 2 == 1)
 		{
 			img.create(this.surface_run, Math.floor(Math.random() * 3));
@@ -200,9 +200,9 @@ pbSoldierDemo.prototype.update = function()
 	{
 	 	this.addSprites(5);
 	}
-	if (fps > 0 && fps < 55)
-	{
-	 	this.removeSprites(1);
-	}
+	// if (fps > 0 && fps < 55)
+	// {
+	//  	this.removeSprites(1);
+	// }
 };
 

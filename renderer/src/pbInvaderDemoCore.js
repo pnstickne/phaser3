@@ -96,7 +96,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	var image = this.parent.loader.getFile( this.parent.starsImg );
 	this.bgSurface = new pbSurface();
 	this.bgSurface.create(0, 0, 1, 1, image);
-	this.bgImage = new pbImage();
+	this.bgImage = new imageClass();
 	this.bgImage.create(this.bgSurface, 0, 0, 0, true, true);
 	this.bg = new pbSprite();
 	this.bg.create(this.bgImage, 0, 0, 1, 0, 1.0, 1.0);
@@ -106,7 +106,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	image = this.parent.loader.getFile( this.parent.playerImg );
 	this.playerSurface = new pbSurface();
 	this.playerSurface.create(0, 0, 1, 1, image);
-	this.playerImage = new pbImage();
+	this.playerImage = new imageClass();
 	this.playerImage.create(this.playerSurface, 0);
 	this.player = new pbSprite();
 	this.player.create(this.playerImage, this.parent.renderer.width * 0.5, this.parent.renderer.height * 0.9, 0, 0, 1.0, 1.0);
@@ -122,7 +122,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.bullets = [];			// list of bullets which are firing
 	for(var i = 0; i < 100; i++)
 	{
-		var img = new pbImage();
+		var img = new imageClass();
 		// anchor point at front of bullet for easy collisions...
 		img.create(this.bulletSurface, 0, 0.5, 0.0);
 		var bullet = new pbSprite();
@@ -139,7 +139,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.rockets = [];			// list of rockets which are firing
 	for(var i = 0; i < 100; i++)
 	{
-		var img = new pbImage();
+		var img = new imageClass();
 		img.create(this.rocketSurface, 0, 0.5, 0.5);
 		var rocket = new pbSprite();
 		rocket.create(img, 0, 0, 0, 0, 1.0, 1.0);
@@ -161,7 +161,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.bombs = [];			// list of bombs which are firing
 	for(var i = 0; i < 100; i++)
 	{
-		var img = new pbImage();
+		var img = new imageClass();
 		img.create(this.bombSurface, 0);
 		var bomb = new pbSprite();
 		bomb.create(img, 0, 0, 0, 0, 1.0, 1.0);
@@ -179,7 +179,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.explosionSurface.create(128, 128, 16, 1, image);
 	for(var i = 0; i < 100; i++)
 	{
-		var img = new pbImage();
+		var img = new imageClass();
 		img.create(this.explosionSurface, 0);
 		var explosion = new pbSprite();
 		explosion.create(img, 0, 0, 0, 0, 0.5, 0.5);
@@ -194,7 +194,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.smokeSurface.create(64, 64, 8, 1, image);
 	for(var i = 0; i < 200; i++)
 	{
-		var img = new pbImage();
+		var img = new imageClass();
 		img.create(this.smokeSurface, 0);
 		var smoke = new pbSprite();
 		smoke.create(img, 0, 0, 0, 0, 1.0, 1.0);
@@ -209,7 +209,7 @@ pbInvaderDemoCore.prototype.addInvaders = function()
 	for(var y = 0; y < 5; y++)
 		for(var x = 0; x < 12; x++)
 		{
-			var img = new pbImage();
+			var img = new imageClass();
 			img.create(this.invaderSurface, Math.floor(Math.random() * 3));
 			var invader = new pbSprite();
 			invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
