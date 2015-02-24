@@ -19,7 +19,8 @@ function pbCanvasToGlDemo( docId )
 
 	this.canvasSrc = null;
 
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	// force to 'webgl' renderer, this demo makes no sense in canvas mode
+	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 
 	console.log( "pbCanvasToGlDemo c'tor exit" );
 }
