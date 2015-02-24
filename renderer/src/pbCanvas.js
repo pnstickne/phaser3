@@ -71,7 +71,7 @@ pbCanvas.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, _angle
 pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
 {
 	var srf = _image.surface;
-	var img = srf.image;
+	var srcImageData = srf.image;
 	var w, h;
 
 	// TODO: use the Pixi style 'object' matrix which is kept as elements so I don't need to extract from array.. after speed tests vs the glMatrix approach!
@@ -87,7 +87,14 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 	// TODO: apply skew factors if set
 	// TODO: animation frame selection and extraction from the sprite-sheet
 
-	if (img.fullScreen || (srf.cellsWide === 1 && srf.cellsHigh === 1))
+	if (_image.fullScreen)
+	{
+		w = pbRenderer.width;
+		h = pbRenderer.height;
+		// a single stretched image, use 5 parameter drawImage call
+		this.ctx.drawImage(srcImageData, e - w * _image.anchorX, f - h * _image.anchorY, w, h);
+	}
+	else if (srf.cellsWide === 1 && srf.cellsHigh === 1)
 	{
 
 		// TODO: store scale in pbMatrix3 when it's set to avoid sqrt here... how best to deal with matrix multiplication for transform tree though?
@@ -101,7 +108,7 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 
 		this.ctx.transform(a, b, c, d, e, f);
 		// a single image, use 3 parameter drawImage call
-		this.ctx.drawImage(img, -w * _image.anchorX, -h * _image.anchorY);
+		this.ctx.drawImage(srcImageData, -w * _image.anchorX, -h * _image.anchorY);
 
 		this.ctx.restore();
 	}
@@ -114,7 +121,7 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 		w = srf.cellWide * sx;
 		h = srf.cellHigh * sy;
 		// part of a sprite sheet, use 9 parameter drawImage call
-		this.ctx.drawImage(img, rect.x * img.width, rect.y * img.height, rect.width * img.width, rect.height * img.height, e - w * _image.anchorX, f - h * _image.anchorY, w, h);
+		this.ctx.drawImage(srcImageData, rect.x * srcImageData.width, rect.y * srcImageData.height, rect.width * srcImageData.width, rect.height * srcImageData.height, e - w * _image.anchorX, f - h * _image.anchorY, w, h);
 	}
 };
 
