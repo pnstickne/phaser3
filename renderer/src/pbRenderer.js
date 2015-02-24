@@ -9,6 +9,10 @@ var canvas = null;
 var webGl = null;
 var rootLayer = null;
 
+// static global
+pbRenderer.width = 0;
+pbRenderer.height = 0;
+
 
 // TODO: split RAF timer out of here and into it's own object, including updateCallback etc???
 
@@ -146,8 +150,8 @@ pbRenderer.prototype.createGraphics = function(_preferredRenderer)
 	canvas.width = canvas.width;
 
 	// useful stuff held local to renderer
-	this.width = canvas.width;
-	this.height = canvas.height;
+	pbRenderer.width = canvas.width;
+	pbRenderer.height = canvas.height;
 	this.graphics = null;
 	
 	//

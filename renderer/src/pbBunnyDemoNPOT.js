@@ -138,14 +138,14 @@ pbBunnyDemoNPOT.prototype.update = function()
 			spr.x = 13;
 			obj.vx = -obj.vx;
 		}
-		else if (spr.x > this.renderer.width - 13)
+		else if (spr.x > pbRenderer.width - 13)
 		{
-			spr.x = this.renderer.width - 13;
+			spr.x = pbRenderer.width - 13;
 			obj.vx = -obj.vx;
 		}
-		if (spr.y >= this.renderer.height)
+		if (spr.y >= pbRenderer.height)
 		{
-			spr.y = this.renderer.height;
+			spr.y = pbRenderer.height;
 			obj.vy *= - 0.85;
 			if (Math.random() > 0.5)
 			{

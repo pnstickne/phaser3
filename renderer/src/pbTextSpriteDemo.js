@@ -86,7 +86,7 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	this.yellowLayer.create(this.redLayer, this.renderer, 0, 0, 0, 0, 1, 1);
 	this.redLayer.addChild(this.yellowLayer);
 
-	var fillScreen = Math.floor(this.renderer.width / 16) * Math.floor(this.renderer.height / 16);
+	var fillScreen = Math.floor(pbRenderer.width / 16) * Math.floor(pbRenderer.height / 16);
 
 	var i, r, img, spr, x, y;
 
@@ -99,8 +99,8 @@ pbTextSpriteDemo.prototype.addSprites = function()
 		img.create(this.surface, r);
 
 		spr = new pbSprite();
-		x = 8 + (i * 16) % this.renderer.width;
-		y = 8 + Math.floor(((i * 16) / this.renderer.width)) * 16;
+		x = 8 + (i * 16) % pbRenderer.width;
+		y = 8 + Math.floor(((i * 16) / pbRenderer.width)) * 16;
 		spr.create(img, x, y, 1.0, 0, 1.0, 1.0);
 
 		this.greenLayer.addChild(spr);
@@ -116,8 +116,8 @@ pbTextSpriteDemo.prototype.addSprites = function()
 		img.create(this.surface, r + 95);
 
 		spr = new pbSprite();
-		x = 8 + (i * 16) % this.renderer.width;
-		y = 8 + Math.floor(((i * 16) / this.renderer.width)) * 16;
+		x = 8 + (i * 16) % pbRenderer.width;
+		y = 8 + Math.floor(((i * 16) / pbRenderer.width)) * 16;
 		spr.create(img, x, y, 1.0, 0, 1.0, 1.0);
 
 		this.redLayer.addChild(spr);
@@ -133,8 +133,8 @@ pbTextSpriteDemo.prototype.addSprites = function()
 		img.create(this.surface, r + 95 * 2);
 
 		spr = new pbSprite();
-		x = 8 + (i * 16) % this.renderer.width;
-		y = 8 + Math.floor(((i * 16) / this.renderer.width)) * 16;
+		x = 8 + (i * 16) % pbRenderer.width;
+		y = 8 + Math.floor(((i * 16) / pbRenderer.width)) * 16;
 		spr.create(img, x, y, 1.0, 0, 1.0, 1.0);
 
 		this.yellowLayer.addChild(spr);
@@ -151,7 +151,7 @@ pbTextSpriteDemo.prototype.update = function()
 	{
 		spr = this.greenLetters[i];
 		spr.y += (spr.x + 100) * 0.01;
-		if (spr.y > this.renderer.height + 8)
+		if (spr.y > pbRenderer.height + 8)
 			spr.y = -8;
 	}
 	for(i = 0, l = this.redLetters.length; i < l; i++)
@@ -159,14 +159,14 @@ pbTextSpriteDemo.prototype.update = function()
 		spr = this.redLetters[i];
 		spr.y -= (spr.x + 100) * 0.01;
 		if (spr.y < -8)
-			spr.y = this.renderer.height + 8;
+			spr.y = pbRenderer.height + 8;
 	}
 	for(i = 0, l = this.yellowLetters.length; i < l; i++)
 	{
 		spr = this.yellowLetters[i];
 		spr.x -= (spr.y + 100) * 0.01;
 		if (spr.x < -8)
-			spr.x = this.renderer.width + 8;
+			spr.x = pbRenderer.width + 8;
 	}
 };
 

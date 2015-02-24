@@ -43,8 +43,8 @@ pbCanvasToGlDemo.prototype.create = function()
 	{
 		var obj =
 		{
-			x : Math.random() * this.renderer.width,
-			y : Math.random() * this.renderer.height,
+			x : Math.random() * pbRenderer.width,
+			y : Math.random() * pbRenderer.height,
 			vx : (Math.random() > 0.5 ? 1 : -1),
 			vy : (Math.random() > 0.5 ? 1 : -1),
 			angleInRadians : Math.random() * Math.PI * 2.0,
@@ -130,9 +130,9 @@ pbCanvasToGlDemo.prototype.update = function()
 		// move the webGl texture around
 		obj.angleInRadians += 0.01;
 		obj.x += obj.vx;
-		if (obj.x <= 0 || obj.x >= this.renderer.width) obj.vx = -obj.vx;
+		if (obj.x <= 0 || obj.x >= pbRenderer.width) obj.vx = -obj.vx;
 		obj.y += obj.vy;
-		if (obj.y <= 0 || obj.y >= this.renderer.height) obj.vy= -obj.vy;
+		if (obj.y <= 0 || obj.y >= pbRenderer.height) obj.vy= -obj.vy;
 		obj.scale += obj.scaleDir;
 		if (obj.scale < 0.1 || obj.scale >= 2.0) obj.scaleDir = -obj.scaleDir;
 

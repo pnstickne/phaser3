@@ -56,8 +56,8 @@ pbMultiInstanceDemo.prototype.addCameras = function()
 {
 	var cx = 0;
 	var cy = 0;
-	var tx = this.renderer.width / this.numWide;
-	var ty = this.renderer.height / this.numHigh;
+	var tx = pbRenderer.width / this.numWide;
+	var ty = pbRenderer.height / this.numHigh;
 
 	this.cameras = [];
 	for(var y = 0; y < this.numHigh; y++)

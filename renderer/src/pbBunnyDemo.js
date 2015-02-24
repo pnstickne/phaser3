@@ -117,14 +117,14 @@ pbBunnyDemo.prototype.update = function()
 			obj.x = 13;
 			obj.vx = -obj.vx;
 		}
-		else if (obj.x > this.renderer.width - 13)
+		else if (obj.x > pbRenderer.width - 13)
 		{
-			obj.x = this.renderer.width - 13;
+			obj.x = pbRenderer.width - 13;
 			obj.vx = -obj.vx;
 		}
-		if (obj.y >= this.renderer.height)
+		if (obj.y >= pbRenderer.height)
 		{
-			obj.y = this.renderer.height;
+			obj.y = pbRenderer.height;
 			obj.vy *= - 0.85;
 			if (Math.random() > 0.5)
 			{
