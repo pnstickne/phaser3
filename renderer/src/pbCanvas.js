@@ -237,9 +237,21 @@ pbCanvas.prototype.blitListDirect = function( _list, _listLength, _surface )
 };
 
 
+// called when pbSimpleLayer.setDrawingFunctions is directed to pbSimpleLayer.drawPoint
+// draws the whole of _surface at the _list locations, _list is alternately x and y coordinates
+// this is a wrapper for a webGl function that has no equivalent in Canvas
 pbCanvas.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 {
-	alert("ERROR: Canvas graphic mode does not yet extend blitDrawImagesPoint from pbBaseGraphics!");
+	var c = _listLength;
+	var w = _surface.cellWide * 0.5;
+	var h = _surface.cellWide * 0.5;
+	while(c--)
+	{
+		// round to integer positions for faster rendering
+		var y = (0.5 + _list[c--] - h) | 0;
+		var x = (0.5 + _list[c] - w) | 0;
+		this.ctx.drawImage(_surface.image, x, y);
+	}
 };
 
 
