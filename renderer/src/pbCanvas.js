@@ -62,6 +62,7 @@ pbCanvas.prototype.preRender = function()
 // currently unused
 pbCanvas.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, _angle, _scale)
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend drawImage from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend drawImage from pbBaseGraphics!");
 };
 
@@ -116,6 +117,11 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 	{
 		var cell = Math.floor(_image.cellFrame);
 		var rect = srf.cellTextureBounds[cell % srf.cellsWide][Math.floor(cell / srf.cellsWide)];
+
+		// TODO: debug only
+		if (!rect)
+			console.log("WARNING: invalid cellFrame or error in cellTextureBounds!", cell, srcImageData.currentSrc);
+
 		var sx = Math.sqrt(a * a + b * b);
 		var sy = Math.sqrt(c * c + d * d);	
 		w = srf.cellWide * sx;
@@ -163,12 +169,14 @@ pbCanvas.prototype.blitDrawImages = function(_list, _surface)
 
 pbCanvas.prototype.batchDrawImages = function(_list, _surface)
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend batchDrawImages from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend batchDrawImages from pbBaseGraphics!");
 };
 
 
 pbCanvas.prototype.reset = function()
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend reset from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend reset from pbBaseGraphics!");
 };
 
@@ -181,18 +189,21 @@ pbCanvas.prototype.scissor = function(_x, _y, _width, _height)
 
 pbCanvas.prototype.fillStyle = function(_fillColor, _lineColor)
 {
-	alert("ERROR: Canvas graphic mode does not fillStyle scissor from pbBaseGraphics!");
+	console.log("ERROR: Canvas graphic mode does not yet extend fillStyle from pbBaseGraphics!");
+	alert("ERROR: Canvas graphic mode does not fillStyle from pbBaseGraphics!");
 };
 
 
 pbCanvas.prototype.fillRect = function( x, y, wide, high, color )
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend fillRect from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend fillRect from pbBaseGraphics!");
 };
 
 
 pbCanvas.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface )
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend blitSimpleDrawImages from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend blitSimpleDrawImages from pbBaseGraphics!");
 };
 
@@ -234,12 +245,14 @@ pbCanvas.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface 
 
 pbCanvas.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surface )
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend blitDrawImagesPointAnim from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend blitDrawImagesPointAnim from pbBaseGraphics!");
 };
 
 
 pbCanvas.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transform, _z )
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend drawCanvasWithTransform from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend drawCanvasWithTransform from pbBaseGraphics!");
 };
 
