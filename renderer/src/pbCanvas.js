@@ -71,6 +71,7 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 {
 	var srf = _image.surface;
 	var img = srf.image;
+	var w, h;
 
 	// TODO: use the Pixi style 'object' matrix which is kept as elements so I don't need to extract from array.. after speed tests vs the glMatrix approach!
 	var a = _transform[0];
@@ -80,80 +81,40 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 	var e = _transform[6];
 	var f = _transform[7];
 
-	// TODO: store scale in pbMatrix3 when it's set to avoid sqrt here... how best to deal with matrix multiplication for transform tree though?
-	// var sx = Math.sqrt(a * a + b * b);
-	// var sy = Math.sqrt(c * c + d * d);	
-	var w = srf.cellWide;		// * sx;
-	var h = srf.cellHigh;		// * sy;  TODO: I think this scale factor should be required but it works without... try with some larger images to check
 
 	// TODO: 'fullScreen' flag... stretch to fit
 	// TODO: apply skew factors if set
 	// TODO: animation frame selection and extraction from the sprite-sheet
 
-	this.ctx.save();
-	this.ctx.transform(a, b, c, d, e, f);
-	this.ctx.drawImage(img, -w * _image.anchorX, -h * _image.anchorY);
-	this.ctx.restore();
+	if (img.fullScreen || (srf.cellsWide === 1 && srf.cellsHigh === 1))
+	{
 
+		// TODO: store scale in pbMatrix3 when it's set to avoid sqrt here... how best to deal with matrix multiplication for transform tree though?
+		// var sx = Math.sqrt(a * a + b * b);
+		// var sy = Math.sqrt(c * c + d * d);	
+		w = srf.cellWide;		// * sx;
+		h = srf.cellHigh;		// * sy;  TODO: I think this scale factor should be required but it works without... try with some larger images to check
 
-	// // set up the animation frame
-	// var cell = Math.floor(_image.cellFrame);
-	// var rect = surface.cellTextureBounds[cell % surface.cellsWide][Math.floor(cell / surface.cellsWide)];
+		// don't allow transforms to accumulate, save state and restore it...
+		this.ctx.save();
 
-	// var wide, high;
-	// if (_image.fullScreen)
-	// {
-	// 	rect.width = gl.drawingBufferWidth / surface.cellWide;
-	// 	rect.height = gl.drawingBufferHeight / surface.cellHigh;
-	// 	wide = gl.drawingBufferWidth;
-	// 	high = gl.drawingBufferHeight;
-	// }
-	// else
-	// {
-	// 	// half width, half height (of source frame)
-	// 	wide = surface.cellWide;
-	// 	high = surface.cellHigh;
-	// }
+		this.ctx.transform(a, b, c, d, e, f);
+		// a single image, use 3 parameter drawImage call
+		this.ctx.drawImage(img, -w * _image.anchorX, -h * _image.anchorY);
 
-	// // screen destination position
-	// // l, b,		0,1
-	// // l, t,		4,5
-	// // r, b,		8,9
-	// // r, t,		12,13
-	// if (_image.corners)
-	// {
-	// 	var cnr = _image.corners;
-	// 	l = -wide * _image.anchorX;
-	// 	r = wide + l;
-	// 	t = -high * _image.anchorY;
-	// 	b = high + t;
-	// 	// object has corner offets (skewing/perspective etc)
-	// 	buffer[ 0 ] = cnr.lbx * l; buffer[ 1 ] = cnr.lby * b;
-	// 	buffer[ 4 ] = cnr.ltx * l; buffer[ 5 ] = cnr.lty * t;
-	// 	buffer[ 8 ] = cnr.rbx * r; buffer[ 9 ] = cnr.rby * b;
-	// 	buffer[ 12] = cnr.rtx * r; buffer[ 13] = cnr.rty * t;
-	// }
-	// else
-	// {
-	// 	l = -wide * _image.anchorX;
-	// 	r = wide + l;
-	// 	t = -high * _image.anchorY;
-	// 	b = high + t;
-	// 	buffer[ 0 ] = buffer[ 4 ] = l;
-	// 	buffer[ 1 ] = buffer[ 9 ] = b;
-	// 	buffer[ 8 ] = buffer[ 12] = r;
-	// 	buffer[ 5 ] = buffer[ 13] = t;
-	// }
-
-	// // texture source position
-	// // x, b,		2,3
-	// // x, y,		6,7
-	// // r, b,		10,11
-	// // r, y,		14,15
-	// buffer[ 2 ] = buffer[ 6 ] = rect.x;
-	// buffer[ 3 ] = buffer[ 11] = rect.y + rect.height;
-	// buffer[ 10] = buffer[ 14] = rect.x + rect.width;
-	// buffer[ 7 ] = buffer[ 15] = rect.y;
+		this.ctx.restore();
+	}
+	else
+	{
+		var cell = Math.floor(_image.cellFrame);
+		var rect = srf.cellTextureBounds[cell % srf.cellsWide][Math.floor(cell / srf.cellsWide)];
+		var sx = Math.sqrt(a * a + b * b);
+		var sy = Math.sqrt(c * c + d * d);	
+		w = srf.cellWide * sx;
+		h = srf.cellHigh * sy;
+		// part of a sprite sheet, use 9 parameter drawImage call
+		this.ctx.drawImage(img, rect.x * img.width, rect.y * img.height, rect.width * img.width, rect.height * img.height, e, f, w, h);
+	}
 };
 
 
