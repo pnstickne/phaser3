@@ -2,7 +2,7 @@
  *
  * Bunny Mark - takes direct control of the rendering process for maximum speed
  *
- * TODO: optimise the pbSprite, pbImage and pbLayer code to close the distance between this and pbBunnyDemoNPOT
+ * TODO: optimise the pbSprite, pbImage and pbWebGlLayer code to close the distance between this and pbBunnyDemoNPOT
  * 
  */
 
@@ -36,7 +36,7 @@ pbBunnyDemo.prototype.allLoaded = function()
 {
 	console.log( "pbBunnyDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 

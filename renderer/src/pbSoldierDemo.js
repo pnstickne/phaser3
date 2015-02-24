@@ -44,7 +44,7 @@ pbSoldierDemo.prototype.allLoaded = function()
 {
 	console.log( "pbSoldierDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -125,7 +125,7 @@ pbSoldierDemo.prototype.addSprites = function(num)
 		spr.create(img, x, y, 1.0, 0, 96 / 600, 96 / 600);
 		rootLayer.addChild(spr);
 
-		// TODO: add pbLayer system to manage layers of pbSprites
+		// TODO: add pbWebGlLayer system to manage layers of pbSprites
 		// TODO: *maybe* add callback for pbSprite.update to implement AI functionality directly without needing unique objects for everything(?)
 		// OR: create a demoSoldier object
 		this.spriteList.push(

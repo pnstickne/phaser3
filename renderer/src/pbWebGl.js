@@ -206,7 +206,7 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 
 // TODO: third wave of pbWebGL optimisation... these drawing functions are tied to the shaders that support them, maybe set a currentProgram attribute callback?  Definitely need to move these out into their own files.
 
-// single image instances from pbLayer
+// single image instances from pbWebGlLayer
 pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
@@ -522,7 +522,7 @@ pbWebGl.prototype.blitListDirect = function( _list, _listLength, _surface )
 };
 
 
-// currently unused in demos.  pbImage.isParticle through pbLayer, sends four floats per vertex (x,y,u,v) to gl, no sprite sheet
+// currently unused in demos.  pbImage.isParticle through pbWebGlLayer, sends four floats per vertex (x,y,u,v) to gl, no sprite sheet
 // TODO: don't need u,v stream if it's always 0 & 1 values??
 pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 {
@@ -812,7 +812,7 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 };
 
 
-// Used by pbLayer for multiple sprite instances which are not particles
+// Used by pbWebGlLayer for multiple sprite instances which are not particles
 // Sends transform matrix elements to gl.
 // _list object format: { image: pbImage, transform: pbMatrix3, z_order: Number }
 pbWebGl.prototype.rawBatchDrawImages = function( _list )

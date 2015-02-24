@@ -66,7 +66,7 @@ pbCanvas.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, _angle
 };
 
 
-// used by pbLayer for single sprite drawing
+// used by pbWebGlLayer for single sprite drawing
 pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
 {
 	var srf = _image.surface;
@@ -118,7 +118,7 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 };
 
 
-// used by pbLayer for multiple sprite instances which are not particles
+// used by pbWebGlLayer for multiple sprite instances which are not particles
 // list objects: { image: pbImage, transform: pbMatrix3, z_order: Number }
 pbCanvas.prototype.rawBatchDrawImages = function(_list)
 {
@@ -140,7 +140,7 @@ pbCanvas.prototype.rawBatchDrawImages = function(_list)
 };
 
 
-// used by pbLayer for multiple sprite instances which have the particle flag set
+// used by pbWebGlLayer for multiple sprite instances which have the particle flag set
 pbCanvas.prototype.blitDrawImages = function(_list, _surface)
 {
 	// can't batch in Canvas mode, feed them to drawImageWithTransform one at a time

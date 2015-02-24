@@ -27,7 +27,7 @@ pbTextSpriteDemo.prototype.allLoaded = function()
 {
 	console.log( "pbTextSpriteDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -74,15 +74,15 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	this.surface = new pbSurface();
 	this.surface.create(16, 16, 95, 7, image);		// there are 7 rows of 95 characters which are 16x16 pixels each
 
-	this.greenLayer = new pbLayer();
+	this.greenLayer = new pbWebGlLayer();
 	this.greenLayer.create(rootLayer, this.renderer, 0, 0, 0, 0, 1, 1);
 	rootLayer.addChild(this.greenLayer);
 
-	this.redLayer = new pbLayer();
+	this.redLayer = new pbWebGlLayer();
 	this.redLayer.create(this.greenLayer, this.renderer, 0, 0, 0, 0, 1, 1);
 	this.greenLayer.addChild(this.redLayer);
 
-	this.yellowLayer = new pbLayer();
+	this.yellowLayer = new pbWebGlLayer();
 	this.yellowLayer.create(this.redLayer, this.renderer, 0, 0, 0, 0, 1, 1);
 	this.redLayer.addChild(this.yellowLayer);
 

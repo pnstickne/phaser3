@@ -27,7 +27,7 @@ pbBlankDemo.prototype.allLoaded = function()
 {
 	console.log( "pbBlankDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 

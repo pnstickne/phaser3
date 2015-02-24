@@ -119,7 +119,7 @@ pbRenderer.prototype.boot = function(_renderMode)
 	this.createGraphics(_renderMode);
 
 	// create the rootLayer container for all graphics
-	rootLayer = new pbLayer();
+	rootLayer = new layerClass();
 	rootLayer.create(null, this, 0, 0, 0, 0, 1, 1);
 
     // call the boot callback now the renderer is ready
@@ -156,26 +156,35 @@ pbRenderer.prototype.createGraphics = function(_preferredRenderer)
 	// currently: 'webgl', 'canvas'
 	//
 
+	useRenderer = 'none';
 	if (_preferredRenderer === undefined || _preferredRenderer == 'webgl')
 	{
 		// try to get a webGL context
 		this.graphics = new pbWebGl();
-		if (!this.graphics.create(canvas))
+		if (this.graphics.create(canvas))
 		{
-			this.graphics.destroy();
-			this.graphics = null;
+			// got one, now set up the support
+			useRenderer = 'webgl';
+			layerClass = pbWebGlLayer;
+			return;
 		}
+		this.graphics.destroy();
+		this.graphics = null;
 	}
 
 	if (!this.graphics)
 	{
 		// final case fallback, try canvas '2d'
 		this.graphics = new pbCanvas();
-		if (!this.graphics.create(canvas))
+		if (this.graphics.create(canvas))
 		{
-			this.graphics.destroy();
-			this.graphics = null;
+			// got one, now set up the support
+			useRenderer = 'canvas';
+			layerClass = pbCanvasLayer;
+			return;
 		}
+		this.graphics.destroy();
+		this.graphics = null;
 	}
 };
 

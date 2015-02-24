@@ -29,7 +29,9 @@
     <script type="text/javascript" src="pbCanvas.js"></script>
 
     <script type="text/javascript" src="pbSprite.js"></script>
-    <script type="text/javascript" src="pbLayer.js"></script>
+    <script type="text/javascript" src="pbBaseLayer.js"></script>
+    <script type="text/javascript" src="pbCanvasLayer.js"></script>
+    <script type="text/javascript" src="pbWebGlLayer.js"></script>
     <script type="text/javascript" src="pbSimpleLayer.js"></script>
     <script type="text/javascript" src="pbImage.js"></script>
     <script type="text/javascript" src="pbSurface.js"></script>
@@ -74,8 +76,9 @@
     var demoName;
     var docId = 'renderer-test';
     var demoName = null;
-    var whichRenderer = 'canvas';           // which renderer do all of the demos use today?  valid values: undefined, 'webgl', 'canvas'
-
+    var useRenderer = 'canvas';             // which renderer will the demos use today?  valid values: undefined, 'webgl', 'canvas'  Switchable by dat.GUI pickRenderer widget.
+    var layerClass = pbCanvasLayer;         // TODO: consider making a FunctionManager class to handle switchable classes and functions like this more tidily
+    
     
     // after reading: http://www.sitepoint.com/google-closure-how-not-to-write-javascript/
     var _undefinedCheck;
@@ -99,7 +102,7 @@
     guiContainer.appendChild(gui.domElement);
 
     // let the user select a rendering mode
-    var pickRenderer = gui.add(this, "whichRenderer",
+    var pickRenderer = gui.add(this, "useRenderer",
         {
             webgl: "webgl",
             canvas: "canvas"

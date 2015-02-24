@@ -40,7 +40,7 @@ pbMultiInstanceDemo.prototype.allLoaded = function()
 	console.log( "pbMultiInstanceDemo.allLoaded" );
 
 	// callback to this.create when ready, callback to this.update once every frame
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -68,7 +68,7 @@ pbMultiInstanceDemo.prototype.addCameras = function()
 		for(var x = 0; x < this.numWide; x++)
 		{
 			// add a new camera
-			var layer = new pbLayer();
+			var layer = new pbWebGlLayer();
 			layer.create(rootLayer, this.renderer, cx, cy, 0, 0, 1 / this.numWide, 1 / this.numHigh);
 			layer.setClipping(cx, cy, tx, ty);
 			this.cameras[y][x] = new pbInvaderDemoCore();

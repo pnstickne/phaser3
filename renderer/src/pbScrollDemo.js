@@ -48,7 +48,7 @@ pbScrollDemo.prototype.allLoaded = function()
 {
 	console.log( "pbScrollDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -174,7 +174,7 @@ pbScrollDemo.prototype.createLayers = function(_surface)
 
 pbScrollDemo.prototype.addLayer = function(_surface)
 {
-	var layer = new pbLayer();
+	var layer = new pbWebGlLayer();
 	layer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
 	rootLayer.addChild(layer);
 	var i = this.scrollLayers.length;
