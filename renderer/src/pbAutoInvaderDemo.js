@@ -55,7 +55,7 @@ pbAutoInvaderDemo.prototype.create = function()
 {
 	console.log("pbAutoInvaderDemo.create");
 
-	this.layer = new pbWebGlLayer();
+	this.layer = new layerClass();
 	this.layer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
 	// illustrate layer clipping by chopping 20 pixels off each edge
 	this.layer.setClipping( 20, 20, this.renderer.width - 40, this.renderer.height - 40 );

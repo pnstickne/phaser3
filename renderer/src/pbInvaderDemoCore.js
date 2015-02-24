@@ -35,7 +35,7 @@ pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer)
 	this.parent = _parent;
 
 	this.layer = _rootLayer;
-	this.uiLayer = new pbWebGlLayer();
+	this.uiLayer = new layerClass();
 	this.uiLayer.create(this.layer, this.parent.renderer, 0, 0, 0, 0, 1, 1);
 	this.layer.addChild(this.uiLayer);
 

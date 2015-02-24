@@ -174,7 +174,7 @@ pbScrollDemo.prototype.createLayers = function(_surface)
 
 pbScrollDemo.prototype.addLayer = function(_surface)
 {
-	var layer = new pbWebGlLayer();
+	var layer = new layerClass();
 	layer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
 	rootLayer.addChild(layer);
 	var i = this.scrollLayers.length;

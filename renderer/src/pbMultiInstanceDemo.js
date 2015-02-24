@@ -68,7 +68,7 @@ pbMultiInstanceDemo.prototype.addCameras = function()
 		for(var x = 0; x < this.numWide; x++)
 		{
 			// add a new camera
-			var layer = new pbWebGlLayer();
+			var layer = new layerClass();
 			layer.create(rootLayer, this.renderer, cx, cy, 0, 0, 1 / this.numWide, 1 / this.numHigh);
 			layer.setClipping(cx, cy, tx, ty);
 			this.cameras[y][x] = new pbInvaderDemoCore();

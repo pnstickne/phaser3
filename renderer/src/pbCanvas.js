@@ -66,6 +66,7 @@ pbCanvas.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, _angle
 };
 
 
+// TODO: considerable optimisations available here!
 // used by pbWebGlLayer for single sprite drawing
 pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
 {
