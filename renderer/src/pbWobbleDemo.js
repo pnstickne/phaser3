@@ -2,6 +2,7 @@
  *
  * Corner point displacement demo for the new Phaser 3 renderer.
  * Displays a full-screen image wobbling.
+ * NOTE: 'webgl' mode only - canvas does not support corner displacement like this
  *
  * Chop a full-screen texture into tiles, lay them out in a grid to reconstruct the original image.
  * Randomly pick a corner and apply velocity to the grid position variable.
@@ -44,7 +45,7 @@ pbWobbleDemo.prototype.allLoaded = function()
 {
 	console.log( "pbWobbleDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
