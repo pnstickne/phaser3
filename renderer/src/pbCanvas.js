@@ -220,9 +220,17 @@ pbCanvas.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface
 };
 
 
+// batch images, no transforms
+// _list contains objects with an .x and .y property
 pbCanvas.prototype.blitListDirect = function( _list, _listLength, _surface )
 {
-	alert("ERROR: Canvas graphic mode does not yet extend blitListDirect from pbBaseGraphics!");
+	var c = _listLength;
+	var w = _surface.cellWide * 0.5;
+	var h = _surface.cellWide * 0.5;
+	while(c--)
+	{
+		this.ctx.drawImage(_surface.image, _list[c].x - w, _list[c].y - h);
+	}
 };
 
 
