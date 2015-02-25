@@ -729,7 +729,7 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 			buffer[ c + 11] = -wide;
 			buffer[ c + 12] =  high;
 
-			// rotation cos & sin components
+			// texture source position and size
 			buffer[ c + 2 ] = buffer[c - 44 + 35];
 			buffer[ c + 3 ] = buffer[c - 44 + 36];
 			buffer[ c + 15] = tex_x;
@@ -738,8 +738,8 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 			// rotation cos & sin components
 			buffer[ c + 4 ] = buffer[c - 44 + 37];
 			buffer[ c + 5 ] = buffer[c - 44 + 38];
-			buffer[ c + 15] = cos;
-			buffer[ c + 16] = sin;
+			buffer[ c + 15] = sin;
+			buffer[ c + 16] = cos;
 
 			// scaling sx & sy components
 			buffer[ c + 6 ] = buffer[ c - 44 + 39];

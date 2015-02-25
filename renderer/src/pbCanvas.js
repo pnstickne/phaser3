@@ -84,16 +84,18 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 	var f = _transform[7];
 
 
-	// TODO: 'fullScreen' flag... stretch to fit
 	// TODO: apply skew factors if set
 	// TODO: animation frame selection and extraction from the sprite-sheet
 
 	if (_image.fullScreen)
 	{
+		// TODO: 'fullScreen' flag... WRAP to fit (not stretch to fit)
 		w = pbRenderer.width;
 		h = pbRenderer.height;
 		// a single stretched image, use 5 parameter drawImage call
-		this.ctx.drawImage(srcImageData, e - w * _image.anchorX, f - h * _image.anchorY, w, h);
+		this.ctx.drawImage(srcImageData,
+			e - w * _image.anchorX, f - h * _image.anchorY,
+			w, h);
 	}
 	else if (srf.cellsWide === 1 && srf.cellsHigh === 1)
 	{
@@ -109,25 +111,35 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 
 		this.ctx.transform(a, b, c, d, e, f);
 		// a single image, use 3 parameter drawImage call
-		this.ctx.drawImage(srcImageData, -w * _image.anchorX, -h * _image.anchorY);
+		this.ctx.drawImage(srcImageData,
+			-w * _image.anchorX, -h * _image.anchorY);
 
 		this.ctx.restore();
 	}
 	else
 	{
 		var cell = Math.floor(_image.cellFrame);
+		// TODO: modify cellTextureBounds for canvas to be cellWide/cellHigh factors instead of 0..1
 		var rect = srf.cellTextureBounds[cell % srf.cellsWide][Math.floor(cell / srf.cellsWide)];
 
 		// TODO: debug only
 		if (!rect)
 			console.log("WARNING: invalid cellFrame or error in cellTextureBounds!", cell, srcImageData.currentSrc);
 
+		this.ctx.save();
+
+		this.ctx.transform(a, b, c, d, e, f);
 		var sx = Math.sqrt(a * a + b * b);
 		var sy = Math.sqrt(c * c + d * d);	
 		w = srf.cellWide * sx;
 		h = srf.cellHigh * sy;
 		// part of a sprite sheet, use 9 parameter drawImage call
-		this.ctx.drawImage(srcImageData, rect.x * srcImageData.width, rect.y * srcImageData.height, rect.width * srcImageData.width, rect.height * srcImageData.height, e - w * _image.anchorX, f - h * _image.anchorY, w, h);
+		this.ctx.drawImage(srcImageData,
+			rect.x * srcImageData.width, rect.y * srcImageData.height,
+			rect.width * srcImageData.width, rect.height * srcImageData.height,
+			-w * _image.anchorX, -h * _image.anchorY,
+			w, h);
+		this.ctx.restore();
 	}
 };
 

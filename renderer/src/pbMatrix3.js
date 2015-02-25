@@ -34,6 +34,14 @@ if(!GLMAT_ARRAY_TYPE) {
 }
 
 
+// TODO: rotation direction may vary between WebGL:
+// 		"    vec3 pos = uProjectionMatrix * modelMatrix * vec3(aPosition.xy, 1);" +
+//		"    gl_Position = vec4(pos.xy, z, 1);"
+// and Canvas:
+//		this.ctx.transform(a, b, c, d, e, f);
+// because the WebGL is upside-down.  Finding a different way to compensate for that might remove rotationDirection.
+pbMatrix3.rotationDirection = -1;			// default is correct for Canvas mode, +1 for webGl, I cannot believe the standards differ!
+
 
 function pbMatrix3()
 {
@@ -59,7 +67,7 @@ pbMatrix3.makeTranslation = function( tx, ty )
 pbMatrix3.makeRotation = function( angleInRadians )
 {
 	var c = Math.cos( angleInRadians );
-	var s = Math.sin( angleInRadians );
+	var s = Math.sin( angleInRadians ) * pbMatrix3.rotationDirection;
 	var m = new GLMAT_ARRAY_TYPE(9);
 	m[0] = c;
 	m[1] = -s;
@@ -93,7 +101,7 @@ pbMatrix3.makeScale = function( sx, sy )
 pbMatrix3.makeTransform = function(_x, _y, _angleInRadians, _scaleX, _scaleY)
 {
 	var c = Math.cos( _angleInRadians );
-	var s = Math.sin( _angleInRadians );
+	var s = Math.sin( _angleInRadians ) * pbMatrix3.rotationDirection;
 	var m = new GLMAT_ARRAY_TYPE(9);
 	m[0] = c * _scaleX;
 	m[1] = -s * _scaleY;
@@ -111,7 +119,7 @@ pbMatrix3.makeTransform = function(_x, _y, _angleInRadians, _scaleX, _scaleY)
 pbMatrix3.setTransform = function( _m, _x, _y, _angleInRadians, _scaleX, _scaleY)
 {
 	var c = Math.cos( _angleInRadians );
-	var s = Math.sin( _angleInRadians );
+	var s = Math.sin( _angleInRadians ) * pbMatrix3.rotationDirection;
 
 	_m[0] = c * _scaleX;
 	_m[1] = -s * _scaleY;

@@ -171,6 +171,7 @@ pbRenderer.prototype.createGraphics = function(_preferredRenderer)
 			useRenderer = 'webgl';
 			layerClass = pbWebGlLayer;
 			imageClass = pbWebGlImage;
+			pbMatrix3.rotationDirection = 1;
 			return;
 		}
 		this.graphics.destroy();
@@ -187,6 +188,7 @@ pbRenderer.prototype.createGraphics = function(_preferredRenderer)
 			useRenderer = 'canvas';
 			layerClass = pbCanvasLayer;
 			imageClass = pbCanvasImage;
+			pbMatrix3.rotationDirection = -1;
 			return;
 		}
 		this.graphics.destroy();
