@@ -48,7 +48,7 @@ pbScrollDemo.prototype.allLoaded = function()
 {
 	console.log( "pbScrollDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -142,14 +142,14 @@ pbScrollDemo.prototype.createSurfaces = function()
 	var image = this.loader.getFile( this.bgImg );
 	var surface = new pbSurface();
 	surface.create(0, 0, 1, 1, image);
-	surface.cellTextureBounds[0][0].width = this.renderer.width / surface.cellWide;
-	var img = new pbImage();
+	surface.cellTextureBounds[0][0].width = pbRenderer.width / surface.cellWide;
+	var img = new imageClass();
 	img.create(surface, 0, 0, 0, true, false);
 	this.bgSpr = new pbSprite();
 
 	// scale the tiled background to compensate for the extra drawn width from tiling
 	// TODO: create a simple API to fix surface and sprite scaling, or add a separate variable to handle tiling properly
-	this.bgSpr.create(img, 0, 0, 1.0, 0, this.renderer.width / surface.cellWide, this.renderer.height / surface.cellHigh);
+	this.bgSpr.create(img, 0, 0, 1.0, 0, pbRenderer.width / surface.cellWide, pbRenderer.height / surface.cellHigh);
 	rootLayer.addChild(this.bgSpr);
 
 	// set up the tiles in a pbSprite
@@ -174,7 +174,7 @@ pbScrollDemo.prototype.createLayers = function(_surface)
 
 pbScrollDemo.prototype.addLayer = function(_surface)
 {
-	var layer = new pbLayer();
+	var layer = new layerClass();
 	layer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
 	rootLayer.addChild(layer);
 	var i = this.scrollLayers.length;
@@ -214,7 +214,7 @@ pbScrollDemo.prototype.drawMap = function(_layer)
 
 pbScrollDemo.prototype.createTile = function(_x, _y, _cell)
 {
-	var img = new pbImage();
+	var img = new imageClass();
 	img.create(this.tileSurface, _cell, 0, 0, false, false);
 	var spr = new pbSprite();
 	spr.create(img, _x, _y, 0.5, 0, 1, 1);
@@ -235,9 +235,9 @@ pbScrollDemo.prototype.update = function()
 			this.scrollLayers[i].dirX = -this.scrollLayers[i].dirX;
 		}
 
-		if (sx >= this.mapWidth - this.renderer.width)
+		if (sx >= this.mapWidth - pbRenderer.width)
 		{
-			sx = this.mapWidth - this.renderer.width - 1;
+			sx = this.mapWidth - pbRenderer.width - 1;
 			this.scrollLayers[i].dirX = -this.scrollLayers[i].dirX;
 		}
 
@@ -247,9 +247,9 @@ pbScrollDemo.prototype.update = function()
 			this.scrollLayers[i].dirY = -this.scrollLayers[i].dirY;
 		}
 
-		if (sy >= this.mapHeight - this.renderer.height)
+		if (sy >= this.mapHeight - pbRenderer.height)
 		{
-			sy = this.mapHeight - this.renderer.height - 1;
+			sy = this.mapHeight - pbRenderer.height - 1;
 			this.scrollLayers[i].dirY = -this.scrollLayers[i].dirY;
 		}
 

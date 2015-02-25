@@ -44,7 +44,7 @@ pbSoldierDemo.prototype.allLoaded = function()
 {
 	console.log( "pbSoldierDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -53,7 +53,7 @@ pbSoldierDemo.prototype.create = function()
 	console.log("pbSoldierDemo.create");
 
 	this.targetx = 0;
-	this.targety = 600 - 20
+	this.targety = 600 - 20;
 
 	this.spriteList = [];
 };
@@ -103,12 +103,12 @@ pbSoldierDemo.prototype.addSprites = function(num)
 	for( var i = 0; i < num; i++ )
 	{
 		// start from the top of the screen
-		var x = Math.random() * this.renderer.width;
+		var x = Math.random() * pbRenderer.width;
 		var y = 0;
 
 		// unique image holder per soldier (permits individual animation)
 		var frames = 0;
-		var img = new pbImage();
+		var img = new imageClass();
 		if (i % 2 == 1)
 		{
 			img.create(this.surface_run, Math.floor(Math.random() * 3));
@@ -125,7 +125,7 @@ pbSoldierDemo.prototype.addSprites = function(num)
 		spr.create(img, x, y, 1.0, 0, 96 / 600, 96 / 600);
 		rootLayer.addChild(spr);
 
-		// TODO: add pbLayer system to manage layers of pbSprites
+		// TODO: add pbWebGlLayer system to manage layers of pbSprites
 		// TODO: *maybe* add callback for pbSprite.update to implement AI functionality directly without needing unique objects for everything(?)
 		// OR: create a demoSoldier object
 		this.spriteList.push(
@@ -200,9 +200,9 @@ pbSoldierDemo.prototype.update = function()
 	{
 	 	this.addSprites(5);
 	}
-	if (fps > 0 && fps < 55)
-	{
-	 	this.removeSprites(1);
-	}
+	// if (fps > 0 && fps < 55)
+	// {
+	//  	this.removeSprites(1);
+	// }
 };
 

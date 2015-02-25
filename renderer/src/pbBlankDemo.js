@@ -27,7 +27,7 @@ pbBlankDemo.prototype.allLoaded = function()
 {
 	console.log( "pbBlankDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -71,7 +71,7 @@ pbBlankDemo.prototype.addSprites = function()
 	this.surface = new pbSurface();
 	this.surface.create(0, 0, 1, 1, image);
 
-	var img = new pbImage();
+	var img = new imageClass();
 	img.create(this.surface, 0);
 
 	this.spr = new pbSprite();

@@ -37,6 +37,8 @@ function pbSprite()
  */
 pbSprite.prototype.create = function(_image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
 {
+	// console.log("pbSprite.create");
+
 	if (_image === undefined) _image = null;
 
 	this.image = _image;
@@ -52,7 +54,7 @@ pbSprite.prototype.create = function(_image, _x, _y, _z, _angleInRadians, _scale
 	this.scaleX = _scaleX;
 	this.scaleY = _scaleY;
 
-	// try to apply anchor offset prior to rotation so things rotate around anchor instead of their 0,0 (centre for pbSprite, top-left corner for pbLayer)
+	// try to apply anchor offset prior to rotation so things rotate around anchor instead of their 0,0 (centre for pbSprite, top-left corner for pbWebGlLayer)
 	// if (_image)
 	// {
 	// 	// TODO: merge these combinations into a specialised pbMatrix3 function when we've got them working correctly
@@ -86,6 +88,8 @@ pbSprite.prototype.destroy = function()
 
 pbSprite.prototype.update = function(_drawDictionary)
 {
+	// console.log("pbSprite.update");
+
 	if (!this.alive)
 		return true;
 
@@ -136,6 +140,9 @@ pbSprite.prototype.addChild = function(_child)
 {
 	if (!this.children)
 		this.children = [];
+
+	// console.log("pbSprite.addChild", this.children.length);
+	
 	this.children.push(_child);
 	_child.parent = this;
 };
@@ -172,5 +179,16 @@ pbSprite.prototype.removeChildAt = function(_index)
 	if (this.children.length <= _index) return;
 	this.children[_index].parent = null;
 	this.children.splice(_index, 1);
+};
+
+
+// allow this class to be extended
+// permits multiple levels of inheritance 	http://jsfiddle.net/ZWZP6/2/  
+// improvement over original answer at 		http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
+pbSprite.prototype.super = function(clazz, functionName)
+{
+	// console.log("pbSprite.super", functionName);
+    var args = Array.prototype.slice.call(arguments, 2);
+    clazz.prototype.__super__.prototype[functionName].apply(this, args);
 };
 

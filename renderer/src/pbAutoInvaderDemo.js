@@ -47,7 +47,7 @@ pbAutoInvaderDemo.prototype.allLoaded = function()
 	console.log( "pbAutoInvaderDemo.allLoaded" );
 
 	// callback to this.create when ready, callback to this.update once every frame
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -55,10 +55,10 @@ pbAutoInvaderDemo.prototype.create = function()
 {
 	console.log("pbAutoInvaderDemo.create");
 
-	this.layer = new pbLayer();
+	this.layer = new layerClass();
 	this.layer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
 	// illustrate layer clipping by chopping 20 pixels off each edge
-	this.layer.setClipping( 20, 20, this.renderer.width - 40, this.renderer.height - 40 );
+	this.layer.setClipping( 20, 20, pbRenderer.width - 40, pbRenderer.height - 40 );
 	rootLayer.addChild(this.layer);
 	this.game = new pbInvaderDemoCore();
 	this.game.create(this, this.layer);

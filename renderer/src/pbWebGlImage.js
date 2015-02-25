@@ -11,7 +11,7 @@
  */
 
 
-function pbImage()
+function pbWebGlImage()
 {
 	this.surface = null;
 	this.cellFrame = 0;
@@ -25,24 +25,12 @@ function pbImage()
 }
 
 
-pbImage.prototype.create = function(_surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen)
-{
-	if (_cellFrame === undefined || _cellFrame === null) _cellFrame = 0;
-	if (_anchorX === undefined || _anchorX === null) _anchorX = 0.5;
-	if (_anchorY === undefined || _anchorY === null) _anchorY = 0.5;
-	if (_tiling === undefined || _tiling === null) _tiling = false;
-	if (_fullScreen === undefined || _fullScreen === null) _fullScreen = false;
-
-	this.surface = _surface;
-	this.cellFrame = _cellFrame;
-	this.gpuTexture = null;
-	this.corners = null;
-	this.anchorX = _anchorX;
-	this.anchorY = _anchorY;
-	this.fullScreen = _fullScreen;
-	this.tiling = _tiling;		// TODO: move to pbSurface?? batch processing will be all or nothing so shared surface can't switch 'tiling' state on & off per pbImage
-	this.isParticle = false;
-};
+// pbWebGlImage extends from the pbBaseImage prototype chain
+// permits multiple levels of inheritance 	http://jsfiddle.net/ZWZP6/2/  
+// improvement over original answer at 		http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
+pbWebGlImage.prototype = new pbBaseImage();
+pbWebGlImage.prototype.constructor = pbWebGlImage;
+pbWebGlImage.prototype.__super__ = pbBaseImage;
 
 
 /**
@@ -59,7 +47,7 @@ pbImage.prototype.create = function(_surface, _cellFrame, _anchorX, _anchorY, _t
  * @param {[type]} rbx [description]
  * @param {[type]} rby [description]
  */
-pbImage.prototype.setCorners = function(ltx, lty, rtx, rty, lbx, lby, rbx, rby)
+pbWebGlImage.prototype.setCorners = function(ltx, lty, rtx, rty, lbx, lby, rbx, rby)
 {
 	if (ltx === undefined)
 		this.corners = null;
@@ -68,26 +56,13 @@ pbImage.prototype.setCorners = function(ltx, lty, rtx, rty, lbx, lby, rbx, rby)
 };
 
 
-pbImage.prototype.destroy = function()
-{
-	this.surface = null;
-	this.gpuTexture = null;
-	this.corners = null;
-};
-
-
-pbImage.prototype.preUpdate = function()
-{
-};
-
-
-pbImage.prototype.draw = function(_drawDictionary, _transform, _z_order)
+pbWebGlImage.prototype.draw = function(_drawDictionary, _transform, _z_order)
 {
 	_drawDictionary.add( this.surface, { image: this, transform: _transform, z_order: _z_order });
 };
 
 
-pbImage.prototype.simpleDraw = function(_drawDictionary, _x, _y)
+pbWebGlImage.prototype.simpleDraw = function(_drawDictionary, _x, _y)
 {
 	_drawDictionary.add( this.surface, { image: this, x: _x, y: _y });
 };

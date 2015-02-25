@@ -9,6 +9,10 @@ var canvas = null;
 var webGl = null;
 var rootLayer = null;
 
+// static global
+pbRenderer.width = 0;
+pbRenderer.height = 0;
+
 
 // TODO: split RAF timer out of here and into it's own object, including updateCallback etc???
 
@@ -119,7 +123,7 @@ pbRenderer.prototype.boot = function(_renderMode)
 	this.createGraphics(_renderMode);
 
 	// create the rootLayer container for all graphics
-	rootLayer = new pbLayer();
+	rootLayer = new layerClass();
 	rootLayer.create(null, this, 0, 0, 0, 0, 1, 1);
 
     // call the boot callback now the renderer is ready
@@ -146,8 +150,8 @@ pbRenderer.prototype.createGraphics = function(_preferredRenderer)
 	canvas.width = canvas.width;
 
 	// useful stuff held local to renderer
-	this.width = canvas.width;
-	this.height = canvas.height;
+	pbRenderer.width = canvas.width;
+	pbRenderer.height = canvas.height;
 	this.graphics = null;
 	
 	//
@@ -156,26 +160,39 @@ pbRenderer.prototype.createGraphics = function(_preferredRenderer)
 	// currently: 'webgl', 'canvas'
 	//
 
+	useRenderer = 'none';
 	if (_preferredRenderer === undefined || _preferredRenderer == 'webgl')
 	{
 		// try to get a webGL context
 		this.graphics = new pbWebGl();
-		if (!this.graphics.create(canvas))
+		if (this.graphics.create(canvas))
 		{
-			this.graphics.destroy();
-			this.graphics = null;
+			// got one, now set up the support
+			useRenderer = 'webgl';
+			layerClass = pbWebGlLayer;
+			imageClass = pbWebGlImage;
+			pbMatrix3.rotationDirection = 1;
+			return;
 		}
+		this.graphics.destroy();
+		this.graphics = null;
 	}
 
 	if (!this.graphics)
 	{
 		// final case fallback, try canvas '2d'
 		this.graphics = new pbCanvas();
-		if (!this.graphics.create(canvas))
+		if (this.graphics.create(canvas))
 		{
-			this.graphics.destroy();
-			this.graphics = null;
+			// got one, now set up the support
+			useRenderer = 'canvas';
+			layerClass = pbCanvasLayer;
+			imageClass = pbCanvasImage;
+			pbMatrix3.rotationDirection = -1;
+			return;
 		}
+		this.graphics.destroy();
+		this.graphics = null;
 	}
 };
 

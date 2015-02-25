@@ -27,7 +27,7 @@ pbTransformDemo.prototype.allLoaded = function()
 {
 	console.log( "pbTransformDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -69,7 +69,7 @@ pbTransformDemo.prototype.addSprites = function()
 	this.surface = new pbSurface();
 	this.surface.create(0, 0, 1, 1, image);
 
-	var img = new pbImage();
+	var img = new imageClass();
 	img.create(this.surface, 0, 0.5, 1.0);		// anchorY = 1.0 - make movement appear more complex
 
 	this.dirx = 2;
@@ -113,6 +113,6 @@ pbTransformDemo.prototype.update = function()
 	// bounce the top sprite across the renderer view
 	this.spr.x += this.dirx;
 	if (this.spr.x < 150) this.dirx = -this.dirx;
-	if (this.spr.x > this.renderer.width - 150) this.dirx = -this.dirx;
+	if (this.spr.x > pbRenderer.width - 150) this.dirx = -this.dirx;
 };
 

@@ -34,7 +34,7 @@ pbBunnyDemoNPOT.prototype.allLoaded = function()
 {
 	console.log( "pbBunnyDemoNPOT.allLoaded" );
 
-	this.renderer = new pbRenderer( whichRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -92,7 +92,7 @@ pbBunnyDemoNPOT.prototype.addSprites = function(num)
 
 	for(var i = 0; i < num; i++)
 	{
-		var img = new pbImage();
+		var img = new imageClass();
 		img.create(this.surface, 0, 0.5, 1.0);
 		img.isParticle = true;			// use fast batch drawing, object doesn't rotate
 
@@ -138,14 +138,14 @@ pbBunnyDemoNPOT.prototype.update = function()
 			spr.x = 13;
 			obj.vx = -obj.vx;
 		}
-		else if (spr.x > this.renderer.width - 13)
+		else if (spr.x > pbRenderer.width - 13)
 		{
-			spr.x = this.renderer.width - 13;
+			spr.x = pbRenderer.width - 13;
 			obj.vx = -obj.vx;
 		}
-		if (spr.y >= this.renderer.height)
+		if (spr.y >= pbRenderer.height)
 		{
-			spr.y = this.renderer.height;
+			spr.y = pbRenderer.height;
 			obj.vy *= - 0.85;
 			if (Math.random() > 0.5)
 			{

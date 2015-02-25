@@ -35,7 +35,7 @@ pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer)
 	this.parent = _parent;
 
 	this.layer = _rootLayer;
-	this.uiLayer = new pbLayer();
+	this.uiLayer = new layerClass();
 	this.uiLayer.create(this.layer, this.parent.renderer, 0, 0, 0, 0, 1, 1);
 	this.layer.addChild(this.uiLayer);
 
@@ -47,7 +47,7 @@ pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer)
 	this.text = new pbText();
 	this.text.create(this.textSurface, this.uiLayer, " ".charCodeAt(0));
 	this.scoreLine = this.text.addLine("SCORE 000000", 20, 20, 16);
-	this.levelLine = this.text.addLine("LEVEL 001", this.parent.renderer.width - 20 - 9 * 16, 20, 16);
+	this.levelLine = this.text.addLine("LEVEL 001", pbRenderer.width - 20 - 9 * 16, 20, 16);
 
 	this.score = 0;
 	this.level = 1;
@@ -96,7 +96,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	var image = this.parent.loader.getFile( this.parent.starsImg );
 	this.bgSurface = new pbSurface();
 	this.bgSurface.create(0, 0, 1, 1, image);
-	this.bgImage = new pbImage();
+	this.bgImage = new imageClass();
 	this.bgImage.create(this.bgSurface, 0, 0, 0, true, true);
 	this.bg = new pbSprite();
 	this.bg.create(this.bgImage, 0, 0, 1, 0, 1.0, 1.0);
@@ -106,10 +106,10 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	image = this.parent.loader.getFile( this.parent.playerImg );
 	this.playerSurface = new pbSurface();
 	this.playerSurface.create(0, 0, 1, 1, image);
-	this.playerImage = new pbImage();
+	this.playerImage = new imageClass();
 	this.playerImage.create(this.playerSurface, 0);
 	this.player = new pbSprite();
-	this.player.create(this.playerImage, this.parent.renderer.width * 0.5, this.parent.renderer.height * 0.9, 0, 0, 1.0, 1.0);
+	this.player.create(this.playerImage, pbRenderer.width * 0.5, pbRenderer.height * 0.9, 0, 0, 1.0, 1.0);
 	this.layer.addChild(this.player);
 	this.player.die = false;
 	this.playerDirX = -2;
@@ -122,7 +122,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.bullets = [];			// list of bullets which are firing
 	for(var i = 0; i < 100; i++)
 	{
-		var img = new pbImage();
+		var img = new imageClass();
 		// anchor point at front of bullet for easy collisions...
 		img.create(this.bulletSurface, 0, 0.5, 0.0);
 		var bullet = new pbSprite();
@@ -139,7 +139,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.rockets = [];			// list of rockets which are firing
 	for(var i = 0; i < 100; i++)
 	{
-		var img = new pbImage();
+		var img = new imageClass();
 		img.create(this.rocketSurface, 0, 0.5, 0.5);
 		var rocket = new pbSprite();
 		rocket.create(img, 0, 0, 0, 0, 1.0, 1.0);
@@ -161,7 +161,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.bombs = [];			// list of bombs which are firing
 	for(var i = 0; i < 100; i++)
 	{
-		var img = new pbImage();
+		var img = new imageClass();
 		img.create(this.bombSurface, 0);
 		var bomb = new pbSprite();
 		bomb.create(img, 0, 0, 0, 0, 1.0, 1.0);
@@ -179,7 +179,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.explosionSurface.create(128, 128, 16, 1, image);
 	for(var i = 0; i < 100; i++)
 	{
-		var img = new pbImage();
+		var img = new imageClass();
 		img.create(this.explosionSurface, 0);
 		var explosion = new pbSprite();
 		explosion.create(img, 0, 0, 0, 0, 0.5, 0.5);
@@ -194,7 +194,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.smokeSurface.create(64, 64, 8, 1, image);
 	for(var i = 0; i < 200; i++)
 	{
-		var img = new pbImage();
+		var img = new imageClass();
 		img.create(this.smokeSurface, 0);
 		var smoke = new pbSprite();
 		smoke.create(img, 0, 0, 0, 0, 1.0, 1.0);
@@ -209,7 +209,7 @@ pbInvaderDemoCore.prototype.addInvaders = function()
 	for(var y = 0; y < 5; y++)
 		for(var x = 0; x < 12; x++)
 		{
-			var img = new pbImage();
+			var img = new imageClass();
 			img.create(this.invaderSurface, Math.floor(Math.random() * 3));
 			var invader = new pbSprite();
 			invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
@@ -229,7 +229,7 @@ pbInvaderDemoCore.prototype.addInvaders = function()
 pbInvaderDemoCore.prototype.update = function()
 {
 	// scroll the background by adjusting the start point of the texture read y coordinate
-	this.bgSurface.cellTextureBounds[0][0].y -= 1 / this.parent.renderer.height;
+	this.bgSurface.cellTextureBounds[0][0].y -= 1 / pbRenderer.height;
 
 
 	//
@@ -238,7 +238,7 @@ pbInvaderDemoCore.prototype.update = function()
 	if (this.player.die)
 	{
 		// TODO: life lost
-		this.player.x = this.parent.renderer.width * 0.5;
+		this.player.x = pbRenderer.width * 0.5;
 		this.playerDirX = 2;
 		this.player.die = false;
 	}
@@ -250,7 +250,7 @@ pbInvaderDemoCore.prototype.update = function()
 	}
 	// bounce off edges
 	if (this.player.x < this.player.image.surface.cellWide * 0.5
-		|| this.player.x > this.parent.renderer.width - this.player.image.surface.cellWide * 0.5)
+		|| this.player.x > pbRenderer.width - this.player.image.surface.cellWide * 0.5)
 		this.playerDirX = -this.playerDirX;
 	// move
 	this.player.x += this.playerDirX;
@@ -286,7 +286,7 @@ pbInvaderDemoCore.prototype.update = function()
 			// horizontal movement
 			invader.x += this.invaderDirX;
 			if (invader.x < invader.image.surface.cellWide * 0.5
-				|| invader.x > this.parent.renderer.width - invader.image.surface.cellWide * 0.5)
+				|| invader.x > pbRenderer.width - invader.image.surface.cellWide * 0.5)
 				this.flipDir = true;
 
 			// invader dropping bomb
@@ -297,7 +297,7 @@ pbInvaderDemoCore.prototype.update = function()
 
 		// vertical movement
 		invader.y += this.invaderMoveY;
-		if (invader.y > this.parent.renderer.height + invader.image.surface.cellHigh)
+		if (invader.y > pbRenderer.height + invader.image.surface.cellHigh)
 			invader.die = true;
 
 		// animation
@@ -447,7 +447,7 @@ pbInvaderDemoCore.prototype.playerRocketMove = function()
 		}
 
 		// hit alien or off the edges of the screen?
-		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.image.surface.cellHigh || b.x < 0 || b.x > this.parent.renderer.width)
+		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.image.surface.cellHigh || b.x < 0 || b.x > pbRenderer.width)
 		{
 			// kill the rocket and add it back to the pool
 			this.layer.removeChild(b);
@@ -530,7 +530,7 @@ pbInvaderDemoCore.prototype.invaderBombMove = function()
 		}
 
 		// hit player or off the bottom of the screen?
-		if (hit || b.y > this.parent.renderer.height + b.image.surface.cellHigh * 0.5)
+		if (hit || b.y > pbRenderer.height + b.image.surface.cellHigh * 0.5)
 		{
 			// kill the bullet and add it back to the pool
 			this.layer.removeChild(b);

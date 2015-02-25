@@ -7,6 +7,7 @@
         body {
             margin: 0;
             background: #111;
+            border: none;
         }
 
         #gui {
@@ -16,9 +17,11 @@
         }
     </style>
 
+    <!-- useful stuff -->
     <script type="text/javascript" src="dat.gui.js"></script>
     <script type="text/javascript" src="stats.js"></script>
 
+    <!-- system control and drawing -->
     <script type="text/javascript" src="pbRenderer.js"></script>
     <script type="text/javascript" src="pbRootTimer.js"></script>
     <script type="text/javascript" src="pbLoader.js"></script>
@@ -28,18 +31,26 @@
     <script type="text/javascript" src="pbWebGlTextures.js"></script>
     <script type="text/javascript" src="pbCanvas.js"></script>
 
+    <!-- logic -->
     <script type="text/javascript" src="pbSprite.js"></script>
-    <script type="text/javascript" src="pbLayer.js"></script>
-    <script type="text/javascript" src="pbSimpleLayer.js"></script>
-    <script type="text/javascript" src="pbImage.js"></script>
     <script type="text/javascript" src="pbSurface.js"></script>
+    <script type="text/javascript" src="pbSimpleLayer.js"></script>
+    <script type="text/javascript" src="pbBaseLayer.js"></script>
+    <script type="text/javascript" src="pbCanvasLayer.js"></script>
+    <script type="text/javascript" src="pbWebGlLayer.js"></script>
+    <script type="text/javascript" src="pbBaseImage.js"></script>
+    <script type="text/javascript" src="pbCanvasImage.js"></script>
+    <script type="text/javascript" src="pbWebGlImage.js"></script>
     
+    <!-- special purpose -->
     <script type="text/javascript" src="pbText.js"></script>
     
+    <!-- data helpers -->
     <script type="text/javascript" src="pbMatrix3.js"></script>
     <script type="text/javascript" src="pbRectangle.js"></script>
     <script type="text/javascript" src="pbDictionary.js"></script>
 
+    <!-- demos -->
     <script type="text/javascript" src="pbSoldierDemo.js"></script>
     <script type="text/javascript" src="pbTransformDemo.js"></script>
     <script type="text/javascript" src="pbWobbleDemo.js"></script>
@@ -70,12 +81,15 @@
  * During development it is expected that class names, hierarchies and inter-relationships will change frequently as we grow towards the final structure.
  */
 
+    // globals
     var demo;
     var demoName;
     var docId = 'renderer-test';
     var demoName = null;
-    var whichRenderer = 'canvas';           // which renderer do all of the demos use today?  valid values: undefined, 'webgl', 'canvas'
-
+    var useRenderer = 'canvas';             // which renderer will the demos use today?  valid values: undefined, 'webgl', 'canvas'  Switchable by dat.GUI pickRenderer widget.
+    var layerClass = pbCanvasLayer;         // TODO: consider making a FunctionManager class to handle switchable classes and functions like this more tidily
+    var imageClass = pbCanvasImage;
+    
     
     // after reading: http://www.sitepoint.com/google-closure-how-not-to-write-javascript/
     var _undefinedCheck;
@@ -93,18 +107,19 @@
     stats.domElement.style.bottom = '0px';
     document.body.appendChild( stats.domElement );
 
+    // dat.GUI user interface components
     var gui = new dat.GUI({ autoPlace: false });
 
     var guiContainer = document.getElementById('gui');
     guiContainer.appendChild(gui.domElement);
 
-    // let the user select a rendering mode
-    var pickRenderer = gui.add(this, "whichRenderer",
+    // let the user select a rendering mode, listen to see if the demos change the selection
+    var pickRenderer = gui.add(this, "useRenderer",
         {
             webgl: "webgl",
             canvas: "canvas"
         }
-    );
+    ).listen();
     pickRenderer.onFinishChange(
         function(value)
         {
@@ -125,7 +140,8 @@
         }
     );
 
-    // let the use select a demo to view
+
+    // let the user select a demo to view
     var pickDemo = gui.add(this, "demoName",
         {
             none: null,

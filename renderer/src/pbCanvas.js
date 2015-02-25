@@ -62,15 +62,17 @@ pbCanvas.prototype.preRender = function()
 // currently unused
 pbCanvas.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, _angle, _scale)
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend drawImage from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend drawImage from pbBaseGraphics!");
 };
 
 
-// used by pbLayer for single sprite drawing
+// TODO: considerable optimisations available here!
+// used by pbWebGlLayer for single sprite drawing
 pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
 {
 	var srf = _image.surface;
-	var img = srf.image;
+	var srcImageData = srf.image;
 	var w, h;
 
 	// TODO: use the Pixi style 'object' matrix which is kept as elements so I don't need to extract from array.. after speed tests vs the glMatrix approach!
@@ -82,11 +84,20 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 	var f = _transform[7];
 
 
-	// TODO: 'fullScreen' flag... stretch to fit
 	// TODO: apply skew factors if set
 	// TODO: animation frame selection and extraction from the sprite-sheet
 
-	if (img.fullScreen || (srf.cellsWide === 1 && srf.cellsHigh === 1))
+	if (_image.fullScreen)
+	{
+		// TODO: 'fullScreen' flag... WRAP to fit (not stretch to fit)
+		w = pbRenderer.width;
+		h = pbRenderer.height;
+		// a single stretched image, use 5 parameter drawImage call
+		this.ctx.drawImage(srcImageData,
+			e - w * _image.anchorX, f - h * _image.anchorY,
+			w, h);
+	}
+	else if (srf.cellsWide === 1 && srf.cellsHigh === 1)
 	{
 
 		// TODO: store scale in pbMatrix3 when it's set to avoid sqrt here... how best to deal with matrix multiplication for transform tree though?
@@ -100,25 +111,40 @@ pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_orde
 
 		this.ctx.transform(a, b, c, d, e, f);
 		// a single image, use 3 parameter drawImage call
-		this.ctx.drawImage(img, -w * _image.anchorX, -h * _image.anchorY);
+		this.ctx.drawImage(srcImageData,
+			-w * _image.anchorX, -h * _image.anchorY);
 
 		this.ctx.restore();
 	}
 	else
 	{
 		var cell = Math.floor(_image.cellFrame);
+		// TODO: modify cellTextureBounds for canvas to be cellWide/cellHigh factors instead of 0..1
 		var rect = srf.cellTextureBounds[cell % srf.cellsWide][Math.floor(cell / srf.cellsWide)];
+
+		// TODO: debug only
+		if (!rect)
+			console.log("WARNING: invalid cellFrame or error in cellTextureBounds!", cell, srcImageData.currentSrc);
+
+		this.ctx.save();
+
+		this.ctx.transform(a, b, c, d, e, f);
 		var sx = Math.sqrt(a * a + b * b);
 		var sy = Math.sqrt(c * c + d * d);	
 		w = srf.cellWide * sx;
 		h = srf.cellHigh * sy;
 		// part of a sprite sheet, use 9 parameter drawImage call
-		this.ctx.drawImage(img, rect.x * img.width, rect.y * img.height, rect.width * img.width, rect.height * img.height, e, f, w, h);
+		this.ctx.drawImage(srcImageData,
+			rect.x * srcImageData.width, rect.y * srcImageData.height,
+			rect.width * srcImageData.width, rect.height * srcImageData.height,
+			-w * _image.anchorX, -h * _image.anchorY,
+			w, h);
+		this.ctx.restore();
 	}
 };
 
 
-// used by pbLayer for multiple sprite instances which are not particles
+// used by pbWebGlLayer for multiple sprite instances which are not particles
 // list objects: { image: pbImage, transform: pbMatrix3, z_order: Number }
 pbCanvas.prototype.rawBatchDrawImages = function(_list)
 {
@@ -140,7 +166,7 @@ pbCanvas.prototype.rawBatchDrawImages = function(_list)
 };
 
 
-// used by pbLayer for multiple sprite instances which have the particle flag set
+// used by pbWebGlLayer for multiple sprite instances which have the particle flag set
 pbCanvas.prototype.blitDrawImages = function(_list, _surface)
 {
 	// can't batch in Canvas mode, feed them to drawImageWithTransform one at a time
@@ -155,12 +181,14 @@ pbCanvas.prototype.blitDrawImages = function(_list, _surface)
 
 pbCanvas.prototype.batchDrawImages = function(_list, _surface)
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend batchDrawImages from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend batchDrawImages from pbBaseGraphics!");
 };
 
 
 pbCanvas.prototype.reset = function()
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend reset from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend reset from pbBaseGraphics!");
 };
 
@@ -173,18 +201,21 @@ pbCanvas.prototype.scissor = function(_x, _y, _width, _height)
 
 pbCanvas.prototype.fillStyle = function(_fillColor, _lineColor)
 {
-	alert("ERROR: Canvas graphic mode does not fillStyle scissor from pbBaseGraphics!");
+	console.log("ERROR: Canvas graphic mode does not yet extend fillStyle from pbBaseGraphics!");
+	alert("ERROR: Canvas graphic mode does not fillStyle from pbBaseGraphics!");
 };
 
 
 pbCanvas.prototype.fillRect = function( x, y, wide, high, color )
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend fillRect from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend fillRect from pbBaseGraphics!");
 };
 
 
 pbCanvas.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface )
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend blitSimpleDrawImages from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend blitSimpleDrawImages from pbBaseGraphics!");
 };
 
@@ -207,7 +238,8 @@ pbCanvas.prototype.blitListDirect = function( _list, _listLength, _surface )
 
 
 // called when pbSimpleLayer.setDrawingFunctions is directed to pbSimpleLayer.drawPoint
-// draws the whole of _surface at the _list locations, _list is alternately x and y coordinates
+// draws the whole of _surface at the _list locations
+// _list is alternately x and y coordinates
 // this is a wrapper for a webGl function that has no equivalent in Canvas
 pbCanvas.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 {
@@ -224,14 +256,31 @@ pbCanvas.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface 
 };
 
 
+// called when pbSimpleLayer.setDrawingFunctions is directed to pbSimpleLayer.drawPointAnim
+// _list contains x,y,u,v values, repeated for each point sprite
+// this is a wrapper for a webGl function that has no equivalent in Canvas
 pbCanvas.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surface )
 {
-	alert("ERROR: Canvas graphic mode does not yet extend blitDrawImagesPointAnim from pbBaseGraphics!");
+	var c = _listLength;
+	var w = _surface.cellWide;
+	var h = _surface.cellWide;
+	var w2 = w * 0.5;
+	var h2 = h * 0.5;
+	while(c--)
+	{
+		var v = _list[c--] * _surface.image.height;
+		var u = _list[c--] * _surface.image.width;
+		// round to integer positions for faster rendering
+		var y = (0.5 + _list[c--] - h2) | 0;
+		var x = (0.5 + _list[c] - w2) | 0;
+		this.ctx.drawImage(_surface.image, u, v, w, h, x, y, w, h);
+	}
 };
 
 
 pbCanvas.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transform, _z )
 {
+	console.log("ERROR: Canvas graphic mode does not yet extend drawCanvasWithTransform from pbBaseGraphics!");
 	alert("ERROR: Canvas graphic mode does not yet extend drawCanvasWithTransform from pbBaseGraphics!");
 };
 
