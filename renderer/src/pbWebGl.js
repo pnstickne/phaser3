@@ -637,6 +637,7 @@ pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 
 // sends points and texture locations to gl
 // draws a single animation frame from _surface at the point locations, very quickly
+// _list contains x,y,u,v values, repeated for each point sprite
 pbWebGl.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surface )
 {
 	this.shaders.setProgram(this.shaders.blitShaderPointAnimProgram);

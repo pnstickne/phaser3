@@ -238,7 +238,8 @@ pbCanvas.prototype.blitListDirect = function( _list, _listLength, _surface )
 
 
 // called when pbSimpleLayer.setDrawingFunctions is directed to pbSimpleLayer.drawPoint
-// draws the whole of _surface at the _list locations, _list is alternately x and y coordinates
+// draws the whole of _surface at the _list locations
+// _list is alternately x and y coordinates
 // this is a wrapper for a webGl function that has no equivalent in Canvas
 pbCanvas.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 {
@@ -255,10 +256,25 @@ pbCanvas.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface 
 };
 
 
+// called when pbSimpleLayer.setDrawingFunctions is directed to pbSimpleLayer.drawPointAnim
+// _list contains x,y,u,v values, repeated for each point sprite
+// this is a wrapper for a webGl function that has no equivalent in Canvas
 pbCanvas.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surface )
 {
-	console.log("ERROR: Canvas graphic mode does not yet extend blitDrawImagesPointAnim from pbBaseGraphics!");
-	alert("ERROR: Canvas graphic mode does not yet extend blitDrawImagesPointAnim from pbBaseGraphics!");
+	var c = _listLength;
+	var w = _surface.cellWide;
+	var h = _surface.cellWide;
+	var w2 = w * 0.5;
+	var h2 = h * 0.5;
+	while(c--)
+	{
+		var v = _list[c--] * _surface.image.height;
+		var u = _list[c--] * _surface.image.width;
+		// round to integer positions for faster rendering
+		var y = (0.5 + _list[c--] - h2) | 0;
+		var x = (0.5 + _list[c] - w2) | 0;
+		this.ctx.drawImage(_surface.image, u, v, w, h, x, y, w, h);
+	}
 };
 
 
