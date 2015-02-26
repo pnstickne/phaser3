@@ -74,6 +74,8 @@ pbMatrix4.makeTranslation = function( tx, ty )
 };
 
 
+// composite rotation matrix:
+// around z, then x, then y (z is into the screen)
 pbMatrix4.makeRotation = function( rx, ry, rz )
 {
 	var sx = Math.sin(rx);
@@ -84,19 +86,19 @@ pbMatrix4.makeRotation = function( rx, ry, rz )
 	var cz = Math.cos(rz);
 
 	var m = new GLMAT_ARRAY_TYPE(16);
-	m[0] = c;
-	m[1] = -s;
-	m[2] = 0;
-	m[3] = 0;
+	m[ 0] = cy * cx;
+	m[ 1] = sy * cx;
+	m[ 2] = -sx;
+	m[ 3] = 0;
 
-	m[4] = s;
-	m[5] = c;
-	m[6] = 0;
-	m[7] = 0;
+	m[ 4] = cy*sx*sz-sy*cz;
+	m[ 5] = sy*sx*sz+cy*cz;
+	m[ 6] = cx*sz;
+	m[ 7] = 0;
 
-	m[8] = 0;
-	m[9] = 0;
-	m[10] = 1;
+	m[ 8] = cy*sx*cz+sy*sz;
+	m[ 9] = sy*sx*cz-cy*sz;
+	m[10] = cy*cz;
 	m[11] = 0;
 
 	m[12] = 0;
