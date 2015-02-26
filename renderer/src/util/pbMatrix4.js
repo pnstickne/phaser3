@@ -74,10 +74,15 @@ pbMatrix4.makeTranslation = function( tx, ty )
 };
 
 
-pbMatrix4.makeRotation = function( angleInRadians )
+pbMatrix4.makeRotation = function( rx, ry, rz )
 {
-	var c = Math.cos( angleInRadians );
-	var s = Math.sin( angleInRadians ) * pbMatrix4.rotationDirection;
+	var sx = Math.sin(rx);
+	var cx = Math.cos(rx);
+	var sy = Math.sin(ry);
+	var cy = Math.cos(ry);
+	var sz = Math.sin(rz);
+	var cz = Math.cos(rz);
+
 	var m = new GLMAT_ARRAY_TYPE(16);
 	m[0] = c;
 	m[1] = -s;

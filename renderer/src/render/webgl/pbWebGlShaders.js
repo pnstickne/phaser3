@@ -282,6 +282,43 @@ var graphicsShaderSources = {
 };
 
 
+/**
+ * imageShaderSource3D - shaders for single image drawing with 3D projection including matrix transforms for scalex,scaley, rotation and translation
+ * @type {Array}
+ */
+var imageShaderSource3D = {
+	fragment:
+		"  precision mediump float;" +
+		"  uniform sampler2D uImageSampler;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    gl_FragColor = texture2D(uImageSampler, vTexCoord);" +
+		"    if (gl_FragColor.a < 0.80) discard;" +
+		"  }",
+
+	vertex:
+		"  attribute vec4 aPosition;" +
+		"  uniform float uZ;" +
+		"  uniform mat4 uProjectionMatrix4;" +
+		"  uniform mat3 uModelMatrix4;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    vec4 pos = uProjectionMatrix4 * uModelMatrix4 * vec4(aPosition.xy, 1, 1);" +
+		"    gl_Position = vec4(pos.xy, uZ + pos.z, 1);" +
+		"    vTexCoord = aPosition.zw;" +
+		"  }",
+
+	attributes:
+		[ "aPosition" ],
+
+	uniforms:
+		[ "uZ", "uProjectionMatrix4", "uModelMatrix4" ],
+
+	sampler:
+		"uImageSampler"
+};
+
+
 
 
 function pbWebGlShaders()
@@ -289,6 +326,7 @@ function pbWebGlShaders()
 	// TODO: change this into a list
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
+	this.imageShaderProgram3D = null;
 	this.blitShaderProgram = null;
 	this.blitShaderPointProgram = null;
 	this.blitShaderPointAnimProgram = null;
@@ -308,6 +346,7 @@ pbWebGlShaders.prototype.create = function()
 
 	// individual sprite processing
 	this.imageShaderProgram = this.createProgram( imageShaderSources );
+	this.imageShaderProgram3D = this.createProgram( imageShaderSource3D );
 
 	// batch processing
 	this.blitShaderProgram = this.createProgram( blitShaderSources );
@@ -324,6 +363,7 @@ pbWebGlShaders.prototype.destroy = function()
 	this.clearProgram();
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
+	this.imageShaderProgram3D = null;
 	this.blitShaderProgram = null;
 	this.blitShaderPointProgram = null;
 	this.blitShaderPointAnimProgram = null;

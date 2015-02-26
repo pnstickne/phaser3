@@ -143,6 +143,10 @@ pbWebGl.prototype.prepareGl = function()
 	// set up a projection matrix in the vertex shader
 	if (this.shaders.currentProgram.uProjectionMatrix)
 		gl.uniformMatrix3fv( this.shaders.currentProgram.uProjectionMatrix, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+
+	// set up a 3D projection matrix in the vertex shader
+	if (this.shaders.currentProgram.uProjectionMatrix4)
+		gl.uniformMatrix3fv( this.shaders.currentProgram.uProjectionMatrix4, false, pbMatrix4.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
 };
 
 
@@ -214,6 +218,94 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 	var surface = _image.surface;
 	if (this.textures.prepare( surface.image, _image.tiling, surface.isNPOT ))
 		this.prepareGl();
+
+	// split off a small part of the big buffer, for a single display object
+	var buffer = this.drawingArray.subarray(0, 16);
+
+	// set up the animation frame
+	var cell = Math.floor(_image.cellFrame);
+	var rect = surface.cellTextureBounds[cell % surface.cellsWide][Math.floor(cell / surface.cellsWide)];
+
+	var wide, high;
+	if (_image.fullScreen)
+	{
+		rect.width = gl.drawingBufferWidth / surface.cellWide;
+		rect.height = gl.drawingBufferHeight / surface.cellHigh;
+		wide = gl.drawingBufferWidth;
+		high = gl.drawingBufferHeight;
+	}
+	else
+	{
+		// half width, half height (of source frame)
+		wide = surface.cellWide;
+		high = surface.cellHigh;
+	}
+
+	// screen destination position
+	// l, b,		0,1
+	// l, t,		4,5
+	// r, b,		8,9
+	// r, t,		12,13
+	if (_image.corners)
+	{
+		var cnr = _image.corners;
+		l = -wide * _image.anchorX;
+		r = wide + l;
+		t = -high * _image.anchorY;
+		b = high + t;
+		// object has corner offets (skewing/perspective etc)
+		buffer[ 0 ] = cnr.lbx * l; buffer[ 1 ] = cnr.lby * b;
+		buffer[ 4 ] = cnr.ltx * l; buffer[ 5 ] = cnr.lty * t;
+		buffer[ 8 ] = cnr.rbx * r; buffer[ 9 ] = cnr.rby * b;
+		buffer[ 12] = cnr.rtx * r; buffer[ 13] = cnr.rty * t;
+	}
+	else
+	{
+		l = -wide * _image.anchorX;
+		r = wide + l;
+		t = -high * _image.anchorY;
+		b = high + t;
+		buffer[ 0 ] = buffer[ 4 ] = l;
+		buffer[ 1 ] = buffer[ 9 ] = b;
+		buffer[ 8 ] = buffer[ 12] = r;
+		buffer[ 5 ] = buffer[ 13] = t;
+	}
+
+	// texture source position
+	// x, b,		2,3
+	// x, y,		6,7
+	// r, b,		10,11
+	// r, y,		14,15
+	buffer[ 2 ] = buffer[ 6 ] = rect.x;
+	buffer[ 3 ] = buffer[ 11] = rect.y + rect.height;
+	buffer[ 10] = buffer[ 14] = rect.x + rect.width;
+	buffer[ 7 ] = buffer[ 15] = rect.y;
+
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
+
+	// send the transform matrix to the vector shader
+	gl.uniformMatrix3fv( this.shaders.currentProgram.uModelMatrix, false, _transform );
+
+	// set the depth value
+   	gl.uniform1f( this.shaders.currentProgram.uZ, _z );
+
+	// point the position attribute at the last bound buffer
+    gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+
+    // four vertices per quad, one quad
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+};
+
+
+
+// single image instances from pbWebGlLayer using a 3D projection
+pbWebGl.prototype.drawImageWithTransform3D = function( _image, _transform, _z )
+{
+	this.shaders.setProgram(this.shaders.imageShaderProgram3D);
+
+	var surface = _image.surface;
+	if (this.textures.prepare( surface.image, _image.tiling, surface.isNPOT ))
+		this.prepareGl3D();
 
 	// split off a small part of the big buffer, for a single display object
 	var buffer = this.drawingArray.subarray(0, 16);
