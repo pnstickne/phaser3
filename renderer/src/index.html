@@ -22,6 +22,7 @@
 
     <script type="text/javascript" src="core/pbRenderer.js"></script>
     <script type="text/javascript" src="core/pbSprite.js"></script>
+    <script type="text/javascript" src="core/pbSprite3D.js"></script>
     <script type="text/javascript" src="core/pbSurface.js"></script>
 
     <script type="text/javascript" src="system/pbRootTimer.js"></script>
@@ -46,24 +47,26 @@
     <script type="text/javascript" src="helper/pbTiles.js"></script>
     
     <script type="text/javascript" src="util/pbMatrix3.js"></script>
+    <script type="text/javascript" src="util/pbMatrix4.js"></script>
     <script type="text/javascript" src="util/pbRectangle.js"></script>
     <script type="text/javascript" src="util/pbDictionary.js"></script>
 
-    <script type="text/javascript" src="demo/pbSoldierDemo.js"></script>
-    <script type="text/javascript" src="demo/pbTransformDemo.js"></script>
-    <script type="text/javascript" src="demo/pbWobbleDemo.js"></script>
-    <script type="text/javascript" src="demo/pbAutoInvaderDemo.js"></script>
-    <script type="text/javascript" src="demo/pbInvaderDemoCore.js"></script>
-    <script type="text/javascript" src="demo/pbTextSpriteDemo.js"></script>
-    <script type="text/javascript" src="demo/pbBunnyDemo.js"></script>
-    <script type="text/javascript" src="demo/pbBunnyDemoNPOT.js"></script>
-    <script type="text/javascript" src="demo/pbBunnyPointDemo.js"></script>
-    <script type="text/javascript" src="demo/pbBunnyPointAnimDemo.js"></script>
-    <script type="text/javascript" src="demo/pbMultiInstanceDemo.js"></script>
-    <script type="text/javascript" src="demo/pbScrollDemo.js"></script>
-    <script type="text/javascript" src="demo/pbScrollPointSpriteDemo.js"></script>
-    <script type="text/javascript" src="demo/pbCanvasToGlDemo.js"></script>
-    <script type="text/javascript" src="demo/pbGlToCanvasDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbSoldierDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbTransformDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbWobbleDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbAutoInvaderDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbInvaderDemoCore.js"></script>
+    <script type="text/javascript" src="_demo/pbTextSpriteDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbBunnyDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbBunnyDemoNPOT.js"></script>
+    <script type="text/javascript" src="_demo/pbBunnyPointDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbBunnyPointAnimDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbMultiInstanceDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbScrollDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbScrollPointSpriteDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbCanvasToGlDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbGlToCanvasDemo.js"></script>
+    <script type="text/javascript" src="_demo/pbTiltDemo.js"></script>
 
 </head>
 
@@ -83,7 +86,7 @@
     var demoName;
     var docId = 'renderer-test';
     var demoName = null;
-    var useRenderer = 'canvas';             // which renderer will the demos use today?  valid values: undefined, 'webgl', 'canvas'  Switchable by dat.GUI pickRenderer widget.
+    var useRenderer = 'webgl';             // which renderer will the demos use today?  valid values: undefined, 'webgl', 'canvas'  Switchable by dat.GUI pickRenderer widget.
     var layerClass = pbCanvasLayer;         // TODO: consider making a FunctionManager class to handle switchable classes and functions like this more tidily
     var imageClass = pbCanvasImage;
     
@@ -155,7 +158,8 @@
             bunny: "pbBunnyDemo",
             bunnyNPOT: "pbBunnyDemoNPOT",
             bunnyPoint: "pbBunnyPointDemo",
-            bunnyPointAnim: "pbBunnyPointAnimDemo"
+            bunnyPointAnim: "pbBunnyPointAnimDemo",
+            tilt: "pbTiltDemo"
         }
     );
     pickDemo.onFinishChange(

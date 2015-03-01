@@ -11,7 +11,6 @@ function pbRootTimer()
     this.time = undefined;
     this.lastTime = undefined;
     this.elapsedTime = undefined;
-    this.frameCount = 0;
 
     this._updateCallback = null;
     this._updateContext = null;
@@ -101,11 +100,10 @@ pbRootTimer.prototype._updateSetTimeout = function ()
 
 
 /**
- * Update frameCount and record current time, elapsed time, etc.
+ * Update time, elapsed time, etc.
  */
 pbRootTimer.prototype._timer = function(_time)
 {
-    this.frameCount++;
     this.time = _time;
     this.elapsedTime = this.time - this.lastTime;
     this.lastTime = this.time;

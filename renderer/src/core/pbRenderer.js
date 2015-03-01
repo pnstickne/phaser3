@@ -12,6 +12,7 @@ var rootLayer = null;
 // static global
 pbRenderer.width = 0;
 pbRenderer.height = 0;
+pbRenderer.frameCount = 0;
 
 
 // TODO: split RAF timer out of here and into it's own object, including updateCallback etc???
@@ -35,7 +36,7 @@ function pbRenderer(_renderMode, _docId, _bootCallback, _updateCallback, _gameCo
 	// members
 	this.isBooted = false;
 	this.rootTimer = null;
-	this.frameCount = 0;
+	pbRenderer.frameCount = 0;
 
 	// drawing system
 	this.graphics = null;
@@ -201,7 +202,7 @@ pbRenderer.prototype.update = function()
 {
 	stats.begin();
 
-	this.frameCount++;
+	pbRenderer.frameCount++;
 
 	// prepare to draw (erase screen)
 	this.graphics.preRender();
