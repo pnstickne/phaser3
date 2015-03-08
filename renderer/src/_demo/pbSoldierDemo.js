@@ -66,12 +66,15 @@ pbSoldierDemo.prototype.destroy = function()
 	gui.remove(this.numCtrl);
 
 	this.spriteList = null;
-	this.surface_run.destroy();
+	if (this.surface_run)
+		this.surface_run.destroy();
 	this.surface_run = null;
-	this.surface_smash.destroy();
+	if (this.surface_smash)
+		this.surface_smash.destroy();
 	this.surface_smash = null;
 
-	this.renderer.destroy();
+	if (this.renderer)
+		this.renderer.destroy();
 	this.renderer = null;
 };
 
