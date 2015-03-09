@@ -147,9 +147,6 @@ pbWebGl.prototype.prepareGl = function()
 	// set up a 3D projection matrix in the vertex shader
 	if (this.shaders.currentProgram.uProjectionMatrix4)
 		gl.uniformMatrix4fv( this.shaders.currentProgram.uProjectionMatrix4, false, pbMatrix4.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
-
-	if (this.shaders.currentProgram.tiltAngle)
-		gl.uniform1f( this.shaders.currentProgram.tiltAngle, (pbRenderer.frameCount % (360 * 4)) * 0.25 * Math.PI / 180.0 );
 };
 
 
