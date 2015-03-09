@@ -402,52 +402,24 @@ pbWebGl.prototype.drawImageWithTransform3D = function( _image, _transform, _z )
 	var cell = Math.floor(_image.cellFrame);
 	var rect = surface.cellTextureBounds[cell % surface.cellsWide][Math.floor(cell / surface.cellsWide)];
 
-	var wide, high;
-	if (_image.fullScreen)
-	{
-		rect.width = gl.drawingBufferWidth / surface.cellWide;
-		rect.height = gl.drawingBufferHeight / surface.cellHigh;
-		wide = gl.drawingBufferWidth;
-		high = gl.drawingBufferHeight;
-	}
-	else
-	{
-		// half width, half height (of source frame)
-		wide = surface.cellWide;
-		high = surface.cellHigh;
-	}
+	// width, height (of source frame)
+	var wide = surface.cellWide;
+	var high = surface.cellHigh;
+	var l, r, t, b;
 
-	// screen destination position
+	// screen destination position (aPosition.xy in vertex shader)
 	// l, b,		0,1
 	// l, t,		4,5
 	// r, b,		8,9
 	// r, t,		12,13
-	if (_image.corners)
-	{
-		var cnr = _image.corners;
-		l = -wide * _image.anchorX;
-		r = wide + l;
-		t = -high * _image.anchorY;
-		b = high + t;
-		// object has corner offets (skewing/perspective etc)
-		buffer[ 0 ] = cnr.lbx * l; buffer[ 1 ] = cnr.lby * b;
-		buffer[ 4 ] = cnr.ltx * l; buffer[ 5 ] = cnr.lty * t;
-		buffer[ 8 ] = cnr.rbx * r; buffer[ 9 ] = cnr.rby * b;
-		buffer[ 12] = cnr.rtx * r; buffer[ 13] = cnr.rty * t;
-	}
-	else
-	{
-		l = -wide * _image.anchorX;
-		r = wide + l;
-		t = -high * _image.anchorY;
-		b = high + t;
-		buffer[ 0 ] = buffer[ 4 ] = l;
-		buffer[ 1 ] = buffer[ 9 ] = b;
-		buffer[ 8 ] = buffer[ 12] = r;
-		buffer[ 5 ] = buffer[ 13] = t;
-	}
+	var l = -wide * _image.anchorX;
+	var t = -high * _image.anchorY;
+	buffer[ 0 ] = buffer[ 4 ] = l;
+	buffer[ 1 ] = buffer[ 9 ] = high + t;
+	buffer[ 8 ] = buffer[ 12] = wide + l;
+	buffer[ 5 ] = buffer[ 13] = t;
 
-	// texture source position
+	// texture source position (aPosition.zw in vertex shader)
 	// x, b,		2,3
 	// x, y,		6,7
 	// r, b,		10,11
