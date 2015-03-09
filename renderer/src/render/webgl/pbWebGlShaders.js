@@ -163,7 +163,6 @@ var imageShaderSources = {
 
 
 /**
- * unused at present...
  * batchImageShaderSources - shaders for batch image drawing
  * calculates the transform matrix from the values provided in the data buffer stream
  * @type {Array}
@@ -186,18 +185,12 @@ var batchImageShaderSources = {
 		"  varying vec2 vTexCoord;" +
 		"  varying vec2 vAbsCoord;" +
 		"  void main(void) {" +
-		"    mat4 modelMatrix;" +
-		"    modelMatrix[0] = vec4( aTransform.x * aTransform.z,-aTransform.y * aTransform.w, 0, 0 );" +
-		"    modelMatrix[1] = vec4( aTransform.y * aTransform.z, 0.707 * aTransform.x * aTransform.w, 0.707, 0 );" +
-		"    modelMatrix[2] = vec4( aTranslate.x, -0.707 * aTranslate.y, 0.707, 0 );" +
-		"    modelMatrix[3] = vec4( 0, 0, 0, 1 );" +
-		"    mat4 tiltProjectionMatrix;" +
-		"    tiltProjectionMatrix[0] = vec4(uProjectionMatrix[0], 0);" + 
-		"    tiltProjectionMatrix[1] = vec4(uProjectionMatrix[1], 0);" + 
-		"    tiltProjectionMatrix[2] = vec4(uProjectionMatrix[2], 0);" + 
-		"    tiltProjectionMatrix[3] = vec4(0, 0, 0, 1);" + 
-		"    vec4 pos = tiltProjectionMatrix * modelMatrix * vec4( aPosition.xy, 1, 1 );" +
-		"    gl_Position = vec4(pos.xyz, 1);" +
+		"    mat3 modelMatrix;" +
+		"    modelMatrix[0] = vec3( aTransform.x * aTransform.z,-aTransform.y * aTransform.w, 0 );" +
+		"    modelMatrix[1] = vec3( aTransform.y * aTransform.z, aTransform.x * aTransform.w, 0 );" +
+		"    modelMatrix[2] = vec3( aTranslate.x, aTranslate.y, 1 );" +
+		"    vec3 pos = uProjectionMatrix * modelMatrix * vec3( aPosition.xy, 1 );" +
+		"    gl_Position = vec4(pos.xy, aTranslate.z, 1);" +
 		"    vTexCoord = aPosition.zw;" +
 		"  }",
 
@@ -233,28 +226,15 @@ var rawBatchImageShaderSources = {
 		"  attribute vec2 aModelMatrix1;" +
 		"  attribute vec3 aModelMatrix2;" +
 		"  uniform mat3 uProjectionMatrix;" +
-		"  uniform float tiltAngle;" +
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
 		"    float z = aModelMatrix2.z;" +
-		"    mat4 modelMatrix;" +
-		"    modelMatrix[0] = vec4(aModelMatrix0, 0,0);" +
-		"    modelMatrix[1] = vec4(aModelMatrix1, 0,0);" +
-		"    modelMatrix[2] = vec4(aModelMatrix2.xy, 1,0);" +
-		"    modelMatrix[3] = vec4(0,0,0,1);" +
-		"    float s = sin(tiltAngle);" +
-		"    float c = cos(tiltAngle);" +
-		"    modelMatrix[1].y *= c;" +
-		"    modelMatrix[1].z *= s;" +
-		"    modelMatrix[2].y *= -s;" +
-		"    modelMatrix[2].z *= c;" +
-		"    mat4 tiltProjectionMatrix;" +
-		"    tiltProjectionMatrix[0] = vec4(uProjectionMatrix[0], 0);" + 
-		"    tiltProjectionMatrix[1] = vec4(uProjectionMatrix[1], 0);" + 
-		"    tiltProjectionMatrix[2] = vec4(uProjectionMatrix[2], 0);" + 
-		"    tiltProjectionMatrix[3] = vec4(0, 0, 0, 1);" + 
-		"    vec4 pos = tiltProjectionMatrix * modelMatrix * vec4( aPosition.xy, 1, 1 );" +
-		"    gl_Position = vec4(pos.xyz, 1);" +
+		"    mat3 modelMatrix;" +
+		"    modelMatrix[0] = vec3(aModelMatrix0, 0);" +
+		"    modelMatrix[1] = vec3(aModelMatrix1, 0);" +
+		"    modelMatrix[2] = vec3(aModelMatrix2.xy, 1);" +
+		"    vec3 pos = uProjectionMatrix * modelMatrix * vec3(aPosition.xy, 1);" +
+		"    gl_Position = vec4(pos.xy, z, 1);" +
 		"    vTexCoord = aPosition.zw;" +
 		"  }",
 
@@ -262,7 +242,7 @@ var rawBatchImageShaderSources = {
 		[ "aPosition", "aModelMatrix0", "aModelMatrix1", "aModelMatrix2" ],
 
 	uniforms:
-		[ "uProjectionMatrix", "tiltAngle" ],
+		[ "uProjectionMatrix" ],
 
 	sampler:
 		"uImageSampler"
