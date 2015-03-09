@@ -48,7 +48,7 @@ function pbMatrix4()
 }
 
 
-pbMatrix4.makeTranslation = function( tx, ty )
+pbMatrix4.makeTranslation = function( tx, ty, tz )
 {
 	var m = new GLMAT_ARRAY_TYPE(16);
 	m[0] = 1;
@@ -68,7 +68,7 @@ pbMatrix4.makeTranslation = function( tx, ty )
 
 	m[12] = tx;
 	m[13] = ty;
-	m[14] = 0;
+	m[14] = tz;
 	m[15] = 1;
 	return m;
 };
@@ -393,6 +393,77 @@ pbMatrix4.fastMultiply = function( a, b )
 	m[14] = a30 * b02 + a31 * b12 + a32 * b22 +       b32;
 	m[15] = 1;
 	return m;
+};
+
+
+// display transforms always have the form:
+// a, b, c, 0
+// d, e, f, 0
+// g, h, i, 0
+// j, k, l, 1
+// 
+// we can speed up the multiplication by skipping the 0 and 1 multiplication steps
+pbMatrix4.setFastMultiply = function( a, b )
+{
+	var a00 = a[         0 ];
+	var a01 = a[         1 ];
+	var a02 = a[         2 ];
+	// a03 = 0
+
+	var a10 = a[     4 + 0 ];
+	var a11 = a[     4 + 1 ];
+	var a12 = a[     4 + 2 ];
+	// a13 = 0
+
+	var a20 = a[ 2 * 4 + 0 ];
+	var a21 = a[ 2 * 4 + 1 ];
+	var a22 = a[ 2 * 4 + 2 ];
+	// a23 = 0
+
+	var a30 = a[ 3 * 4 + 0 ];
+	var a31 = a[ 3 * 4 + 1 ];
+	var a32 = a[ 3 * 4 + 2 ];
+	// a33 = 1
+
+	var b00 = b[         0 ];
+	var b01 = b[         1 ];
+	var b02 = b[         2 ];
+	// b03 = 0
+
+	var b10 = b[     4 + 0 ];
+	var b11 = b[     4 + 1 ];
+	var b12 = b[     4 + 2 ];
+	// b13 = 0
+
+	var b20 = b[ 2 * 4 + 0 ];
+	var b21 = b[ 2 * 4 + 1 ];
+	var b22 = b[ 2 * 4 + 2 ];
+	// b23 = 0
+
+	var b30 = b[ 3 * 4 + 0 ];
+	var b31 = b[ 3 * 4 + 1 ];
+	var b32 = b[ 3 * 4 + 2 ];
+	// b33 = 1
+
+	a[0]  = a00 * b00 + a01 * b10 + a02 * b20;
+	a[1]  = a00 * b01 + a01 * b11 + a02 * b21;
+	a[2]  = a00 * b02 + a01 * b12 + a02 * b22;
+	a[3]  = 0;
+
+	a[4]  = a10 * b00 + a11 * b10 + a12 * b20;
+	a[5]  = a10 * b01 + a11 * b11 + a12 * b21;
+	a[6]  = a10 * b02 + a11 * b12 + a12 * b22;
+	a[7]  = 0;
+
+	a[8]  = a20 * b00 + a21 * b10 + a22 * b20;
+	a[9]  = a20 * b01 + a21 * b11 + a22 * b21;
+	a[10] = a20 * b02 + a21 * b12 + a22 * b22;
+	a[11] = 0;
+
+	a[12] = a30 * b00 + a31 * b10 + a32 * b20 +       b30;
+	a[13] = a30 * b01 + a31 * b11 + a32 * b21 +       b31;
+	a[14] = a30 * b02 + a31 * b12 + a32 * b22 +       b32;
+	a[15] = 1;
 };
 
 
