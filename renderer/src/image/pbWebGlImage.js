@@ -22,6 +22,7 @@ function pbWebGlImage()
 	this.fullScreen = false;
 	this.tiling = false;
 	this.isParticle = false;
+	this.is3D = false;
 }
 
 

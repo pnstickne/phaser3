@@ -136,59 +136,76 @@ pbMatrix4.makeScale = function( sx, sy )
 };
 
 
-pbMatrix4.makeTransform = function(_x, _y, _angleInRadians, _scaleX, _scaleY)
+// rx, ry, rz are jumbled to provide expected results for each axis of rotation:
+// rx is across the screen (tumbles head-over-heels)
+// ry is down the screen (spins like a top)
+// rz is into the screen (rotates like a 2d sprite)
+pbMatrix4.makeTransform = function(_x, _y, _z, _rz, _rx, _ry, _scaleX, _scaleY, _scaleZ)
 {
-	var c = Math.cos( _angleInRadians );
-	var s = Math.sin( _angleInRadians ) * pbMatrix4.rotationDirection;
+	var sx = Math.sin(_rx);
+	var cx = Math.cos(_rx);
+	var sy = Math.sin(_ry);
+	var cy = Math.cos(_ry);
+	var sz = Math.sin(_rz);
+	var cz = Math.cos(_rz);
+
 	var m = new GLMAT_ARRAY_TYPE(16);
 
-	m[0] = c * _scaleX;
-	m[1] = -s * _scaleY;
-	m[2] = 0;
-	m[3] = 0;
+	m[ 0] = cy * cx * _scaleX;
+	m[ 1] = sy * cx * _scaleY;
+	m[ 2] = -sx * _scaleZ;
+	m[ 3] = 0;
 
-	m[4] = s * _scaleX;
-	m[5] = c * _scaleY;
-	m[6] = 0;
-	m[7] = 0;
+	m[ 4] = cy*sx*sz-sy*cz * _scaleX;
+	m[ 5] = sy*sx*sz+cy*cz * _scaleY;
+	m[ 6] = cx*sz * _scaleZ;
+	m[ 7] = 0;
 
-	m[8] = 0;
-	m[9] = 0;
-	m[10] = 1;
+	m[ 8] = cy*sx*cz+sy*sz * _scaleX;
+	m[ 9] = sy*sx*cz-cy*sz * _scaleY;
+	m[10] = cy*cz * _scaleZ;
 	m[11] = 0;
 
 	m[12] = _x;
 	m[13] = _y;
-	m[14] = 0;
+	m[14] = _z;
 	m[15] = 1;
 
 	return m;
 };
 
 
-pbMatrix4.setTransform = function( _m, _x, _y, _angleInRadians, _scaleX, _scaleY)
+// rx, ry, rz are jumbled to provide expected results for each axis of rotation:
+// rx is across the screen (tumbles head-over-heels)
+// ry is down the screen (spins like a top)
+// rz is into the screen (rotates like a 2d sprite)
+pbMatrix4.setTransform = function( _m, _x, _y, _z, _rz, _rx, _ry, _scaleX, _scaleY, _scaleZ)
 {
-	var c = Math.cos( _angleInRadians );
-	var s = Math.sin( _angleInRadians ) * pbMatrix4.rotationDirection;
+	var sx = Math.sin(_rx);
+	var cx = Math.cos(_rx);
+	var sy = Math.sin(_ry);
+	var cy = Math.cos(_ry);
+	var sz = Math.sin(_rz);
+	var cz = Math.cos(_rz);
 
-	_m[0] = c * _scaleX;
-	_m[1] = -s * _scaleY;
-	_m[2] = 0;
-	_m[3] = 0;
+	_m[ 0] = cy * cx * _scaleX;
+	_m[ 1] = sy * cx * _scaleY;
+	_m[ 2] = -sx * _scaleZ;
+	_m[ 3] = 0;
 
-	_m[4] = s * _scaleX;
-	_m[5] = c * _scaleY;
-	_m[6] = 0;
-	_m[7] = 0;
+	_m[ 4] = cy*sx*sz-sy*cz * _scaleX;
+	_m[ 5] = sy*sx*sz+cy*cz * _scaleY;
+	_m[ 6] = cx*sz * _scaleZ;
+	_m[ 7] = 0;
 
-	_m[8] = 0;
-	_m[9] = 0;
-	_m[10] = 1;
+	_m[ 8] = cy*sx*cz+sy*sz * _scaleX;
+	_m[ 9] = sy*sx*cz-cy*sz * _scaleY;
+	_m[10] = cy*cz * _scaleZ;
 	_m[11] = 0;
 
 	_m[12] = _x;
 	_m[13] = _y;
-	_m[14] = 0;
+	_m[14] = _z;
 	_m[15] = 1;
 };
 
@@ -318,50 +335,58 @@ pbMatrix4.fastMultiply = function( a, b )
 	var a00 = a[         0 ];
 	var a01 = a[         1 ];
 	var a02 = a[         2 ];
+	// a03 = 0
 
 	var a10 = a[     4 + 0 ];
 	var a11 = a[     4 + 1 ];
 	var a12 = a[     4 + 2 ];
+	// a13 = 0
 
 	var a20 = a[ 2 * 4 + 0 ];
 	var a21 = a[ 2 * 4 + 1 ];
 	var a22 = a[ 2 * 4 + 2 ];
+	// a23 = 0
 
 	var a30 = a[ 3 * 4 + 0 ];
 	var a31 = a[ 3 * 4 + 1 ];
 	var a32 = a[ 3 * 4 + 2 ];
+	// a33 = 1
 
 	var b00 = b[         0 ];
 	var b01 = b[         1 ];
 	var b02 = b[         2 ];
+	// b03 = 0
 
 	var b10 = b[     4 + 0 ];
 	var b11 = b[     4 + 1 ];
 	var b12 = b[     4 + 2 ];
+	// b13 = 0
 
 	var b20 = b[ 2 * 4 + 0 ];
 	var b21 = b[ 2 * 4 + 1 ];
 	var b22 = b[ 2 * 4 + 2 ];
+	// b23 = 0
 
 	var b30 = b[ 3 * 4 + 0 ];
 	var b31 = b[ 3 * 4 + 1 ];
 	var b32 = b[ 3 * 4 + 2 ];
+	// b33 = 1
 
 	var m = new GLMAT_ARRAY_TYPE(16);
 	m[0]  = a00 * b00 + a01 * b10 + a02 * b20;
 	m[1]  = a00 * b01 + a01 * b11 + a02 * b21;
 	m[2]  = a00 * b02 + a01 * b12 + a02 * b22;
-	m[3]  =                         a02      ;
+	m[3]  = 0;
 
 	m[4]  = a10 * b00 + a11 * b10 + a12 * b20;
 	m[5]  = a10 * b01 + a11 * b11 + a12 * b21;
 	m[6]  = a10 * b02 + a11 * b12 + a12 * b22;
-	m[7]  =                         a12      ;
+	m[7]  = 0;
 
 	m[8]  = a20 * b00 + a21 * b10 + a22 * b20;
 	m[9]  = a20 * b01 + a21 * b11 + a22 * b21;
 	m[10] = a20 * b02 + a21 * b12 + a22 * b22;
-	m[11] =                         a22      ;
+	m[11] = 0;
 
 	m[12] = a30 * b00 + a31 * b10 + a32 * b20 +       b30;
 	m[13] = a30 * b01 + a31 * b11 + a32 * b21 +       b31;
@@ -378,8 +403,9 @@ pbMatrix4.fastMultiply = function( a, b )
 // j, k, l, 1
 // 
 // we can speed up the multiplication by skipping the 0 and 1 multiplication steps
-pbMatrix4.setFastMultiply = function( a, b )
+pbMatrix4.setFastMultiply3 = function( a, b )
 {
+	// the 'a' matrix (also the output) is 4x4
 	var a00 = a[         0 ];
 	var a01 = a[         1 ];
 	var a02 = a[         2 ];
@@ -396,40 +422,37 @@ pbMatrix4.setFastMultiply = function( a, b )
 	var a31 = a[ 3 * 4 + 1 ];
 	var a32 = a[ 3 * 4 + 2 ];
 
+	// the 'b' matrix is 3x3
 	var b00 = b[         0 ];
 	var b01 = b[         1 ];
 	var b02 = b[         2 ];
 
-	var b10 = b[     4 + 0 ];
-	var b11 = b[     4 + 1 ];
-	var b12 = b[     4 + 2 ];
+	var b10 = b[     3 + 0 ];
+	var b11 = b[     3 + 1 ];
+	var b12 = b[     3 + 2 ];
 
-	var b20 = b[ 2 * 4 + 0 ];
-	var b21 = b[ 2 * 4 + 1 ];
-	var b22 = b[ 2 * 4 + 2 ];
-
-	var b30 = b[ 3 * 4 + 0 ];
-	var b31 = b[ 3 * 4 + 1 ];
-	var b32 = b[ 3 * 4 + 2 ];
+	var b20 = b[ 2 * 3 + 0 ];
+	var b21 = b[ 2 * 3 + 1 ];
+	var b22 = b[ 2 * 3 + 2 ];
 
 	a[0]  = a00 * b00 + a01 * b10 + a02 * b20;
 	a[1]  = a00 * b01 + a01 * b11 + a02 * b21;
 	a[2]  = a00 * b02 + a01 * b12 + a02 * b22;
-	a[3]  =                         a02      ;
+	a[3]  = 0;
 
 	a[4]  = a10 * b00 + a11 * b10 + a12 * b20;
 	a[5]  = a10 * b01 + a11 * b11 + a12 * b21;
 	a[6]  = a10 * b02 + a11 * b12 + a12 * b22;
-	a[7]  =                         a12      ;
+	a[7]  = 0;
 
 	a[8]  = a20 * b00 + a21 * b10 + a22 * b20;
 	a[9]  = a20 * b01 + a21 * b11 + a22 * b21;
 	a[10] = a20 * b02 + a21 * b12 + a22 * b22;
-	a[11] =                         a22      ;
+	a[11] = 0;
 
-	a[12] = a30 * b00 + a31 * b10 + a32 * b20 +       b30;
-	a[13] = a30 * b01 + a31 * b11 + a32 * b21 +       b31;
-	a[14] = a30 * b02 + a31 * b12 + a32 * b22 +       b32;
+	a[12] = a30 * b00 + a31 * b10 + a32 * b20;
+	a[13] = a30 * b01 + a31 * b11 + a32 * b21;
+	a[14] = a30 * b02 + a31 * b12 + a32 * b22;
 	a[15] = 1;
 };
 

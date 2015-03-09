@@ -300,11 +300,11 @@ var imageShaderSource3D = {
 		"  attribute vec4 aPosition;" +
 		"  uniform float uZ;" +
 		"  uniform mat4 uProjectionMatrix4;" +
-		"  uniform mat3 uModelMatrix4;" +
+		"  uniform mat4 uModelMatrix4;" +
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
-		"    vec4 pos = uProjectionMatrix4 * uModelMatrix4 * vec4(aPosition.xy, 1, 1);" +
-		"    gl_Position = vec4(pos.xy, uZ + pos.z, 1);" +
+		"    vec4 pos = uProjectionMatrix4 * uModelMatrix4 * vec4(aPosition.xyz, 1);" +
+		"    gl_Position = vec4(pos.xy, 1, 1);" +
 		"    vTexCoord = aPosition.zw;" +
 		"  }",
 
@@ -469,7 +469,10 @@ pbWebGlShaders.prototype.setProgram = function(_program)
 				{
 					var attribute = this.currentProgram.attributes[a];
 					this.currentProgram[attribute] = gl.getAttribLocation( this.currentProgram, attribute );
-					gl.enableVertexAttribArray( this.currentProgram[attribute] );
+					if (this.currentProgram[attribute] === null)
+						console.log("WARNING (pbWebGlShaders.setProgram): shader attribute returned NULL for", attribute, "it's probably unused in the shader");
+					else
+						gl.enableVertexAttribArray( this.currentProgram[attribute] );
 				}
 			}
 		}
@@ -483,6 +486,8 @@ pbWebGlShaders.prototype.setProgram = function(_program)
 				{
 					var uniform = this.currentProgram.uniforms[u];
 					this.currentProgram[uniform] = gl.getUniformLocation( this.currentProgram, uniform );
+					if (this.currentProgram[uniform] === null)
+						console.log("WARNING (pbWebGlShaders.setProgram): shader uniform returned NULL for", uniform, "it's probably unused in the shader");
 				}
 			}
 		}

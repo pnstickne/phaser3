@@ -92,6 +92,6 @@ pbTiltDemo.prototype.addSprites = function()
 
 pbTiltDemo.prototype.update = function()
 {
-	this.spr.ry += 0.01;
+	this.spr.rx += 0.01;
 };
 

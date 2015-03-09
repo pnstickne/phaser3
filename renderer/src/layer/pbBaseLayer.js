@@ -80,7 +80,10 @@ pbBaseLayer.prototype.draw = function(_list)
 	
 	if (_list.length === 1)
 	{
-		this.renderer.graphics.drawImageWithTransform( obj.image, obj.transform, obj.z_order );
+		if (obj.image.is3D)
+			this.renderer.graphics.drawImageWithTransform3D( obj.image, obj.transform, obj.z_order );
+		else
+			this.renderer.graphics.drawImageWithTransform( obj.image, obj.transform, obj.z_order );
 	}
 	else if (obj.image.isParticle)
 	{
