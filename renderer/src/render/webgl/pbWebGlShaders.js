@@ -293,18 +293,18 @@ var imageShaderSource3D = {
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
 		"    gl_FragColor = texture2D(uImageSampler, vTexCoord);" +
-		"    if (gl_FragColor.a < 0.80) discard;" +
 		"  }",
 
 	vertex:
+		"  precision mediump float;" +
 		"  attribute vec4 aPosition;" +
 		"  uniform float uZ;" +
 		"  uniform mat4 uProjectionMatrix4;" +
 		"  uniform mat4 uModelMatrix4;" +
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
-		"    vec4 pos = uProjectionMatrix4 * uModelMatrix4 * vec4(aPosition.xyz, 1);" +
-		"    gl_Position = vec4(pos.xy, 1, 1);" +
+		"    vec4 pos = uProjectionMatrix4 * uModelMatrix4 * vec4(0, 0, 1, 1);" +
+		"    gl_Position = vec4(pos.xyz, 1);" +
 		"    vTexCoord = aPosition.zw;" +
 		"  }",
 
@@ -319,6 +319,84 @@ var imageShaderSource3D = {
 };
 
 
+/**
+ * modezShaderSources - mode z shaders for single image drawing including matrix transforms for scalex,scaley, rotation and translation
+ * @type {Array}
+ */
+var modezShaderSources = {
+	fragment:
+		"  precision mediump float;" +
+		"  uniform sampler2D uImageSampler;" +
+		"  varying vec2 vTexCoord;" +
+		"  const float high = 10.0;" +
+		"  void main(void) {" +
+		"    float x = vTexCoord.x * 2.0 - 1.0;" +
+		"    float y = vTexCoord.y * 2.0 - 1.0;" +
+		"    float r = high / y;" +
+		"    if (r > 0.0)" +
+		"    {" +
+		"      vec2 c = vec2(x * r * 0.02 + 0.5, r * 0.02);" +
+		"      gl_FragColor = vec4(texture2D(uImageSampler, c).rgb, 1.0);" +
+		"      if (c.x < 0.0 || c.x > 1.0 || c.y < 0.0 || c.y > 1.0) discard;" +
+		"    }" +
+		"  }",
+		//gl_FragColor = vec4(texture2D(uImageSampler, vTexCoord).rgb, 1.0);"
+
+	vertex:
+		"  precision mediump float;" +
+		"  attribute vec4 aPosition;" +
+		"  uniform float uZ;" +
+		"  uniform mat3 uProjectionMatrix;" +
+		"  uniform mat3 uModelMatrix;" +
+		"  varying vec2 vTexCoord;" +
+		"  void main(void) {" +
+		"    vec3 pos = uProjectionMatrix * uModelMatrix * vec3(aPosition.xy, 1);" +
+		"    gl_Position = vec4(pos.xy, uZ, 1);" +
+		"    vTexCoord = aPosition.zw;" +
+		"  }",
+
+	attributes:
+		[ "aPosition" ],
+
+	uniforms:
+		[ "uZ", "uProjectionMatrix", "uModelMatrix" ],
+
+	sampler:
+		"uImageSampler"
+};
+
+/*
+const float speed = 14.0;
+const float high = 13.5;
+
+vec3 color(vec2 uv)
+{
+    vec3 color;
+    
+    // negative inverse scaled texture source y location
+    float r = -high / uv.y;
+    
+    // prevent upside down version for negative y values
+    if (r > 0.0)
+    {
+        vec3 p = vec3(uv, 1.0) * r;
+        color = texture2D(iChannel0, p.xz * 0.0125).rgb;
+    }
+
+    return color;
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    float aspect = iResolution.x / iResolution.y;
+    
+    vec2 uv = fragCoord.xy / iResolution.xy * 2.0 - 1.0;
+    uv.x *= aspect;
+   
+    vec3 c = color(uv);
+	fragColor = vec4(c.r, c.g, c.b, 1.0);
+}
+*/
 
 
 function pbWebGlShaders()
@@ -327,6 +405,7 @@ function pbWebGlShaders()
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
 	this.imageShaderProgram3D = null;
+	this.modezShaderProgram = null;
 	this.blitShaderProgram = null;
 	this.blitShaderPointProgram = null;
 	this.blitShaderPointAnimProgram = null;
@@ -347,6 +426,7 @@ pbWebGlShaders.prototype.create = function()
 	// individual sprite processing
 	this.imageShaderProgram = this.createProgram( imageShaderSources );
 	this.imageShaderProgram3D = this.createProgram( imageShaderSource3D );
+	this.modezShaderProgram = this.createProgram( modezShaderSources );
 
 	// batch processing
 	this.blitShaderProgram = this.createProgram( blitShaderSources );
@@ -364,6 +444,7 @@ pbWebGlShaders.prototype.destroy = function()
 	this.graphicsShaderProgram = null;
 	this.imageShaderProgram = null;
 	this.imageShaderProgram3D = null;
+	this.modezShaderProgram = null;
 	this.blitShaderProgram = null;
 	this.blitShaderPointProgram = null;
 	this.blitShaderPointAnimProgram = null;

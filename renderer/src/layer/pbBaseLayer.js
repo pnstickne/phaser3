@@ -80,7 +80,9 @@ pbBaseLayer.prototype.draw = function(_list)
 	
 	if (_list.length === 1)
 	{
-		if (obj.image.is3D)
+		if (obj.image.isModeZ)
+			this.renderer.graphics.drawModeZ( obj.image, obj.transform, obj.z_order );
+		else if (obj.image.is3D)
 			this.renderer.graphics.drawImageWithTransform3D( obj.image, obj.transform, obj.z_order );
 		else
 			this.renderer.graphics.drawImageWithTransform( obj.image, obj.transform, obj.z_order );
