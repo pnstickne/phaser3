@@ -215,7 +215,7 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 		var imageData = _ctx.createImageData(canvas.width, canvas.height);
 
 		// read the texture pixels into a typed array
-		var buf8 = this.getTexture(this.fb);
+		var buf8 = this.getTextureData(this.fb);
 
 		// copy the typed array data into the ImageData surface
 		var c = imageData.data.length;
@@ -229,11 +229,42 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 
 
 /**
- * getTexture - transfer a webGl texture to a system RAM buffer (returns a Uint8Array)
+ * getTextureToSurface - grab a webGl texture on the GPU into a pbSurface texture
+ * 
+ */
+pbWebGlTextures.prototype.getTextureToSurface = function(_ctx)
+{
+	if (this.canReadTexture && this.fb)
+	{
+		// read the texture pixels into a typed array
+		var buf8 = this.getTextureData(this.fb);
+
+		// create a ImageData to hold the texture
+		var canvas = _ctx.canvas;
+		var imageData = _ctx.createImageData(buf8.width, buf8.height);
+
+		// copy the typed array data into the ImageData surface
+		var c = imageData.data.length;
+		while(c--)
+			imageData.data[c] = buf8[c];
+
+		// create a pbSurface to hold the ImageData
+		var surface = new pbSurface();
+		// _wide, _high, _numWide, _numHigh, _imageData)
+		surface.create(buf8.width, buf8.height, 1, 1, imageData);
+
+		return surface;
+	}
+	return null;
+};
+
+
+/**
+ * getTextureData - transfer a webGl texture to a system RAM buffer (returns a Uint8Array)
  *
  */
 // from http://learningwebgl.com/blog/?p=1786
-pbWebGlTextures.prototype.getTexture = function(_fb)
+pbWebGlTextures.prototype.getTextureData = function(_fb)
 {
 	if (this.canReadTexture && _fb)
 	{
@@ -258,6 +289,8 @@ pbWebGlTextures.prototype.getTexture = function(_fb)
 
 		// read the texture pixels into a typed array
 		var buf8 = new Uint8Array(wide * high * 4);
+		buf8.width = wide;
+		buf8.height = high;
 		gl.readPixels(0, 0, wide, high, gl.RGBA, gl.UNSIGNED_BYTE, buf8);
 
 		// unbind the framebuffer
