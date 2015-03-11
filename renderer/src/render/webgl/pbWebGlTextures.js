@@ -125,13 +125,13 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
  */
 pbWebGlTextures.prototype.prepareRenderTexture = function( _width, _height )
 {
-	// create a render-to-this.rtTexture frame buffer
+	// create a render-to-texture frame buffer
 	this.rttFb = gl.createFramebuffer();
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFb);
 	this.rttFb.width = _width;
 	this.rttFb.height = _height;
 
-	// create a this.rtTexture surface to render to
+	// create a texture surface to render to
 	this.rtTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.rtTexture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -141,20 +141,20 @@ pbWebGlTextures.prototype.prepareRenderTexture = function( _width, _height )
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.rttFb.width, this.rttFb.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
-    // create a this.rtDepth buffer
+    // create a depth buffer
     this.rtDepth = gl.createRenderBuffer();
     gl.bindRenderBuffer(gl.RENDERBUFFER, this.rtDepth);
     gl.renderBufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.rttFb.width, this.rttFb.height);
 
-    // attach the this.rtTexture and this.rtDepth buffers to the frame buffer
+    // attach the texture and depth buffers to the frame buffer
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.rtTexture, 0);
     gl.frameBufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.rtDepth);
 
     // unbind everything
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindRenderBuffer(gl.RENDERBUFFER, null);
-    
-    //gl.bindFramebuffer(gl.FRAMEBUFFER, null);  // NOTE: leave the frame buffer bound, it is our target for all rendering until stopRenderTexture
+    // NOTE: leave the frame buffer bound, it is now our target for all rendering until stopRenderTexture
+    //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
 
 
@@ -164,7 +164,19 @@ pbWebGlTextures.prototype.prepareRenderTexture = function( _width, _height )
  */
 pbWebGlTextures.prototype.stopRenderTexture = function()
 {
+	// unbind the frame buffer to stop rendering to a texture and resume rendering to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+};
+
+
+/**
+ * renderTextureAgain - rebind the rttFb frame buffer to render another image to the existing rtTexture
+ *
+ */
+pbWebGlTextures.prototype.renderTextureAgain = function()
+{
+	if (this.rttFb)
+		gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFb);
 };
 
 
