@@ -111,10 +111,10 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
 
 
 /**
- * prepareTextureForCanvas - prepare a webGl texture to transfer it's content to a Canvas
+ * prepareTextureForAccess - prepare a webGl texture to transfer it's content to system memory
  *
  */
-pbWebGlTextures.prototype.prepareTextureForCanvas = function()
+pbWebGlTextures.prototype.prepareTextureForAccess = function()
 {
 	// make a framebuffer
 	this.fb = gl.createFramebuffer();
@@ -141,19 +141,11 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 {
 	if (this.canReadTexture && this.fb)
 	{
-		// make this the current frame buffer
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
-
-		// attach the texture to the framebuffer again (to update the contents)
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.currentTexture, 0);
-
-		// get ImageData surface from the _canvas
 		var canvas = _ctx.canvas;
 		var imageData = _ctx.createImageData(canvas.width, canvas.height);
 
 		// read the texture pixels into a typed array
-		var buf8 = new Uint8Array(imageData.data.length);
-		gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, buf8);
+		var buf8 = this.getTexture();
 
 		// copy the typed array data into the ImageData surface
 		var c = imageData.data.length;
@@ -162,11 +154,48 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 
 		// put the ImageData on the _canvas
 		_ctx.putImageData(imageData, 0, 0);
+	}
+};
+
+
+/**
+ * getTexture - transfer a webGl texture to system RAM
+ * 
+ */
+// from http://learningwebgl.com/blog/?p=1786
+pbWebGlTextures.prototype.getTexture = function()
+{
+	if (this.canReadTexture && this.fb)
+	{
+		// make this the current frame buffer
+		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+
+		// attach the texture to the framebuffer again (to update the contents)
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.currentTexture, 0);
+
+		// dimensions of the texture
+		var wide, high;
+		if (this.currentTexture.image)
+		{
+			wide = this.currentTexture.image.width;
+			high = this.currentTexture.image.height;
+		}
+		else if (this.currentTexture.canvas)
+		{
+			wide = this.currentTexture.canvas.width;
+			high = this.currentTexture.canvas.height;
+		}
+
+		// read the texture pixels into a typed array
+		var buf8 = new Uint8Array(wide * high * 4);
+		gl.readPixels(0, 0, wide, high, gl.RGBA, gl.UNSIGNED_BYTE, buf8);
 
 		// unbind the framebuffer
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	}
 
+		return buf8;
+	}
+	return null;
 };
 
 

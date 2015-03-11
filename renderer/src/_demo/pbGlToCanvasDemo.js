@@ -134,7 +134,7 @@ pbGlToCanvasDemo.prototype.update = function()
 
 	// prepare the texture to be grabbed by attaching it to a frame buffer (once only)
 	if (!this.renderer.graphics.textures.canReadTexture)
-		this.renderer.graphics.textures.prepareTextureForCanvas();
+		this.renderer.graphics.textures.prepareTextureForAccess();
 
 	var c = this.list.length;
 	while(c--)
