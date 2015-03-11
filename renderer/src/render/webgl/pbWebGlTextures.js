@@ -11,6 +11,9 @@ function pbWebGlTextures()
 	this.fb = null;
 	this.currentTexture = null;
 	this.canReadTexture = false;
+	this.rttFb = null;
+	this.rtTexture = null;
+	this.rtDepth = null;
 }
 
 
@@ -20,6 +23,9 @@ pbWebGlTextures.prototype.create = function()
 	this.fb = null;
 	this.currentTexture = null;
 	this.canReadTexture = false;
+	this.rttFb = null;
+	this.rtTexture = null;
+	this.rtDepth = null;
 };
 
 
@@ -28,6 +34,9 @@ pbWebGlTextures.prototype.destroy = function()
 	this.onGPU = null;
 	this.fb = null;
 	this.currentTexture = null;
+	this.rttFb = null;
+	this.rtTexture = null;
+	this.rtDepth = null;
 };
 
 
@@ -111,6 +120,55 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
 
 
 /**
+ * prepare - prepare a texture for webGl to render to it, leave it bound to the framebuffer so everything will go there
+ *
+ */
+pbWebGlTextures.prototype.prepareRenderTexture = function( _width, _height )
+{
+	// create a render-to-this.rtTexture frame buffer
+	this.rttFb = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFb);
+	this.rttFb.width = _width;
+	this.rttFb.height = _height;
+
+	// create a this.rtTexture surface to render to
+	this.rtTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.rtTexture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.rttFb.width, this.rttFb.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+    // create a this.rtDepth buffer
+    this.rtDepth = gl.createRenderBuffer();
+    gl.bindRenderBuffer(gl.RENDERBUFFER, this.rtDepth);
+    gl.renderBufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.rttFb.width, this.rttFb.height);
+
+    // attach the this.rtTexture and this.rtDepth buffers to the frame buffer
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.rtTexture, 0);
+    gl.frameBufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.rtDepth);
+
+    // unbind everything
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindRenderBuffer(gl.RENDERBUFFER, null);
+    
+    //gl.bindFramebuffer(gl.FRAMEBUFFER, null);  // NOTE: leave the frame buffer bound, it is our target for all rendering until stopRenderTexture
+};
+
+
+/**
+ * stopRenderTexture - stop future rendering going to the render texture
+ *
+ */
+pbWebGlTextures.prototype.stopRenderTexture = function()
+{
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+};
+
+
+/**
  * prepareTextureForAccess - prepare a webGl texture to transfer it's content to system memory
  *
  */
@@ -145,7 +203,7 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 		var imageData = _ctx.createImageData(canvas.width, canvas.height);
 
 		// read the texture pixels into a typed array
-		var buf8 = this.getTexture();
+		var buf8 = this.getTexture(this.fb);
 
 		// copy the typed array data into the ImageData surface
 		var c = imageData.data.length;
@@ -159,21 +217,21 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 
 
 /**
- * getTexture - transfer a webGl texture to system RAM
- * 
+ * getTexture - transfer a webGl texture to a system RAM buffer (returns a Uint8Array)
+ *
  */
 // from http://learningwebgl.com/blog/?p=1786
-pbWebGlTextures.prototype.getTexture = function()
+pbWebGlTextures.prototype.getTexture = function(_fb)
 {
-	if (this.canReadTexture && this.fb)
+	if (this.canReadTexture && _fb)
 	{
 		// make this the current frame buffer
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, _fb);
 
 		// attach the texture to the framebuffer again (to update the contents)
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.currentTexture, 0);
 
-		// dimensions of the texture
+		// dimensions of the texture, branch depending on the original image source
 		var wide, high;
 		if (this.currentTexture.image)
 		{
