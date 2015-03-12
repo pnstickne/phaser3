@@ -302,12 +302,10 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 
 /**
  * drawImageToTextureWithTransform - draw images to a render texture
- * - on the first call, width and height must be specified for the target render texture which will be created then
- * - on subsequent calls, leave width and height null or undefined and the rendering will continue to go to the previously created render texture
  * - after each call the framebuffer is released, so no further action is required when rendering to texture is completed
  *
- * @param  {[type]} _width     - if null or undefined, use a previously created render texture (must NOT be null on first call)
- * @param  {[type]} _height    - if null or undefined, use a previously created render texture (must NOT be null on first call)
+ * @param  {[type]} _width     - size of the texture to render to
+ * @param  {[type]} _height    - size of the texture to render to
  * @param  {[type]} _image     - the image to render
  * @param  {[type]} _transform - the transform matrix for the image
  * @param  {[type]} _z         - the depth value for the image
@@ -317,7 +315,7 @@ pbWebGl.prototype.drawImageToTextureWithTransform = function( _width, _height, _
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
 
-	if (_width && _height)
+	if (!this.textures.rttFb)
 		this.textures.prepareRenderTexture(_width, _height);
 	else
 		this.textures.renderTextureAgain();

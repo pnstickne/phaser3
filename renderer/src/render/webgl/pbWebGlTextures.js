@@ -134,25 +134,26 @@ pbWebGlTextures.prototype.prepareRenderTexture = function( _width, _height )
 	// create a texture surface to render to
 	this.rtTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.rtTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.rttFb.width, this.rttFb.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     gl.generateMipmap(gl.TEXTURE_2D);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.rttFb.width, this.rttFb.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
     // create a depth buffer
-    this.rtDepth = gl.createRenderBuffer();
-    gl.bindRenderBuffer(gl.RENDERBUFFER, this.rtDepth);
-    gl.renderBufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.rttFb.width, this.rttFb.height);
+    this.rtDepth = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, this.rtDepth);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.rttFb.width, this.rttFb.height);
 
     // attach the texture and depth buffers to the frame buffer
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.rtTexture, 0);
-    gl.frameBufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.rtDepth);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.rtDepth);
 
     // unbind everything
     gl.bindTexture(gl.TEXTURE_2D, null);
-    gl.bindRenderBuffer(gl.RENDERBUFFER, null);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     // NOTE: leave the frame buffer bound, it is now our target for all rendering until stopRenderTexture
     //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
@@ -184,7 +185,7 @@ pbWebGlTextures.prototype.renderTextureAgain = function()
  * prepareTextureForAccess - prepare a webGl texture to transfer it's content to system memory
  *
  */
-pbWebGlTextures.prototype.prepareTextureForAccess = function()
+pbWebGlTextures.prototype.prepareTextureForAccess = function(_texture)
 {
 	// make a framebuffer
 	this.fb = gl.createFramebuffer();
@@ -193,7 +194,7 @@ pbWebGlTextures.prototype.prepareTextureForAccess = function()
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
 
 	// attach the texture to the framebuffer.
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.currentTexture, 0);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, _texture, 0);
 
 	// check if you can read from this type of texture.
 	this.canReadTexture = (gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE);
@@ -229,7 +230,7 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 
 
 /**
- * getTextureToSurface - grab a webGl texture on the GPU into a pbSurface texture
+ * getTextureToSurface - grab a webGl texture from the GPU into a pbSurface texture
  * 
  */
 pbWebGlTextures.prototype.getTextureToSurface = function(_ctx)
@@ -240,7 +241,6 @@ pbWebGlTextures.prototype.getTextureToSurface = function(_ctx)
 		var buf8 = this.getTextureData(this.fb);
 
 		// create a ImageData to hold the texture
-		var canvas = _ctx.canvas;
 		var imageData = _ctx.createImageData(buf8.width, buf8.height);
 
 		// copy the typed array data into the ImageData surface
@@ -260,7 +260,7 @@ pbWebGlTextures.prototype.getTextureToSurface = function(_ctx)
 
 
 /**
- * getTextureData - transfer a webGl texture to a system RAM buffer (returns a Uint8Array)
+ * getTextureData - transfer a webGl texture from the GPU to a system RAM buffer (returns a Uint8Array)
  *
  */
 // from http://learningwebgl.com/blog/?p=1786

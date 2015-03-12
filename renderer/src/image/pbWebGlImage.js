@@ -24,6 +24,7 @@ function pbWebGlImage()
 	this.isParticle = false;
 	this.is3D = false;
 	this.isModeZ = false;
+	this.toTexture = false;
 }
 
 
