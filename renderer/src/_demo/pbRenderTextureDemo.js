@@ -104,21 +104,23 @@ pbRenderTextureDemo.prototype.update = function()
 
 	// bounce the sprite across the renderer view
 	this.spr.x += this.dirx;
-	if (this.spr.x < 150) this.dirx = -this.dirx;
-	if (this.spr.x > pbRenderer.width - 150) this.dirx = -this.dirx;
+	if (this.spr.x < 50) this.dirx = -this.dirx;
+	if (this.spr.x > 256 - 50) this.dirx = -this.dirx;
 
 
 	// don't try to grab the render texture before it's even been created...
 	if (this.renderer.graphics.textures.rtTexture)
 	{
-		// this.renderer.graphics.textures.prepareRenderTexture();
+		// this.renderer.graphics.textures.prepareRenderToTexture();
 
 		// prepare the texture to be grabbed by attaching it to a frame buffer (once only)
 		// if (!this.renderer.graphics.textures.canReadTexture)
-			this.renderer.graphics.textures.prepareTextureForAccess(this.renderer.graphics.textures.rtTexture);
+		this.renderer.graphics.textures.prepareTextureForAccess(this.renderer.graphics.textures.rtTexture);
 
 		// grab the webGl.currentTexture and draw it into the destination canvas as ImageData
-		this.renderSurface = this.renderer.graphics.textures.getTextureToSurface(gl);
+		if (!this.renderSurface)
+			this.renderSurface = new pbSurface();
+		this.renderer.graphics.textures.getTextureToSurface(gl, this.renderSurface);
 
 		// first time we obtain the rendered surface, attach it so it'll get rendered to the rootLayer
 		if (this.firstTime)
