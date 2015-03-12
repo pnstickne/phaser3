@@ -9,10 +9,10 @@ function pbWebGlTextures()
 {
 	this.onGPU = null;
 	this.fb = null;
-	this.currentTexture = null;
+	this.currentSrcTexture = null;
 	this.canReadTexture = false;
 	this.rttFb = null;
-	this.rtTexture = null;
+	this.currentDstTexture = null;
 	this.rtDepth = null;
 }
 
@@ -21,10 +21,10 @@ pbWebGlTextures.prototype.create = function()
 {
 	this.onGPU = [];
 	this.fb = null;
-	this.currentTexture = null;
+	this.currentSrcTexture = null;
 	this.canReadTexture = false;
 	this.rttFb = null;
-	this.rtTexture = null;
+	this.currentDstTexture = null;
 	this.rtDepth = null;
 };
 
@@ -33,15 +33,15 @@ pbWebGlTextures.prototype.destroy = function()
 {
 	this.onGPU = null;
 	this.fb = null;
-	this.currentTexture = null;
+	this.currentSrcTexture = null;
 	this.rttFb = null;
-	this.rtTexture = null;
+	this.currentDstTexture = null;
 	this.rtDepth = null;
 };
 
 
 /**
- * prepare - prepare a texture for webGl rendering
+ * prepare - prepare a texture to be rendered with webGl
  *
  * @param  {[type]} _image  [description]
  * @param  {[type]} _tiling [description]
@@ -52,7 +52,7 @@ pbWebGlTextures.prototype.destroy = function()
 pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
 {
 	// this _image is already the selected texture
-	if (this.currentTexture && this.currentTexture.image === _image)
+	if (this.currentSrcTexture && this.currentSrcTexture.image === _image)
 		return false;
 
 	var texture = null;
@@ -75,7 +75,7 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
 		    return false;
 	    }
 
-		console.log( "pbWebGlTextures.prepare uploading new texture : ", _image.width, "x", _image.height );
+		console.log( "pbWebGlTextures.prepare uploading new source texture : ", _image.width, "x", _image.height );
 
 	    // link the texture object to the image and vice-versa
 		texture = gl.createTexture();
@@ -112,7 +112,7 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
 	}
 
 	// activate the texture
-    this.currentTexture = texture;
+    this.currentSrcTexture = texture;
     gl.activeTexture( gl.TEXTURE0 );
 
     return true;
@@ -134,8 +134,8 @@ pbWebGlTextures.prototype.prepareRenderToTexture = function( _width, _height )
 	this.rttFb.height = _height;
 
 	// create a texture surface to render to
-	this.rtTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, this.rtTexture);
+	this.currentDstTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.currentDstTexture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.rttFb.width, this.rttFb.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -144,9 +144,10 @@ pbWebGlTextures.prototype.prepareRenderToTexture = function( _width, _height )
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     gl.generateMipmap(gl.TEXTURE_2D);
 
-	// create an ImageData to hold the texture and link it to the render texture
-	this.rtTexture.image = new ImageData(_width, _height);
-	this.rtTexture.image.gpuTexture = this.rtTexture;
+	// create a new ImageData to hold the texture pixels
+	this.currentDstTexture.image = new ImageData(_width, _height);
+	// link the image to the destination texture
+	this.currentDstTexture.image.gpuTexture = this.currentDstTexture;
 
     // create a depth buffer
     this.rtDepth = gl.createRenderbuffer();
@@ -154,7 +155,7 @@ pbWebGlTextures.prototype.prepareRenderToTexture = function( _width, _height )
     gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.rttFb.width, this.rttFb.height);
 
     // attach the texture and depth buffers to the frame buffer
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.rtTexture, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.currentDstTexture, 0);
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.rtDepth);
 
     // unbind everything
@@ -163,6 +164,18 @@ pbWebGlTextures.prototype.prepareRenderToTexture = function( _width, _height )
     // NOTE: leave the frame buffer bound, it is now our target for all rendering until stopRenderTexture
     //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
+
+
+// http://stackoverflow.com/questions/13626465/how-to-create-a-new-imagedata-object-independently
+function ImageData(_width, _height)
+{
+    var canvas = document.createElement('canvas');
+    canvas.width = _width;
+    canvas.height = _height;
+    var ctx = canvas.getContext('2d');
+    var imageData = ctx.createImageData(canvas.width, canvas.height);
+    return imageData;
+}
 
 
 /**
@@ -177,29 +190,42 @@ pbWebGlTextures.prototype.stopRenderTexture = function()
 
 
 /**
- * renderToTextureAgain - rebind the rttFb frame buffer to render this _image to the existing rtTexture
- * make sure that _image is the currentTexture
- *
+ * setRenderTargetToTexture - rebind the rttFb frame buffer to render to currentDstTexture
+ * 
  */
-pbWebGlTextures.prototype.renderToTextureAgain = function(_image)
+pbWebGlTextures.prototype.setRenderTargetToTexture = function(_width, _height)
 {
-	console.log("pbWebGlTextures.renderToTextureAgain", _image.surface.image.width, "x", _image.surface.image.height);
-
-	if (this.rttFb)
+	if (!this.rttFb)
 	{
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFb);
+		// create the destination texture
+		this.prepareRenderToTexture(_width, _height);
+	}
+	else
+	{
+		console.log("pbWebGlTextures.setRenderTargetToTexture", _width, "x", _height);
 
-		// _image isn't the current texture
-		if (!this.currentTexture || this.currentTexture.image !== _image)
-		{
-			var index = this.onGPU.indexOf(_image);
-			if (index == -1)
-				this.onGPU.push(_image);
-			texture = _image.gpuTexture;
-			gl.bindTexture(gl.TEXTURE_2D, texture);
-			this.currentTexture = texture;
-			gl.activeTexture( gl.TEXTURE0 );
-		}
+		// rebind the frame buffer containing the destination texture
+		gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFb);
+	}
+};
+
+
+pbWebGlTextures.prototype.setRenderSourceImage = function( _image )
+{
+	// make sure that _image is the current source texture
+	if (!this.currentSrcTexture || this.currentSrcTexture.image !== _image)
+	{
+		console.log("pbWebGlTextures.setRenderSourceImage", _image.width, "x", _image.height);
+
+		var index = this.onGPU.indexOf(_image);
+		if (index == -1)
+			this.onGPU.push(_image);
+		texture = _image.gpuTexture;
+		if (texture === null)
+			console.log("WARNING: image has null for gpuTexture.");
+		gl.bindTexture(gl.TEXTURE_2D, texture);
+		this.currentSrcTexture = texture;
+		gl.activeTexture( gl.TEXTURE0 );
 	}
 };
 
@@ -225,7 +251,7 @@ pbWebGlTextures.prototype.prepareTextureForAccess = function(_texture)
 	this.canReadTexture = (gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE);
 
 	// remember which texture we're working with
-    this.currentTexture = _texture;
+    this.currentSrcTexture = _texture;
 };
 
 
@@ -244,7 +270,7 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 		var imageData = _ctx.createImageData(canvas.width, canvas.height);
 
 		// read the texture pixels into a typed array
-		var buf8 = this.getTextureData(this.fb);
+		var buf8 = this.getTextureData(this.fb, this.currentSrcTexture);
 
 		// copy the typed array data into the ImageData surface
 		var c = imageData.data.length;
@@ -257,42 +283,36 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 };
 
 
-// http://stackoverflow.com/questions/13626465/how-to-create-a-new-imagedata-object-independently
-function ImageData(_width, _height)
-{
-    var canvas = document.createElement('canvas');
-    canvas.width = _width;
-    canvas.height = _height;
-    var ctx = canvas.getContext('2d');
-    var imageData = ctx.createImageData(canvas.width, canvas.height);
-    return imageData;
-}
-
-
 /**
- * getTextureToSurface - grab a webGl texture from the GPU into a pbSurface texture
+ * getTextureToSurface - grab the webGl destination texture from the GPU into a pbSurface
  * 
  */
 pbWebGlTextures.prototype.getTextureToSurface = function(_ctx, _surface)
 {
-	console.log("pbWebGlTextures.getTextureToSurface", this.currentTexture.image.width, "x", this.currentTexture.image.height);
-
 	if (this.canReadTexture && this.fb)
 	{
-		// read the texture pixels into a typed array
-		var buf8 = this.getTextureData(this.fb);
+		var wide = this.currentDstTexture.image.width;
+		var high = this.currentDstTexture.image.height;
+		console.log("pbWebGlTextures.getTextureToSurface", wide, "x", high);
 
-		// copy the typed array data into the ImageData surface
-		var c = this.currentTexture.image.data.length;
+		// transfer the destination texture pixels from the GPU into a typed array
+		var buf8 = this.getTextureData(this.fb, this.currentDstTexture);
+		var image = _surface.image;
+		if (!image || image.width != wide || image.height != high)
+		{
+			// create an ImageData to copy the pixels into
+			image = new ImageData(wide, high);
+		}
+		// copy the pixels into the new ImageData
+		var c = this.currentDstTexture.image.data.length;
 		while(c--)
 		{
-			this.currentTexture.image.data[c] = buf8[c];
-			// if (buf8[c] !== 0)
-			// 	console.log((c / 4) % 256, 0|((c / 4) / 256));
+			image.data[c] = buf8[c];
 		}
 
+		// associate the ImageData with the _surface
 		// _wide, _high, _numWide, _numHigh, _imageData)
-		_surface.create(buf8.width, buf8.height, 1, 1, this.currentTexture.image);
+		_surface.create(buf8.width, buf8.height, 1, 1, image);
 	}
 };
 
@@ -302,7 +322,7 @@ pbWebGlTextures.prototype.getTextureToSurface = function(_ctx, _surface)
  *
  */
 // from http://learningwebgl.com/blog/?p=1786
-pbWebGlTextures.prototype.getTextureData = function(_fb)
+pbWebGlTextures.prototype.getTextureData = function(_fb, _texture)
 {
 	if (this.canReadTexture && _fb)
 	{
@@ -310,19 +330,19 @@ pbWebGlTextures.prototype.getTextureData = function(_fb)
 		gl.bindFramebuffer(gl.FRAMEBUFFER, _fb);
 
 		// attach the texture to the framebuffer again (to update the contents)
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.currentTexture, 0);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, _texture, 0);
 
 		// dimensions of the texture, branch depending on the original image source
 		var wide, high;
-		if (this.currentTexture.canvas)
+		if (_texture.canvas)
 		{
-			wide = this.currentTexture.canvas.width;
-			high = this.currentTexture.canvas.height;
+			wide = _texture.canvas.width;
+			high = _texture.canvas.height;
 		}
-		else if (this.currentTexture.image)
+		else if (_texture.image)
 		{
-			wide = this.currentTexture.image.width;
-			high = this.currentTexture.image.height;
+			wide = _texture.image.width;
+			high = _texture.image.height;
 		}
 
 		console.log("pbWebGlTextures.getTextureData", wide, "x", high);
@@ -358,11 +378,13 @@ pbWebGlTextures.prototype.createTextureFromCanvas = function(_canvas)
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+	// upload the canvas image into the texture
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _canvas);
 
 	// activate the texture
-    this.currentTexture = texture;
-    this.currentTexture.canvas = _canvas;
+    this.currentSrcTexture = texture;
+    this.currentSrcTexture.canvas = _canvas;
     gl.activeTexture( gl.TEXTURE0 );
 
 	// create a buffer to transfer all the vertex position data through

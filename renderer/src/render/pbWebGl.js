@@ -315,90 +315,96 @@ pbWebGl.prototype.drawImageToTextureWithTransform = function( _width, _height, _
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
 
-	if (!this.textures.rttFb)
-		this.textures.prepareRenderToTexture(_width, _height);
-	this.textures.renderToTextureAgain(_image);
+	// create the destination texture
+	this.textures.setRenderTargetToTexture(_width, _height);
 
+	// create the source texture and initialise webgl (once only)
 	var surface = _image.surface;
 	if (this.textures.prepare( surface.image, _image.tiling, surface.isNPOT ))
 		this.prepareGl();
 
-	// split off a small part of the big buffer, for a single display object
-	var buffer = this.drawingArray.subarray(0, 16);
+	// set up the source image as the render source
+	this.textures.setRenderSourceImage( surface.image );
 
-	// set up the animation frame
-	var cell = Math.floor(_image.cellFrame);
-	var rect = surface.cellTextureBounds[cell % surface.cellsWide][Math.floor(cell / surface.cellsWide)];
+	// this indented block is identical to part of drawImageWithTransform...
+	// TODO: how many of these are there? Worth adding a function? DRY
 
-	var wide, high;
-	if (_image.fullScreen)
-	{
-		rect.width = gl.drawingBufferWidth / surface.cellWide;
-		rect.height = gl.drawingBufferHeight / surface.cellHigh;
-		wide = gl.drawingBufferWidth;
-		high = gl.drawingBufferHeight;
-	}
-	else
-	{
-		// half width, half height (of source frame)
-		wide = surface.cellWide;
-		high = surface.cellHigh;
-	}
+		// split off a small part of the big buffer, for a single display object
+		var buffer = this.drawingArray.subarray(0, 16);
 
-	// screen destination position
-	// l, b,		0,1
-	// l, t,		4,5
-	// r, b,		8,9
-	// r, t,		12,13
-	var l, r, t, b;
-	if (_image.corners)
-	{
-		var cnr = _image.corners;
-		l = -wide * _image.anchorX;
-		r = wide + l;
-		t = -high * _image.anchorY;
-		b = high + t;
-		// object has corner offets (skewing/perspective etc)
-		buffer[ 0 ] = cnr.lbx * l; buffer[ 1 ] = cnr.lby * b;
-		buffer[ 4 ] = cnr.ltx * l; buffer[ 5 ] = cnr.lty * t;
-		buffer[ 8 ] = cnr.rbx * r; buffer[ 9 ] = cnr.rby * b;
-		buffer[ 12] = cnr.rtx * r; buffer[ 13] = cnr.rty * t;
-	}
-	else
-	{
-		l = -wide * _image.anchorX;
-		r = wide + l;
-		t = -high * _image.anchorY;
-		b = high + t;
-		buffer[ 0 ] = buffer[ 4 ] = l;
-		buffer[ 1 ] = buffer[ 9 ] = b;
-		buffer[ 8 ] = buffer[ 12] = r;
-		buffer[ 5 ] = buffer[ 13] = t;
-	}
+		// set up the animation frame
+		var cell = Math.floor(_image.cellFrame);
+		var rect = surface.cellTextureBounds[cell % surface.cellsWide][Math.floor(cell / surface.cellsWide)];
 
-	// texture source position
-	// x, b,		2,3
-	// x, y,		6,7
-	// r, b,		10,11
-	// r, y,		14,15
-	buffer[ 2 ] = buffer[ 6 ] = rect.x;
-	buffer[ 3 ] = buffer[ 11] = rect.y + rect.height;
-	buffer[ 10] = buffer[ 14] = rect.x + rect.width;
-	buffer[ 7 ] = buffer[ 15] = rect.y;
+		var wide, high;
+		if (_image.fullScreen)
+		{
+			rect.width = gl.drawingBufferWidth / surface.cellWide;
+			rect.height = gl.drawingBufferHeight / surface.cellHigh;
+			wide = gl.drawingBufferWidth;
+			high = gl.drawingBufferHeight;
+		}
+		else
+		{
+			// half width, half height (of source frame)
+			wide = surface.cellWide;
+			high = surface.cellHigh;
+		}
 
-    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
+		// screen destination position
+		// l, b,		0,1
+		// l, t,		4,5
+		// r, b,		8,9
+		// r, t,		12,13
+		var l, r, t, b;
+		if (_image.corners)
+		{
+			var cnr = _image.corners;
+			l = -wide * _image.anchorX;
+			r = wide + l;
+			t = -high * _image.anchorY;
+			b = high + t;
+			// object has corner offets (skewing/perspective etc)
+			buffer[ 0 ] = cnr.lbx * l; buffer[ 1 ] = cnr.lby * b;
+			buffer[ 4 ] = cnr.ltx * l; buffer[ 5 ] = cnr.lty * t;
+			buffer[ 8 ] = cnr.rbx * r; buffer[ 9 ] = cnr.rby * b;
+			buffer[ 12] = cnr.rtx * r; buffer[ 13] = cnr.rty * t;
+		}
+		else
+		{
+			l = -wide * _image.anchorX;
+			r = wide + l;
+			t = -high * _image.anchorY;
+			b = high + t;
+			buffer[ 0 ] = buffer[ 4 ] = l;
+			buffer[ 1 ] = buffer[ 9 ] = b;
+			buffer[ 8 ] = buffer[ 12] = r;
+			buffer[ 5 ] = buffer[ 13] = t;
+		}
 
-	// send the transform matrix to the vector shader
-	gl.uniformMatrix3fv( this.shaders.currentProgram.uModelMatrix, false, _transform );
+		// texture source position
+		// x, b,		2,3
+		// x, y,		6,7
+		// r, b,		10,11
+		// r, y,		14,15
+		buffer[ 2 ] = buffer[ 6 ] = rect.x;
+		buffer[ 3 ] = buffer[ 11] = rect.y + rect.height;
+		buffer[ 10] = buffer[ 14] = rect.x + rect.width;
+		buffer[ 7 ] = buffer[ 15] = rect.y;
 
-	// set the depth value
-   	gl.uniform1f( this.shaders.currentProgram.uZ, _z );
+	    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 
-	// point the position attribute at the last bound buffer
-    gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+		// send the transform matrix to the vector shader
+		gl.uniformMatrix3fv( this.shaders.currentProgram.uModelMatrix, false, _transform );
 
-    // four vertices per quad, one quad
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+		// set the depth value
+	   	gl.uniform1f( this.shaders.currentProgram.uZ, _z );
+
+		// point the position attribute at the last bound buffer
+	    gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+
+	    // four vertices per quad, one quad
+	    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
    	// cease rendering to the render texture
    	this.textures.stopRenderTexture();
@@ -1224,7 +1230,7 @@ pbWebGl.prototype.reset = function()
     gl.bindBuffer( gl.ARRAY_BUFFER, null );
    	gl.bindTexture( gl.TEXTURE_2D, null );
    	this.shaders.clearProgram();
-	this.textures.currentTexture = null;
+	this.textures.currentSrcTexture = null;
 };
 
 
@@ -1255,7 +1261,7 @@ pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transfor
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
 
-	if ( _dirty || !this.textures.currentTexture || this.textures.currentTexture.canvas !== _canvas )
+	if ( _dirty || !this.textures.currentSrcTexture || this.textures.currentSrcTexture.canvas !== _canvas )
 	{
 		// create a webGl texture from the canvas
 		this.textures.createTextureFromCanvas(_canvas);

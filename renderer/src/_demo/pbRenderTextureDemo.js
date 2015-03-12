@@ -99,6 +99,8 @@ pbRenderTextureDemo.prototype.addSprites = function()
 
 pbRenderTextureDemo.prototype.update = function()
 {
+	console.log("pbRenderTextureDemo.update");
+	
 	// rotate
 	this.spr.angleInRadians += 0.01;
 
@@ -109,15 +111,15 @@ pbRenderTextureDemo.prototype.update = function()
 
 
 	// don't try to grab the render texture before it's even been created...
-	if (this.renderer.graphics.textures.rtTexture)
+	if (this.renderer.graphics.textures.currentDstTexture)
 	{
 		// this.renderer.graphics.textures.prepareRenderToTexture();
 
 		// prepare the texture to be grabbed by attaching it to a frame buffer (once only)
 		// if (!this.renderer.graphics.textures.canReadTexture)
-		this.renderer.graphics.textures.prepareTextureForAccess(this.renderer.graphics.textures.rtTexture);
+		this.renderer.graphics.textures.prepareTextureForAccess(this.renderer.graphics.textures.currentDstTexture);
 
-		// grab the webGl.currentTexture and draw it into the destination canvas as ImageData
+		// grab the webGl.currentSrcTexture and draw it into the destination canvas as ImageData
 		if (!this.renderSurface)
 			this.renderSurface = new pbSurface();
 		this.renderer.graphics.textures.getTextureToSurface(gl, this.renderSurface);
