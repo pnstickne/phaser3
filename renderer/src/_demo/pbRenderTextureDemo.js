@@ -114,7 +114,7 @@ pbRenderTextureDemo.prototype.update = function()
 		// this.renderer.graphics.textures.prepareRenderTexture();
 
 		// prepare the texture to be grabbed by attaching it to a frame buffer (once only)
-		if (!this.renderer.graphics.textures.canReadTexture)
+		// if (!this.renderer.graphics.textures.canReadTexture)
 			this.renderer.graphics.textures.prepareTextureForAccess(this.renderer.graphics.textures.rtTexture);
 
 		// grab the webGl.currentTexture and draw it into the destination canvas as ImageData
@@ -129,14 +129,15 @@ pbRenderTextureDemo.prototype.update = function()
 			// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
 			img.create(this.renderSurface, 0, 0.5, 0.5);
 
-			this.renderSprite = new pbSprite();
-			// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-			this.renderSprite.create(img, 0, 0, 0, 0, 1, 1);
-
-			this.displayLayer = new pbLayer();
+			this.displayLayer = new layerClass();
 			// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
 			this.displayLayer.create(rootLayer, this.renderer, 0,0,0, 0, 1, 1);
 			rootLayer.addChild(this.displayLayer);
+
+			this.renderSprite = new pbSprite();
+			// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
+			this.renderSprite.create(img, 128, 128, 0, 0, 1, 1);
+			this.displayLayer.addChild(this.renderSprite);
 
 			this.firstTime = false;
 		}

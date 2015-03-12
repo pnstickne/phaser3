@@ -318,7 +318,7 @@ pbWebGl.prototype.drawImageToTextureWithTransform = function( _width, _height, _
 	if (!this.textures.rttFb)
 		this.textures.prepareRenderTexture(_width, _height);
 	else
-		this.textures.renderTextureAgain();
+		this.textures.renderTextureAgain(_image);
 
 	var surface = _image.surface;
 	if (this.textures.prepare( surface.image, _image.tiling, surface.isNPOT ))

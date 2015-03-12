@@ -142,6 +142,10 @@ pbWebGlTextures.prototype.prepareRenderTexture = function( _width, _height )
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     gl.generateMipmap(gl.TEXTURE_2D);
 
+	// create an ImageData to hold the texture and link it to the render texture
+	this.rtTexture.image = new ImageData(_width, _height);
+	this.rtTexture.image.gpuTexture = this.rtTexture;
+
     // create a depth buffer
     this.rtDepth = gl.createRenderbuffer();
     gl.bindRenderbuffer(gl.RENDERBUFFER, this.rtDepth);
@@ -174,10 +178,24 @@ pbWebGlTextures.prototype.stopRenderTexture = function()
  * renderTextureAgain - rebind the rttFb frame buffer to render another image to the existing rtTexture
  *
  */
-pbWebGlTextures.prototype.renderTextureAgain = function()
+pbWebGlTextures.prototype.renderTextureAgain = function(_image)
 {
 	if (this.rttFb)
+	{
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFb);
+
+		// _image isn't the current texture
+		if (!this.currentTexture || this.currentTexture.image !== _image)
+		{
+			var index = this.onGPU.indexOf(_image);
+		    if (index == -1)
+			    this.onGPU.push(_image);
+			texture = _image.gpuTexture;
+	    	gl.bindTexture(gl.TEXTURE_2D, texture);
+		    this.currentTexture = texture;
+		    gl.activeTexture( gl.TEXTURE0 );
+		}
+	}
 };
 
 
@@ -198,6 +216,9 @@ pbWebGlTextures.prototype.prepareTextureForAccess = function(_texture)
 
 	// check if you can read from this type of texture.
 	this.canReadTexture = (gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE);
+
+	// remember which texture we're working with
+    this.currentTexture = _texture;
 };
 
 
@@ -229,6 +250,18 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 };
 
 
+// http://stackoverflow.com/questions/13626465/how-to-create-a-new-imagedata-object-independently
+function ImageData(_width, _height)
+{
+    var canvas = document.createElement('canvas');
+    canvas.width = _width;
+    canvas.height = _height;
+    var ctx = canvas.getContext('2d');
+    var imageData = ctx.createImageData(canvas.width, canvas.height);
+    return imageData;
+}
+
+
 /**
  * getTextureToSurface - grab a webGl texture from the GPU into a pbSurface texture
  * 
@@ -240,18 +273,15 @@ pbWebGlTextures.prototype.getTextureToSurface = function(_ctx)
 		// read the texture pixels into a typed array
 		var buf8 = this.getTextureData(this.fb);
 
-		// create a ImageData to hold the texture
-		var imageData = _ctx.createImageData(buf8.width, buf8.height);
-
 		// copy the typed array data into the ImageData surface
-		var c = imageData.data.length;
+		var c = this.currentTexture.image.data.length;
 		while(c--)
-			imageData.data[c] = buf8[c];
+			this.currentTexture.image.data[c] = buf8[c];
 
 		// create a pbSurface to hold the ImageData
 		var surface = new pbSurface();
 		// _wide, _high, _numWide, _numHigh, _imageData)
-		surface.create(buf8.width, buf8.height, 1, 1, imageData);
+		surface.create(buf8.width, buf8.height, 1, 1, this.currentTexture.image);
 
 		return surface;
 	}
