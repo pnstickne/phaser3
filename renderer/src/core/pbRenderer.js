@@ -205,7 +205,7 @@ pbRenderer.prototype.update = function()
 	pbRenderer.frameCount++;
 
 	// prepare to draw (erase screen)
-	this.graphics.preRender();
+	this.graphics.preRender(pbRenderer.width, pbRenderer.height);
 
 	// update game logic
 	this.updateCallback.call(this.gameContext);

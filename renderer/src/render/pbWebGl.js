@@ -119,11 +119,11 @@ pbWebGl.prototype.destroy = function()
 };
 
 
-pbWebGl.prototype.preRender = function()
+pbWebGl.prototype.preRender = function(_width, _height)
 {
 	// clear the viewport
 	gl.disable( gl.SCISSOR_TEST );
-	gl.viewport( 0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight );
+	gl.viewport( 0, 0, _width, _height);
 	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 };
 
@@ -213,6 +213,8 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 // single image instances from pbWebGlLayer
 pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 {
+	console.log("drawImageWithTransform", _image);
+
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
 
 	var surface = _image.surface;
@@ -300,6 +302,69 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 
 
 
+// single texture instances
+pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z )
+{
+	console.log("drawTextureWithTransform", _texture);
+	
+	this.shaders.setProgram(this.shaders.imageShaderProgram);
+
+	// split off a small part of the big buffer, for a single display object
+	var buffer = this.drawingArray.subarray(0, 16);
+
+	// set up the animation frame
+	var rect = new pbRectangle(0,0,1,1);
+
+	var wide, high;
+	// half width, half height (of source frame)
+	wide = 512;
+	high = 512;
+
+	// screen destination position
+	// l, b,		0,1
+	// l, t,		4,5
+	// r, b,		8,9
+	// r, t,		12,13
+	var l, r, t, b;
+	{
+		l = -wide * 0.5;
+		r = wide + l;
+		t = -high * 0.5;
+		b = high + t;
+		buffer[ 0 ] = buffer[ 4 ] = l;
+		buffer[ 1 ] = buffer[ 9 ] = b;
+		buffer[ 8 ] = buffer[ 12] = r;
+		buffer[ 5 ] = buffer[ 13] = t;
+	}
+
+	// texture source position
+	// x, b,		2,3
+	// x, y,		6,7
+	// r, b,		10,11
+	// r, y,		14,15
+	buffer[ 2 ] = buffer[ 6 ] = rect.x;
+	buffer[ 3 ] = buffer[ 11] = rect.y + rect.height;
+	buffer[ 10] = buffer[ 14] = rect.x + rect.width;
+	buffer[ 7 ] = buffer[ 15] = rect.y;
+
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
+
+	// send the transform matrix to the vector shader
+	gl.uniformMatrix3fv( this.shaders.currentProgram.uModelMatrix, false, _transform );
+
+	// set the depth value
+   	gl.uniform1f( this.shaders.currentProgram.uZ, _z );
+
+	// point the position attribute at the last bound buffer
+    gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+
+    // four vertices per quad, one quad
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+};
+
+
+
+
 /**
  * drawImageToTextureWithTransform - draw images to a render texture
  * - after each call the framebuffer is released, so no further action is required when rendering to texture is completed
@@ -315,9 +380,6 @@ pbWebGl.prototype.drawImageToTextureWithTransform = function( _width, _height, _
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
 
-	// create the destination texture
-	this.textures.setRenderTargetToTexture(_width, _height);
-
 	// create the source texture and initialise webgl (once only)
 	var surface = _image.surface;
 	if (this.textures.prepare( surface.image, _image.tiling, surface.isNPOT ))
@@ -325,6 +387,9 @@ pbWebGl.prototype.drawImageToTextureWithTransform = function( _width, _height, _
 
 	// set up the source image as the render source
 	this.textures.setRenderSourceImage( surface.image );
+
+	// create the destination texture
+	this.textures.setRenderTargetToTexture(_width, _height);
 
 	// this indented block is identical to part of drawImageWithTransform...
 	// TODO: how many of these are there? Worth adding a function? DRY

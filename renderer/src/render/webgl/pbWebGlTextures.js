@@ -119,6 +119,20 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
 };
 
 
+// http://stackoverflow.com/questions/13626465/how-to-create-a-new-imagedata-object-independently
+function ImageData(_width, _height)
+{
+	console.log("ImageData", _width, "x", _height);
+
+    var canvas = document.createElement('canvas');
+    canvas.width = _width;
+    canvas.height = _height;
+    var ctx = canvas.getContext('2d');
+    var imageData = ctx.createImageData(canvas.width, canvas.height);
+    return imageData;
+}
+
+
 /**
  * prepare - prepare a texture for webGl to render to it, leave it bound to the framebuffer so everything will go there
  *
@@ -136,18 +150,18 @@ pbWebGlTextures.prototype.prepareRenderToTexture = function( _width, _height )
 	// create a texture surface to render to
 	this.currentDstTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.currentDstTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.rttFb.width, this.rttFb.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+    //gl.generateMipmap(gl.TEXTURE_2D);
 
 	// create a new ImageData to hold the texture pixels
 	this.currentDstTexture.image = new ImageData(_width, _height);
 	// link the image to the destination texture
 	this.currentDstTexture.image.gpuTexture = this.currentDstTexture;
+
+	var dataTypedArray = new Uint8Array(this.currentDstTexture.image.data);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.rttFb.width, this.rttFb.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, dataTypedArray);
+
 
     // create a depth buffer
     this.rtDepth = gl.createRenderbuffer();
@@ -161,30 +175,6 @@ pbWebGlTextures.prototype.prepareRenderToTexture = function( _width, _height )
     // unbind everything
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-    // NOTE: leave the frame buffer bound, it is now our target for all rendering until stopRenderTexture
-    //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-};
-
-
-// http://stackoverflow.com/questions/13626465/how-to-create-a-new-imagedata-object-independently
-function ImageData(_width, _height)
-{
-    var canvas = document.createElement('canvas');
-    canvas.width = _width;
-    canvas.height = _height;
-    var ctx = canvas.getContext('2d');
-    var imageData = ctx.createImageData(canvas.width, canvas.height);
-    return imageData;
-}
-
-
-/**
- * stopRenderTexture - stop future rendering going to the render texture
- *
- */
-pbWebGlTextures.prototype.stopRenderTexture = function()
-{
-	// unbind the frame buffer to stop rendering to a texture and resume rendering to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
 
@@ -200,13 +190,21 @@ pbWebGlTextures.prototype.setRenderTargetToTexture = function(_width, _height)
 		// create the destination texture
 		this.prepareRenderToTexture(_width, _height);
 	}
-	else
-	{
-		console.log("pbWebGlTextures.setRenderTargetToTexture", _width, "x", _height);
+	console.log("pbWebGlTextures.setRenderTargetToTexture", _width, "x", _height);
 
-		// rebind the frame buffer containing the destination texture
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFb);
-	}
+	// rebind the frame buffer containing the destination texture
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFb);
+};
+
+
+/**
+ * stopRenderTexture - stop future rendering going to the render texture
+ *
+ */
+pbWebGlTextures.prototype.stopRenderTexture = function()
+{
+	// unbind the frame buffer to stop rendering to a texture and resume rendering to the display
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
 
 
@@ -231,12 +229,15 @@ pbWebGlTextures.prototype.setRenderSourceImage = function( _image )
 
 
 /**
- * prepareTextureForAccess - prepare a webGl texture to transfer it's content to system memory
+ * prepareTextureForAccess - prepare a webGl texture as currentSrcTexture, ready to transfer it's content to system memory
  *
  */
 pbWebGlTextures.prototype.prepareTextureForAccess = function(_texture)
 {
-	console.log("pbWebGlTextures.prepareTextureForAccess", _texture.image.width, "x", _texture.image.height);
+	if (_texture.canvas)
+		console.log("pbWebGlTextures.prepareTextureForAccess", _texture.canvas.width, "x", _texture.canvas.height);
+	else
+		console.log("pbWebGlTextures.prepareTextureForAccess", _texture.image.width, "x", _texture.image.height);
 
 	// make a framebuffer
 	this.fb = gl.createFramebuffer();
@@ -284,19 +285,19 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 
 
 /**
- * getTextureToSurface - grab the webGl destination texture from the GPU into a pbSurface
+ * getTextureToSurface - grab the currentSrcTexture from the GPU into a pbSurface
  * 
  */
 pbWebGlTextures.prototype.getTextureToSurface = function(_ctx, _surface)
 {
 	if (this.canReadTexture && this.fb)
 	{
-		var wide = this.currentDstTexture.image.width;
-		var high = this.currentDstTexture.image.height;
+		var wide = this.currentSrcTexture.image.width;
+		var high = this.currentSrcTexture.image.height;
 		console.log("pbWebGlTextures.getTextureToSurface", wide, "x", high);
 
 		// transfer the destination texture pixels from the GPU into a typed array
-		var buf8 = this.getTextureData(this.fb, this.currentDstTexture);
+		var buf8 = this.getTextureData(this.fb, this.currentSrcTexture);
 		var image = _surface.image;
 		if (!image || image.width != wide || image.height != high)
 		{
@@ -304,10 +305,12 @@ pbWebGlTextures.prototype.getTextureToSurface = function(_ctx, _surface)
 			image = new ImageData(wide, high);
 		}
 		// copy the pixels into the new ImageData
-		var c = this.currentDstTexture.image.data.length;
+		var c = this.currentSrcTexture.image.data.length;
 		while(c--)
 		{
 			image.data[c] = buf8[c];
+			if (buf8[c] !== 0)
+				console.log((c / 4) % 256, 0|((c / 4) / 256));
 		}
 
 		// associate the ImageData with the _surface

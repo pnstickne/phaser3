@@ -21,16 +21,16 @@ function pbSurface()
 }
 
 
-pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageData)
+pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _image)
 {
-	if (_wide === 0) _wide = _imageData.width;
-	if (_high === 0) _high = _imageData.height;
+	if (_wide === 0) _wide = _image.width;
+	if (_high === 0) _high = _image.height;
 
 	this.cellWide = _wide;
 	this.cellHigh = _high;
 	this.cellsWide = _numWide;
 	this.cellsHigh = _numHigh;
-	this.image = _imageData;
+	this.image = _image;
 	this.isNPOT = false;
 
 	// dimensions of one cell in texture coordinates (0 = left/top, 1 = right/bottom)

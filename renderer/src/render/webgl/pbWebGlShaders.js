@@ -365,6 +365,33 @@ var modezShaderSources = {
 		"uImageSampler"
 };
 
+
+var simpleShaderSources = {
+	fragment:
+		" precision mediump float;" +
+		" varying vec2 v_texcoord;" +
+		" uniform sampler2D uImageSampler;" +
+		" void main() {" +
+    	"   gl_FragColor = texture2D(uImageSampler, v_texcoord);" +
+		" }",
+
+	vertex:
+    	" attribute vec4 aPosition;" +
+    	" varying vec2 v_texcoord;" +
+		" void main() {" +
+		"   gl_Position = aPosition;" +
+		"   v_texcoord = aPosition.xy * 0.5 + 0.5;" +
+		" }",
+
+	attributes:
+		[ "aPosition" ],
+
+	sampler:
+		"uImageSampler"
+};
+
+
+
 /*
 const float speed = 14.0;
 const float high = 13.5;
@@ -406,6 +433,7 @@ function pbWebGlShaders()
 	this.imageShaderProgram = null;
 	this.imageShaderProgram3D = null;
 	this.modezShaderProgram = null;
+	this.simpleShaderProgram = null;
 	this.blitShaderProgram = null;
 	this.blitShaderPointProgram = null;
 	this.blitShaderPointAnimProgram = null;
@@ -427,6 +455,7 @@ pbWebGlShaders.prototype.create = function()
 	this.imageShaderProgram = this.createProgram( imageShaderSources );
 	this.imageShaderProgram3D = this.createProgram( imageShaderSource3D );
 	this.modezShaderProgram = this.createProgram( modezShaderSources );
+	this.simpleShaderProgram = this.createProgram( simpleShaderSources );
 
 	// batch processing
 	this.blitShaderProgram = this.createProgram( blitShaderSources );
@@ -445,6 +474,7 @@ pbWebGlShaders.prototype.destroy = function()
 	this.imageShaderProgram = null;
 	this.imageShaderProgram3D = null;
 	this.modezShaderProgram = null;
+	this.simpleShaderProgram = null;
 	this.blitShaderProgram = null;
 	this.blitShaderPointProgram = null;
 	this.blitShaderPointAnimProgram = null;
