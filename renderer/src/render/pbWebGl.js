@@ -308,7 +308,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 // single texture instances
 pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z )
 {
-	console.log("drawTextureWithTransform", _texture);
+	// console.log("drawTextureWithTransform", _texture);
 	
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
 
@@ -351,6 +351,8 @@ pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z 
 	buffer[ 7 ] = buffer[ 15] = rect.y;
 
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
+    // bind the source buffer
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
 
 	// send the transform matrix to the vector shader
 	gl.uniformMatrix3fv( this.shaders.currentProgram.uModelMatrix, false, _transform );
@@ -366,6 +368,30 @@ pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z 
 };
 
 
+pbWebGl.prototype.drawTextureToDisplay = function(_texture)
+{
+	this.shaders.setProgram(this.shaders.simpleShaderProgram);
+
+	// create a buffer for the vertices used to transfer the render-to-texture to the display
+	var buffer = this.drawingArray.subarray(0, 16);
+
+	var verts = [
+		1,  1,
+		-1,  1,
+		-1, -1,
+		1,  1,
+		-1, -1,
+		1, -1
+	];
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW );
+
+	gl.bindTexture(gl.TEXTURE_2D, _texture);
+
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(0);
+	gl.drawArrays(gl.TRIANGLES, 0, 3 * 2);	// three vertices per tri, two tris
+};
 
 
 /**
