@@ -16,6 +16,7 @@ function pbWebGl()
 	console.log( "pbWebGl c'tor" );
 	gl = null;
 	this.shaders = null;
+	this.filters = null;
 	this.bgVertexBuffer = null;
 	this.bgColorBuffer = null;
 	this.positionBuffer = null;
@@ -75,6 +76,10 @@ pbWebGl.prototype.create = function( _canvas )
 		this.shaders = new pbWebGlShaders();
 		this.shaders.create();
 
+		// create the filter handler
+		this.filters = new pbWebGlFilters();
+		this.filters.create();
+
 		// enable the depth buffer so we can order our sprites
 		gl.enable(gl.DEPTH_TEST);
 		gl.depthFunc(gl.LEQUAL);
@@ -105,6 +110,10 @@ pbWebGl.prototype.destroy = function()
 	if (this.shaders)
 		this.shaders.destroy();
 	this.shaders = null;
+
+	if (this.filters)
+		this.filters.destroy();
+	this.filters = null;
 
 	if (this.textures)
 		this.textures.destroy();
@@ -387,6 +396,45 @@ pbWebGl.prototype.drawTextureToDisplay = function(_texture)
 	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW );
 
 	gl.bindTexture(gl.TEXTURE_2D, _texture);
+
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(0);
+	gl.drawArrays(gl.TRIANGLES, 0, 3 * 2);	// three vertices per tri, two tris
+};
+
+
+pbWebGl.prototype.applyFilterToTexture = function(_srcTexture)
+{
+	if (!this.positionBuffer)
+	{
+		// create a GL buffer to transfer all the vertex position data through
+		this.positionBuffer = gl.createBuffer();
+
+		// bind the buffer to the RAM resident positionBuffer
+	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+
+		// reset the filter fragment shader sampler
+		if (this.filters.currentProgram.samplerUniform)
+   			gl.uniform1i( this.filters.currentProgram.samplerUniform, 0 );
+   	}
+
+	this.filters.setProgram(this.filters.testFilterProgram);
+
+	// create a buffer for the vertices used to draw the _srcTexture to the _dstTexture
+	var buffer = this.drawingArray.subarray(0, 16);
+
+	var verts = [
+		1,  1,
+		-1,  1,
+		-1, -1,
+		1,  1,
+		-1, -1,
+		1, -1
+	];
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW );
+
+	gl.bindTexture(gl.TEXTURE_2D, _srcTexture);
 
 	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(0);

@@ -17,12 +17,13 @@ function pbRenderTextureDemo( docId )
 
 	this.firstTime = true;
 	this.surface = null;
-	this.layer = null;
+	this.srcImage = null;
 	this.renderSurface = null;
 	this.displayLayer = null;
 	this.rttTexture = null;
 	this.rttFramebuffer = null;
 	this.rttRenderbuffer = null;
+	this.filterTexture = null;
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
@@ -57,6 +58,11 @@ pbRenderTextureDemo.prototype.destroy = function()
 
 	this.renderer.destroy();
 	this.renderer = null;
+
+	this.rttTexture = null;
+	this.rttRenderbuffer = null;
+	this.rttFramebuffer = null;
+	this.filterTexture = null;
 };
 
 
@@ -68,7 +74,6 @@ pbRenderTextureDemo.prototype.restart = function()
 	this.create();
 };
 
-var srcImage;
 
 pbRenderTextureDemo.prototype.addSprites = function()
 {
@@ -79,41 +84,49 @@ pbRenderTextureDemo.prototype.addSprites = function()
 	// _wide, _high, _numWide, _numHigh, _image
 	this.surface.create(0, 0, 1, 1, image);
 
-	srcImage = new imageClass();
+	this.srcImage = new imageClass();
 	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
-	srcImage.create(this.surface, 0, 0, 0);
+	this.srcImage.create(this.surface, 0, 0, 0);
 };
 
 
-pbRenderTextureDemo.prototype.initTextureFramebuffer = function()
+pbRenderTextureDemo.prototype.initTexture = function(_width, _height)
 {
-	// create an empty texture to draw to which matches the display dimensions
-	this.rttTexture = gl.createTexture();
-    this.rttTexture.width = pbRenderer.width;
-    this.rttTexture.height = pbRenderer.height;
-	gl.bindTexture(gl.TEXTURE_2D, this.rttTexture);
+	// create an empty texture to draw to, which matches the display dimensions
+	var texture = gl.createTexture();
+    texture.width = _width;
+    texture.height = _height;
+	gl.bindTexture(gl.TEXTURE_2D, texture);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.rttTexture.width, this.rttTexture.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, texture.width, texture.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	return texture;
+}
 
-    // attach the render-to-texture to a new framebuffer
-	this.rttFramebuffer = gl.createFramebuffer();
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.rttTexture, 0);
 
+pbRenderTextureDemo.prototype.initDepth = function(_texture)
+{
 	// create a 'render-to' depth buffer
-    this.rttRenderbuffer = gl.createRenderbuffer();
-    gl.bindRenderbuffer(gl.RENDERBUFFER, this.rttRenderbuffer);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.rttTexture.width, this.rttTexture.height);
-    // attach the depth buffer to the framebuffer
-    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.rttRenderbuffer);
+    var depth = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, depth);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, _texture.width, _texture.height);
+    return depth;
+};
 
-    // clear the gl bindings
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+pbRenderTextureDemo.prototype.initFramebuffer = function(_texture, _depth)
+{
+    // attach the render-to-texture to a new framebuffer
+	var fb = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, _texture, 0);
+    // attach the depth buffer to the framebuffer
+    if (_depth)
+    	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, _depth);
+
+    return fb;
 };
 
 
@@ -122,10 +135,10 @@ pbRenderTextureDemo.prototype.drawSceneToTexture = function()
 	// bind the framebuffer so drawing will go to the associated texture and depth buffer
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
 	// clear the render-to-texture using a varying green shade to make it stand out
-	gl.clearColor(0, (pbRenderer.frameCount % 100 / 100), 0, 1); // green shades;
+	gl.clearColor(0, (pbRenderer.frameCount % 100 / 100), 0, 1); // green shades
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	// draw srcImage into the render-to-texture
-	this.renderer.graphics.drawImageWithTransform(srcImage, this.srcTransform, 1.0);
+	// draw this.srcImage into the render-to-texture
+	this.renderer.graphics.drawImageWithTransform(this.srcImage, this.srcTransform, 1.0);
 };
 
 
@@ -134,11 +147,22 @@ pbRenderTextureDemo.prototype.update = function()
 	if (this.firstTime)
 	{
 		// create the render-to-texture, depth buffer, and a frame buffer to hold them
-		this.initTextureFramebuffer();
+		this.rttTexture = this.initTexture(pbRenderer.width, pbRenderer.height);
+		this.rttRenderbuffer = this.initDepth(this.rttTexture);
+		this.rttFramebuffer = this.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
+
+		// create the filter texture
+		this.filterTexture = this.initTexture(pbRenderer.width, pbRenderer.height);
+		this.filterFramebuffer = this.initFramebuffer(this.filterTexture, null);
 
 		// set the transformation for rendering to the render-to-texture
 		this.srcTransform = pbMatrix3.makeTransform(10, 10, 0, 1, 1);
 		this.dstTransform = pbMatrix3.makeTransform(0, 0, 0, 1, 0);
+
+	    // clear the gl bindings
+	    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	    gl.bindTexture(gl.TEXTURE_2D, null);
+	    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
 		// don't do this again...
 		this.firstTime = false;
@@ -146,8 +170,22 @@ pbRenderTextureDemo.prototype.update = function()
 
 	// draw srcImage to the render-to-texture
 	this.drawSceneToTexture();
+/*
 
-	// draw render-to-texture to the display
+// TODO: this doesn't work yet... there's just a small cyan dot on blue background (may be a scaling issue - real small!)
+
+	// apply a filter as we transfer the texture from rttTexture to filterTexture
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
+	// clear the render-to-texture using a varying blue shade to make it stand out
+	gl.clearColor(0, 0, (pbRenderer.frameCount % 100 / 100), 1); // blue shades
+	gl.clear(gl.COLOR_BUFFER_BIT);
+	this.renderer.graphics.applyFilterToTexture(this.rttTexture);
+
+	// draw the filter texture to the display
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	this.renderer.graphics.drawTextureToDisplay(this.filterTexture);
+*/
+	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	this.renderer.graphics.drawTextureToDisplay(this.rttTexture);
 };
