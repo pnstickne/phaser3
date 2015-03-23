@@ -213,7 +213,7 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 // single image instances from pbWebGlLayer
 pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 {
-	console.log("drawImageWithTransform", _image);
+	// console.log("drawImageWithTransform", _image);
 
 	this.shaders.setProgram(this.shaders.imageShaderProgram);
 
@@ -286,16 +286,19 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 
+	// bind the source texture
+    gl.bindTexture(gl.TEXTURE_2D, this.textures.currentSrcTexture);
+    // bind the source buffer
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+
 	// send the transform matrix to the vector shader
 	gl.uniformMatrix3fv( this.shaders.currentProgram.uModelMatrix, false, _transform );
-
 	// set the depth value
    	gl.uniform1f( this.shaders.currentProgram.uZ, _z );
-
 	// point the position attribute at the last bound buffer
     gl.vertexAttribPointer( this.shaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
-
-    // four vertices per quad, one quad
+	gl.enableVertexAttribArray(this.shaders.currentProgram.aPosition);
+    // draw the buffer: four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 };
 

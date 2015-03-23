@@ -23,7 +23,7 @@ function pbRenderTextureDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "../img/sphere3.png" );
+	this.spriteImg = this.loader.loadImage( "../img/screen1.jpg" );
 
 	console.log( "pbRenderTextureDemo c'tor exit" );
 }
@@ -65,7 +65,7 @@ pbRenderTextureDemo.prototype.restart = function()
 	this.create();
 };
 
-var sphereImage;
+var srcImage;
 
 pbRenderTextureDemo.prototype.addSprites = function()
 {
@@ -73,11 +73,12 @@ pbRenderTextureDemo.prototype.addSprites = function()
 
 	var image = this.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
+	// _wide, _high, _numWide, _numHigh, _image
 	this.surface.create(0, 0, 1, 1, image);
 
-	sphereImage = new imageClass();
-	// // _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
-	sphereImage.create(this.surface, 0, 0.5, 0.5);
+	srcImage = new imageClass();
+	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
+	srcImage.create(this.surface, 0, 0, 0);
 	// // draw this image to a render-to-texture, not the display
 	// img.toTexture = true;
 
@@ -104,103 +105,100 @@ pbRenderTextureDemo.prototype.addSprites = function()
 
     pbRenderTextureDemo.prototype.initTextureFramebuffer = function()
     {
-        rttFramebuffer = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, rttFramebuffer);
-        rttFramebuffer.width = 512;
-        rttFramebuffer.height = 512;
-
-        rttTexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, rttTexture);
+		// create an empty texture to draw to
+		rttTexture = gl.createTexture();
+        rttTexture.width = pbRenderer.width;
+        rttTexture.height = pbRenderer.height;
+		gl.bindTexture(gl.TEXTURE_2D, rttTexture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, rttTexture.width, rttTexture.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        //gl.generateMipmap(gl.TEXTURE_2D);
 
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, rttFramebuffer.width, rttFramebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        // attach the texture to the framebuffer
+		rttFramebuffer = gl.createFramebuffer();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, rttFramebuffer);
 
-        var renderbuffer = gl.createRenderbuffer();
-        gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, rttFramebuffer.width, rttFramebuffer.height);
+        rttRenderbuffer = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, rttRenderbuffer);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, rttTexture.width, rttTexture.height);
 
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, rttTexture, 0);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rttRenderbuffer);
 
-        gl.bindTexture(gl.TEXTURE_2D, null);
         gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        gl.bindTexture(gl.TEXTURE_2D, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
+
 
     pbRenderTextureDemo.prototype.drawSceneToTexture = function()
     {
-        gl.activeTexture(gl.TEXTURE0);
-		this.renderer.graphics.drawImageWithTransform(sphereImage, this.transform, 1.0);
-
-        gl.bindTexture(gl.TEXTURE_2D, rttTexture);
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.bindTexture(gl.TEXTURE_2D, null);
+		this.renderer.graphics.drawImageWithTransform(srcImage, this.transform, 1.0);
     };
+
 
     pbRenderTextureDemo.prototype.drawScene = function()
     {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, rttFramebuffer);
-        gl.viewport(0, 0, rttFramebuffer.width, rttFramebuffer.height);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        this.drawSceneToTexture();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, rttFramebuffer);
+		gl.viewport(0, 0, rttFramebuffer.width, rttFramebuffer.height);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		this.drawSceneToTexture();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		this.renderer.graphics.prepareGl();
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, rttTexture);
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, rttTexture);
 		this.renderer.graphics.drawTextureWithTransform(rttTexture, this.transform, 1.0);
     };
 
+var verts = [
+	1,  1,
+	-1,  1,
+	-1, -1,
+	1,  1,
+	-1, -1,
+	1, -1
+];
 
 pbRenderTextureDemo.prototype.update = function()
 {
-	console.log("pbRenderTextureDemo.update");
-
 	if (this.firstTime)
 	{
-		var verts = [
-		      1,  1,
-		     -1,  1,
-		     -1, -1,
-		      1,  1,
-		     -1, -1,
-		      1, -1,
-		];   
-		var vertBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
+		this.vertBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.vertBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
 		gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(0);
-
-		this.renderer.graphics.shaders.setProgram(this.renderer.graphics.shaders.simpleShaderProgram);
-
-		// create an empty texture
-		var tex = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, tex);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-
-		// Create a framebuffer and attach the texture.
-		var fb = gl.createFramebuffer();
-		gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+		this.initTextureFramebuffer();
+		this.transform = pbMatrix3.makeTransform(10, 10, 0, 1, 1);
+		this.firstTime = false;
 	}
 
-	// Render to the texture (using clear because it's simple)
-	gl.clearColor(0, (pbRenderer.frameCount % 100 / 100), 0, 1); // green shades;
-	gl.clear(gl.COLOR_BUFFER_BIT);
-
-	// Now draw with the texture to the canvas
-	// NOTE: We clear the canvas to red so we'll know
-	// we're drawing the texture and not seeing the clear
-	// from above.
+	gl.bindFramebuffer(gl.FRAMEBUFFER, rttFramebuffer);
+		// clear the texture using a varying green shade to make it stand out
+		gl.clearColor(0, (pbRenderer.frameCount % 100 / 100), 0, 1); // green shades;
+		gl.clear(gl.COLOR_BUFFER_BIT);
+		this.drawSceneToTexture();
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+	// clear the display to red so we know when stuff is working...
 	gl.clearColor(1, 0, 0, 1); // red
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+	// draw texture to the display
+	this.renderer.graphics.shaders.setProgram(this.renderer.graphics.shaders.simpleShaderProgram);
+	gl.bindTexture(gl.TEXTURE_2D, rttTexture);
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.vertBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(0);
+	gl.drawArrays(gl.TRIANGLES, 0, 3 * 2);	// three vertices per tri, two tris
 
 
 	// if (this.firstTime)
