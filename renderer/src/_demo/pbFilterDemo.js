@@ -1,15 +1,15 @@
 /**
  *
- * A render-to-texture demo for the new Phaser 3 renderer.
+ * A filter demo for the new Phaser 3 renderer.
  *
  */
 
 
 
 // created while the data is loading (preloader)
-function pbRenderTextureDemo( docId )
+function pbFilterDemo( docId )
 {
-	console.log( "pbRenderTextureDemo c'tor entry" );
+	console.log( "pbFilterDemo c'tor entry" );
 
 	var _this = this;
 
@@ -23,34 +23,46 @@ function pbRenderTextureDemo( docId )
 	this.rttTexture = null;
 	this.rttFramebuffer = null;
 	this.rttRenderbuffer = null;
+	this.filterTexture = null;
+	this.redScale = 1.0;
+	this.greenScale = 1.0;
+	this.blueScale = 1.0;
+
+	// dat.GUI controlled variables and callbacks
+	this.redCtrl = gui.add(this, "redScale").min(0.0).max(2.0).step(0.1).listen();
+	this.redCtrl.onFinishChange(function(value) { if (!value) _this.redScale = 0; });
+	this.grnCtrl = gui.add(this, "greenScale").min(0.0).max(2.0).step(0.1).listen();
+	this.grnCtrl.onFinishChange(function(value) { if (!value) _this.greenScale = 0; });
+	this.bluCtrl = gui.add(this, "blueScale").min(0.0).max(2.0).step(0.1).listen();
+	this.bluCtrl.onFinishChange(function(value) { if (!value) _this.blueScale = 0; });
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 	this.spriteImg = this.loader.loadImage( "../img/screen1.jpg" );
 
-	console.log( "pbRenderTextureDemo c'tor exit" );
+	console.log( "pbFilterDemo c'tor exit" );
 }
 
 
-pbRenderTextureDemo.prototype.allLoaded = function()
+pbFilterDemo.prototype.allLoaded = function()
 {
-	console.log( "pbRenderTextureDemo.allLoaded" );
+	console.log( "pbFilterDemo.allLoaded" );
 
 	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
-pbRenderTextureDemo.prototype.create = function()
+pbFilterDemo.prototype.create = function()
 {
-	console.log("pbRenderTextureDemo.create");
+	console.log("pbFilterDemo.create");
 
 	this.addSprites();
 };
 
 
-pbRenderTextureDemo.prototype.destroy = function()
+pbFilterDemo.prototype.destroy = function()
 {
-	console.log("pbRenderTextureDemo.destroy");
+	console.log("pbFilterDemo.destroy");
 
 	this.surface.destroy();
 	this.surface = null;
@@ -61,21 +73,22 @@ pbRenderTextureDemo.prototype.destroy = function()
 	this.rttTexture = null;
 	this.rttRenderbuffer = null;
 	this.rttFramebuffer = null;
+	this.filterTexture = null;
 };
 
 
-pbRenderTextureDemo.prototype.restart = function()
+pbFilterDemo.prototype.restart = function()
 {
-	console.log("pbRenderTextureDemo.restart");
+	console.log("pbFilterDemo.restart");
 	
 	this.destroy();
 	this.create();
 };
 
 
-pbRenderTextureDemo.prototype.addSprites = function()
+pbFilterDemo.prototype.addSprites = function()
 {
-	console.log("pbRenderTextureDemo.addSprites");
+	console.log("pbFilterDemo.addSprites");
 
 	var image = this.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
@@ -88,7 +101,7 @@ pbRenderTextureDemo.prototype.addSprites = function()
 };
 
 
-pbRenderTextureDemo.prototype.initTexture = function(_textureRegister, _width, _height)
+pbFilterDemo.prototype.initTexture = function(_textureRegister, _width, _height)
 {
 	// create an empty texture to draw to, which matches the display dimensions
 	var texture = gl.createTexture();
@@ -102,10 +115,10 @@ pbRenderTextureDemo.prototype.initTexture = function(_textureRegister, _width, _
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, texture.width, texture.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 	return texture;
-}
+};
 
 
-pbRenderTextureDemo.prototype.initDepth = function(_texture)
+pbFilterDemo.prototype.initDepth = function(_texture)
 {
 	// create a 'render-to' depth buffer
     var depth = gl.createRenderbuffer();
@@ -115,7 +128,7 @@ pbRenderTextureDemo.prototype.initDepth = function(_texture)
 };
 
 
-pbRenderTextureDemo.prototype.initFramebuffer = function(_texture, _depth)
+pbFilterDemo.prototype.initFramebuffer = function(_texture, _depth)
 {
     // attach the render-to-texture to a new framebuffer
 	var fb = gl.createFramebuffer();
@@ -129,19 +142,16 @@ pbRenderTextureDemo.prototype.initFramebuffer = function(_texture, _depth)
 };
 
 
-pbRenderTextureDemo.prototype.drawSceneToTexture = function(_fb, _image, _transform)
+pbFilterDemo.prototype.drawSceneToTexture = function(_fb, _image, _transform)
 {
 	// bind the framebuffer so drawing will go to the associated texture and depth buffer
 	gl.bindFramebuffer(gl.FRAMEBUFFER, _fb);
-	// clear the render-to-texture using a varying green shade to make it stand out
-	gl.clearColor(0, (pbRenderer.frameCount % 100 / 100), 0, 1); // green shades
-	gl.clear(gl.COLOR_BUFFER_BIT);
 	// draw this.srcImage into the render-to-texture
 	this.renderer.graphics.drawImageWithTransform(_image, _transform, 1.0);
 };
 
 
-pbRenderTextureDemo.prototype.update = function()
+pbFilterDemo.prototype.update = function()
 {
 	if (this.firstTime)
 	{
@@ -150,8 +160,12 @@ pbRenderTextureDemo.prototype.update = function()
 		this.rttRenderbuffer = this.initDepth(this.rttTexture);
 		this.rttFramebuffer = this.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
+		// create the filter texture
+		this.filterTexture = this.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
+		this.filterFramebuffer = this.initFramebuffer(this.filterTexture, null);
+
 		// set the transformation for rendering to the render-to-texture
-		this.srcTransform = pbMatrix3.makeTransform(10, 10, 0, 1, 1);
+		this.srcTransform = pbMatrix3.makeTransform(0, 0, 0, 1, 1);
 
 	    // clear the gl bindings
 	    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
@@ -165,8 +179,27 @@ pbRenderTextureDemo.prototype.update = function()
 	// draw srcImage using the render-to-texture framebuffer
 	this.drawSceneToTexture(this.rttFramebuffer, this.srcImage, this.srcTransform);
 
-	// draw the render-to-texture to the display
+	//
+	// apply a filter as we transfer the texture from rttTexture to filterTexture
+	//
+	
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
+	// copy the rttTexture to the filterTexture applying a filter as it draws
+	this.renderer.graphics.applyFilterToTexture(0, this.rttTexture, this.setTint, this);
+
+	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(this.rttTexture);
+	this.renderer.graphics.drawTextureToDisplay(this.filterTexture);
+};
+
+
+pbFilterDemo.prototype.setTint = function(_filters)
+{
+   	// set the filter program
+	_filters.setProgram(_filters.tintFilterProgram);
+	// set the tint values in the filter shader program
+	gl.uniform1f( pbWebGlShaders.currentProgram.uRedScale, this.redScale );
+	gl.uniform1f( pbWebGlShaders.currentProgram.uGreenScale, this.greenScale );
+	gl.uniform1f( pbWebGlShaders.currentProgram.uBlueScale, this.blueScale );
 };
 
