@@ -403,7 +403,7 @@ pbWebGl.prototype.drawTextureToDisplay = function(_texture)
 };
 
 
-pbWebGl.prototype.applyFilterToTexture = function(_textureRegister, _srcTexture)
+pbWebGl.prototype.applyFilterToTexture = function(_textureRegister, _srcTexture, _callback, _context)
 {
 	if (!this.positionBuffer)
 	{
@@ -414,7 +414,8 @@ pbWebGl.prototype.applyFilterToTexture = function(_textureRegister, _srcTexture)
 	    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
    	}
 
-	this.filters.setProgram(this.filters.testFilterProgram);
+	// callback to set the filter program
+	_callback.call(_context, this.filters);
 
 	// set the fragment shader sampler to use the correct texture source
 	if (pbWebGlShaders.currentProgram.samplerUniform)

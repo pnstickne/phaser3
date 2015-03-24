@@ -7,14 +7,18 @@
  */
 
 
-var testFilterSources = {
+var tintFilterSources = {
+	// tint the image using a separate multiplication factor for each of r,g and b
 	fragment:
 		" precision mediump float;" +
 		" varying vec2 v_texcoord;" +
 		" uniform sampler2D uImageSampler;" +
+		" uniform float uRedScale;" +
+		" uniform float uGreenScale;" +
+		" uniform float uBlueScale;" +
 		" void main() {" +
 		"   vec4 col = texture2D(uImageSampler, v_texcoord);" +
-    	"   gl_FragColor = vec4(col.rg, col.b * 2.0, 1);" +
+    	"   gl_FragColor = vec4(col.r * uRedScale, col.g * uGreenScale, col.b * uBlueScale, 1);" +
 		" }",
 
 	vertex:
@@ -28,6 +32,9 @@ var testFilterSources = {
 	attributes:
 		[ "aPosition" ],
 
+	uniforms:
+		[ "uRedScale", "uGreenScale", "uBlueScale" ],
+
 	sampler:
 		"uImageSampler"
 };
@@ -37,7 +44,7 @@ var testFilterSources = {
 function pbWebGlFilters()
 {
 	// TODO: change this into a list
-	this.testFilterProgram = null;
+	this.tintFilterProgram = null;
 }
 
 
@@ -46,7 +53,7 @@ pbWebGlFilters.prototype.create = function()
 {
 	// create the filter programs
 	
-	this.testFilterProgram = this.createProgram( testFilterSources );
+	this.tintFilterProgram = this.createProgram( tintFilterSources );
 };
 
 
@@ -54,7 +61,7 @@ pbWebGlFilters.prototype.create = function()
 pbWebGlFilters.prototype.destroy = function()
 {
 	this.clearProgram();
-	this.testFilterProgram = null;
+	this.tintFilterProgram = null;
 };
 
 
