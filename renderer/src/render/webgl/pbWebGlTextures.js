@@ -57,12 +57,15 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
 
 	var texture = null;
 
+	// activate the first texture register
+    gl.activeTexture( gl.TEXTURE0 );
+
 	var index = this.onGPU.indexOf(_image);
     if (index != -1)
     {
 		// the _image is already on the GPU
 		texture = this.onGPU[index].gpuTexture;
-		// bind it to use it...
+		// bind the texture to the active texture register
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
     }
     else
@@ -82,7 +85,9 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
 		texture.image = _image;
 		_image.gpuTexture = texture;
 
+		// bind the texture to the active texture register
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
+	    
 	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _image);
 	    if (_npot)
 	    {
@@ -111,9 +116,7 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
 	    this.onGPU.push(_image);
 	}
 
-	// activate the texture
     this.currentSrcTexture = texture;
-    gl.activeTexture( gl.TEXTURE0 );
 
     return true;
 };
