@@ -90,12 +90,13 @@ pbRenderTextureDemo.prototype.addSprites = function()
 };
 
 
-pbRenderTextureDemo.prototype.initTexture = function(_width, _height)
+pbRenderTextureDemo.prototype.initTexture = function(_textureRegister, _width, _height)
 {
 	// create an empty texture to draw to, which matches the display dimensions
 	var texture = gl.createTexture();
     texture.width = _width;
     texture.height = _height;
+    gl.activeTexture(_textureRegister);
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -130,10 +131,10 @@ pbRenderTextureDemo.prototype.initFramebuffer = function(_texture, _depth)
 };
 
 
-pbRenderTextureDemo.prototype.drawSceneToTexture = function()
+pbRenderTextureDemo.prototype.drawSceneToTexture = function(_fb)
 {
 	// bind the framebuffer so drawing will go to the associated texture and depth buffer
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, _fb);
 	// clear the render-to-texture using a varying green shade to make it stand out
 	gl.clearColor(0, (pbRenderer.frameCount % 100 / 100), 0, 1); // green shades
 	gl.clear(gl.COLOR_BUFFER_BIT);
@@ -147,12 +148,12 @@ pbRenderTextureDemo.prototype.update = function()
 	if (this.firstTime)
 	{
 		// create the render-to-texture, depth buffer, and a frame buffer to hold them
-		this.rttTexture = this.initTexture(pbRenderer.width, pbRenderer.height);
+		this.rttTexture = this.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
 		this.rttRenderbuffer = this.initDepth(this.rttTexture);
 		this.rttFramebuffer = this.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 		// create the filter texture
-		this.filterTexture = this.initTexture(pbRenderer.width, pbRenderer.height);
+		this.filterTexture = this.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
 		this.filterFramebuffer = this.initFramebuffer(this.filterTexture, null);
 
 		// set the transformation for rendering to the render-to-texture
@@ -168,25 +169,26 @@ pbRenderTextureDemo.prototype.update = function()
 		this.firstTime = false;
 	}
 
-	// draw srcImage to the render-to-texture
-	this.drawSceneToTexture();
-/*
+	// draw srcImage using the render-to-texture framebuffer
+	this.drawSceneToTexture(this.rttFramebuffer);
 
-// TODO: this doesn't work yet... there's just a small cyan dot on blue background (may be a scaling issue - real small!)
-
+	//
 	// apply a filter as we transfer the texture from rttTexture to filterTexture
+	//
+	
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
 	// clear the render-to-texture using a varying blue shade to make it stand out
-	gl.clearColor(0, 0, (pbRenderer.frameCount % 100 / 100), 1); // blue shades
+	gl.clearColor(0, 0, 1.0 - (pbRenderer.frameCount % 100 / 100), 1); // blue shades
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	this.renderer.graphics.applyFilterToTexture(this.rttTexture);
+	// copy the rttTexture to the filterTexture applying a filter as it draws
+	this.renderer.graphics.applyFilterToTexture(0, this.rttTexture);
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	this.renderer.graphics.drawTextureToDisplay(this.filterTexture);
-*/
-	// draw the filter texture to the display
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(this.rttTexture);
+
+	// draw the render-to-texture to the display
+//	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+//	this.renderer.graphics.drawTextureToDisplay(this.rttTexture);
 };
 
