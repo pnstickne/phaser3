@@ -13,7 +13,8 @@ var testFilterSources = {
 		" varying vec2 v_texcoord;" +
 		" uniform sampler2D uImageSampler;" +
 		" void main() {" +
-    	"   gl_FragColor = texture2D(uImageSampler, v_texcoord);" +
+		"   vec4 col = texture2D(uImageSampler, v_texcoord);" +
+    	"   gl_FragColor = vec4(col.rg, col.b * 2.0, 1);" +
 		" }",
 
 	vertex:
@@ -37,7 +38,6 @@ function pbWebGlFilters()
 {
 	// TODO: change this into a list
 	this.testFilterProgram = null;
-	this.currentProgram = null;
 }
 
 
@@ -55,7 +55,6 @@ pbWebGlFilters.prototype.destroy = function()
 {
 	this.clearProgram();
 	this.testFilterProgram = null;
-	this.currentProgram = null;
 };
 
 
@@ -135,7 +134,7 @@ pbWebGlFilters.prototype.createProgram = function( _source )
 
 pbWebGlFilters.prototype.setProgram = function(_program)
 {
-	if (this.currentProgram != _program)
+	if (pbWebGlShaders.currentProgram != _program)
 	{
 		// remove the old program
 		this.clearProgram();
@@ -143,46 +142,47 @@ pbWebGlFilters.prototype.setProgram = function(_program)
 		//console.log("pbWebGlFilters.setProgram", _program);
 		
 		// set the new program
-		this.currentProgram = _program;
-		gl.useProgram( this.currentProgram );
+		pbWebGlShaders.currentProgram = _program;
+		gl.useProgram( pbWebGlShaders.currentProgram );
 
 		// establish links to attributes and enable them
-		if (this.currentProgram.attributes)
+		if (pbWebGlShaders.currentProgram.attributes)
 		{
-			for(var a in this.currentProgram.attributes)
+			for(var a in pbWebGlShaders.currentProgram.attributes)
 			{
-				if (this.currentProgram.attributes.hasOwnProperty(a))
+				if (pbWebGlShaders.currentProgram.attributes.hasOwnProperty(a))
 				{
-					var attribute = this.currentProgram.attributes[a];
-					this.currentProgram[attribute] = gl.getAttribLocation( this.currentProgram, attribute );
-					if (this.currentProgram[attribute] === null)
+					var attribute = pbWebGlShaders.currentProgram.attributes[a];
+					pbWebGlShaders.currentProgram[attribute] = gl.getAttribLocation( pbWebGlShaders.currentProgram, attribute );
+					if (pbWebGlShaders.currentProgram[attribute] === null)
 						console.log("WARNING (pbWebGlFilters.setProgram): filter attribute returned NULL for", attribute, "it's probably unused in the filter");
 					else
-						gl.enableVertexAttribArray( this.currentProgram[attribute] );
+						gl.enableVertexAttribArray( pbWebGlShaders.currentProgram[attribute] );
 				}
 			}
 		}
 
 		// establish links to uniforms
-		if (this.currentProgram.uniforms)
+		if (pbWebGlShaders.currentProgram.uniforms)
 		{
-			for(var u in this.currentProgram.uniforms)
+			for(var u in pbWebGlShaders.currentProgram.uniforms)
 			{
-				if (this.currentProgram.uniforms.hasOwnProperty(u))
+				if (pbWebGlShaders.currentProgram.uniforms.hasOwnProperty(u))
 				{
-					var uniform = this.currentProgram.uniforms[u];
-					this.currentProgram[uniform] = gl.getUniformLocation( this.currentProgram, uniform );
-					if (this.currentProgram[uniform] === null)
+					var uniform = pbWebGlShaders.currentProgram.uniforms[u];
+					pbWebGlShaders.currentProgram[uniform] = gl.getUniformLocation( pbWebGlShaders.currentProgram, uniform );
+					if (pbWebGlShaders.currentProgram[uniform] === null)
 						console.log("WARNING (pbWebGlFilters.setProgram): filter uniform returned NULL for", uniform, "it's probably unused in the filter");
 				}
 			}
 		}
 
 		// establish link to the texture sampler
-		if (this.currentProgram.sampler)
+		if (pbWebGlShaders.currentProgram.sampler)
 		{
-			this.currentProgram.samplerUniform = gl.getUniformLocation( this.currentProgram, this.currentProgram.sampler );
-		   	gl.uniform1i( this.currentProgram.samplerUniform, 0 );
+			pbWebGlShaders.currentProgram.samplerUniform = gl.getUniformLocation( pbWebGlShaders.currentProgram, pbWebGlShaders.currentProgram.sampler );
+			// set the fragment shader sampler to use TEXTURE0
+		   	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniform, 0 );
 		}
 	}
 };
@@ -195,22 +195,22 @@ pbWebGlFilters.prototype.setProgram = function(_program)
  */
 pbWebGlFilters.prototype.clearProgram = function()
 {
-	if (this.currentProgram)
+	if (pbWebGlShaders.currentProgram)
 	{
 		// break links to all attributes and disable them
-		if (this.currentProgram.attributes)
+		if (pbWebGlShaders.currentProgram.attributes)
 		{
-			for(var a in this.currentProgram.attributes)
+			for(var a in pbWebGlShaders.currentProgram.attributes)
 			{
-				if (this.currentProgram.attributes.hasOwnProperty(a))
+				if (pbWebGlShaders.currentProgram.attributes.hasOwnProperty(a))
 				{
-					var attribute = this.currentProgram.attributes[a];
-					gl.disableVertexAttribArray( this.currentProgram[attribute] );
+					var attribute = pbWebGlShaders.currentProgram.attributes[a];
+					gl.disableVertexAttribArray( pbWebGlShaders.currentProgram[attribute] );
 				}
 			}
 		}
 
-		this.currentProgram = null;
+		pbWebGlShaders.currentProgram = null;
 	}
 };
 
