@@ -579,10 +579,12 @@ pbWebGlShaders.prototype.setProgram = function(_program, _textureNumber)
 		if (pbWebGlShaders.currentProgram.sampler)
 		{
 			pbWebGlShaders.currentProgram.samplerUniform = gl.getUniformLocation( pbWebGlShaders.currentProgram, pbWebGlShaders.currentProgram.sampler );
-			// set the fragment shader sampler to use TEXTURE0
-		   	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniform, _textureNumber );
 		}
 	}
+
+	if (pbWebGlShaders.currentProgram.samplerUniform)
+		// set the fragment shader sampler to use TEXTURE0
+	   	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniform, _textureNumber );
 };
 
 

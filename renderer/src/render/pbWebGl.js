@@ -411,8 +411,8 @@ pbWebGl.prototype.applyFilterToTexture = function(_textureNumber, _srcTexture, _
 	// 	this.positionBuffer = gl.createBuffer();
 
 	// 	// bind the buffer to the RAM resident positionBuffer
-	//     gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
- //   	}
+	// 	gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+	// }
 
 	// callback to set the filter program
 	_callback.call(_context, this.filters, _textureNumber);
