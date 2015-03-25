@@ -104,17 +104,6 @@ pbMultiFilterDemo.prototype.restart = function()
 
 
 
-
-// draw _image using _transform, use the _fb framebuffer texture and depth buffers
-pbMultiFilterDemo.prototype.drawSceneToTexture = function(_fb, _image, _transform)
-{
-	// bind the framebuffer so drawing will go to the associated texture and depth buffer
-	gl.bindFramebuffer(gl.FRAMEBUFFER, _fb);
-	// draw this.srcImage into the render-to-texture
-	this.renderer.graphics.drawImageWithTransform(_image, _transform, 1.0);
-};
-
-
 pbMultiFilterDemo.prototype.update = function()
 {
 	// one-time initialisation
@@ -129,6 +118,10 @@ pbMultiFilterDemo.prototype.update = function()
 		this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
 		this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
+		// create the filter texture
+		this.filter2Texture = pbWebGlTextures.initTexture(gl.TEXTURE2, pbRenderer.width, pbRenderer.height);
+		this.filter2Framebuffer = pbWebGlTextures.initFramebuffer(this.filter2Texture, null);
+
 		// set the transformation for rendering to the render-to-texture
 		this.srcTransform = pbMatrix3.makeTransform(0, 0, 0, 1, 1);
 
@@ -142,19 +135,20 @@ pbMultiFilterDemo.prototype.update = function()
 	}
 
 	// draw srcImage using the render-to-texture framebuffer
-	this.drawSceneToTexture(this.rttFramebuffer, this.srcImage, this.srcTransform);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
+	this.renderer.graphics.drawImageWithTransform(this.srcImage, this.srcTransform, 1.0);
 
-	// copy rttTexture to the filterFramebuffer attached texture, applying a tint filter as it draws
+	// draw rttTexture to the filterTexture, applying a tint filter (from TEXTURE0, filterTexture is on TEXTURE1)
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
 	this.renderer.graphics.applyFilterToTexture(0, this.rttTexture, this.setTint, this);
 
-	// copy filterTexture back to the rttFramebuffer attached texture, applying a wave filter as it draws
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
-	this.renderer.graphics.applyFilterToTexture(1, this.rttTexture, this.setWave, this);
+	// draw filterTexture to the rttTexture, applying a wave filter (from TEXTURE1, rttTexture is still on TEXTURE0)
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter2Framebuffer);
+	this.renderer.graphics.applyFilterToTexture(1, this.filterTexture, this.setWave, this);
 
 	// draw the final texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(0, this.filterTexture);
+	this.renderer.graphics.drawTextureToDisplay(0, this.filter2Texture);
 };
 
 

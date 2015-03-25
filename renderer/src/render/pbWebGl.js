@@ -405,16 +405,7 @@ pbWebGl.prototype.drawTextureToDisplay = function(_textureNumber, _texture)
 
 pbWebGl.prototype.applyFilterToTexture = function(_textureNumber, _srcTexture, _callback, _context)
 {
-	// if (!this.positionBuffer)
-	// {
-	// 	// create a GL buffer to transfer all the vertex position data through
-	// 	this.positionBuffer = gl.createBuffer();
-
-	// 	// bind the buffer to the RAM resident positionBuffer
-	// 	gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
-	// }
-
-	// callback to set the filter program
+	// callback to set the filter program and parameters
 	_callback.call(_context, this.filters, _textureNumber);
 
 	// create a buffer for the vertices used to draw the _srcTexture to the _dstTexture
