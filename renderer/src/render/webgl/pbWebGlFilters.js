@@ -40,11 +40,47 @@ var tintFilterSources = {
 };
 
 
+var waveFilterSources = {
+	// bend the image using trig effects
+	// NOTE: change clamp(xxx, 0.0, 1.0) to mod(xxx, 1.0) if wrap around at edges is preferred
+	fragment:
+		" precision mediump float;" +
+		" varying vec2 v_texcoord;" +
+		" uniform sampler2D uImageSampler;" +
+		" uniform float uOffsetX;" +
+		" uniform float uOffsetY;" +
+		" void main() {" +
+		"   float ox = sin((v_texcoord.x + uOffsetX) * 3.1416 * 2.0) * 0.1;" +
+		"   float oy = sin((v_texcoord.y + uOffsetY) * 3.1416 * 2.0) * 0.1;" +
+		"   vec2 srcCoord = vec2(clamp(v_texcoord.x + ox, 0.0, 1.0), clamp(v_texcoord.y + oy, 0.0, 1.0));" +
+		"   gl_FragColor = texture2D(uImageSampler, srcCoord);" +
+		" }",
+
+	vertex:
+    	" attribute vec4 aPosition;" +
+    	" varying vec2 v_texcoord;" +
+		" void main() {" +
+		"   gl_Position = aPosition;" +
+		"   v_texcoord = aPosition.xy * 0.5 + 0.5;" +
+		" }",
+
+	attributes:
+		[ "aPosition" ],
+
+	uniforms:
+		[ "uOffsetX", "uOffsetY" ],
+
+	sampler:
+		"uImageSampler"
+};
+
+
 
 function pbWebGlFilters()
 {
 	// TODO: change this into a list
 	this.tintFilterProgram = null;
+	this.waveFilterProgram = null;
 }
 
 
@@ -54,6 +90,7 @@ pbWebGlFilters.prototype.create = function()
 	// create the filter programs
 	
 	this.tintFilterProgram = this.createProgram( tintFilterSources );
+	this.waveFilterProgram = this.createProgram( waveFilterSources );
 };
 
 
@@ -62,6 +99,7 @@ pbWebGlFilters.prototype.destroy = function()
 {
 	this.clearProgram();
 	this.tintFilterProgram = null;
+	this.waveFilterProgram = null;
 };
 
 
@@ -130,16 +168,49 @@ pbWebGlFilters.prototype.createProgram = function( _source )
 		return null;
 	}
 
-	// add the parameter lists from the shader source object
-	program.attributes = _source.attributes;
-	program.uniforms = _source.uniforms;
-	program.sampler = _source.sampler;
+	// establish links to attributes, uniforms, and the texture sampler
+	if (_source.attributes)
+	{
+		program.attributes = {};
+		for(var a in _source.attributes)
+		{
+			if (_source.attributes.hasOwnProperty(a))
+			{
+				var attribute = _source.attributes[a];
+				program.attributes[attribute] = gl.getAttribLocation( program, attribute );
+				if (program.attributes[attribute] === null)
+					console.log("WARNING (pbWebGlFilters.setProgram): filter attribute returned NULL for", attribute, "it's probably unused in the filter");
+			}
+		}
+	}
+
+	// establish links to uniforms
+	if (_source.uniforms)
+	{
+		program.uniforms = {};
+		for(var u in _source.uniforms)
+		{
+			if (_source.uniforms.hasOwnProperty(u))
+			{
+				var uniform = _source.uniforms[u];
+				program.uniforms[uniform] = gl.getUniformLocation( program, uniform );
+				if (program.uniforms[uniform] === null)
+					console.log("WARNING (pbWebGlFilters.setProgram): filter uniform returned NULL for", uniform, "it's probably unused in the filter");
+			}
+		}
+	}
+
+	// establish link to the texture sampler
+	if (_source.sampler)
+	{
+		program.samplerUniform = gl.getUniformLocation( program, _source.sampler );
+	}
 
 	return program;
 };
 
 
-pbWebGlFilters.prototype.setProgram = function(_program)
+pbWebGlFilters.prototype.setProgram = function(_program, _textureNumber)
 {
 	if (pbWebGlShaders.currentProgram != _program)
 	{
@@ -152,45 +223,15 @@ pbWebGlFilters.prototype.setProgram = function(_program)
 		pbWebGlShaders.currentProgram = _program;
 		gl.useProgram( pbWebGlShaders.currentProgram );
 
-		// establish links to attributes and enable them
+		// enable all attributes
 		if (pbWebGlShaders.currentProgram.attributes)
-		{
 			for(var a in pbWebGlShaders.currentProgram.attributes)
-			{
 				if (pbWebGlShaders.currentProgram.attributes.hasOwnProperty(a))
-				{
-					var attribute = pbWebGlShaders.currentProgram.attributes[a];
-					pbWebGlShaders.currentProgram[attribute] = gl.getAttribLocation( pbWebGlShaders.currentProgram, attribute );
-					if (pbWebGlShaders.currentProgram[attribute] === null)
-						console.log("WARNING (pbWebGlFilters.setProgram): filter attribute returned NULL for", attribute, "it's probably unused in the filter");
-					else
-						gl.enableVertexAttribArray( pbWebGlShaders.currentProgram[attribute] );
-				}
-			}
-		}
+					gl.enableVertexAttribArray( pbWebGlShaders.currentProgram.attributes[a] );
 
-		// establish links to uniforms
-		if (pbWebGlShaders.currentProgram.uniforms)
-		{
-			for(var u in pbWebGlShaders.currentProgram.uniforms)
-			{
-				if (pbWebGlShaders.currentProgram.uniforms.hasOwnProperty(u))
-				{
-					var uniform = pbWebGlShaders.currentProgram.uniforms[u];
-					pbWebGlShaders.currentProgram[uniform] = gl.getUniformLocation( pbWebGlShaders.currentProgram, uniform );
-					if (pbWebGlShaders.currentProgram[uniform] === null)
-						console.log("WARNING (pbWebGlFilters.setProgram): filter uniform returned NULL for", uniform, "it's probably unused in the filter");
-				}
-			}
-		}
-
-		// establish link to the texture sampler
-		if (pbWebGlShaders.currentProgram.sampler)
-		{
-			pbWebGlShaders.currentProgram.samplerUniform = gl.getUniformLocation( pbWebGlShaders.currentProgram, pbWebGlShaders.currentProgram.sampler );
-			// set the fragment shader sampler to use TEXTURE0
-		   	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniform, 0 );
-		}
+		if (pbWebGlShaders.currentProgram.samplerUniform)
+			// set the fragment shader sampler to use the correct texture
+	   		gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniform, _textureNumber );
 	}
 };
 
