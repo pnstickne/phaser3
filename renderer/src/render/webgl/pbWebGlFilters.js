@@ -252,8 +252,8 @@ pbWebGlFilters.prototype.clearProgram = function()
 			{
 				if (pbWebGlShaders.currentProgram.attributes.hasOwnProperty(a))
 				{
-					var attribute = pbWebGlShaders.currentProgram.attributes[a];
-					gl.disableVertexAttribArray( pbWebGlShaders.currentProgram[attribute] );
+					var value = pbWebGlShaders.currentProgram.attributes[a];
+					gl.disableVertexAttribArray( value );
 				}
 			}
 		}
