@@ -2,6 +2,14 @@
  *
  * A filter demo for the new Phaser 3 renderer.
  *
+ *
+ * TODO: extend this and pbWebGl support functions to allow 'ping-pong' filtering...
+ * eg.
+ * texture0 = raw image -> texture1 apply tint filter
+ * texture1 = tinted image -> texture0 apply warp filter
+ * etc
+ * finally, render from texture 0 or 1 to display
+ * 
  */
 
 
@@ -105,48 +113,6 @@ pbFilterDemo.prototype.restart = function()
 
 
 
-// create an empty texture to draw to
-pbFilterDemo.prototype.initTexture = function(_textureRegister, _width, _height)
-{
-	var texture = gl.createTexture();
-    texture.width = _width;
-    texture.height = _height;
-    gl.activeTexture(_textureRegister);
-	gl.bindTexture(gl.TEXTURE_2D, texture);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, texture.width, texture.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-	return texture;
-};
-
-
-// create a 'render-to' depth buffer matching the _texture dimensions
-pbFilterDemo.prototype.initDepth = function(_texture)
-{
-    var depth = gl.createRenderbuffer();
-    gl.bindRenderbuffer(gl.RENDERBUFFER, depth);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, _texture.width, _texture.height);
-    return depth;
-};
-
-
-// attach _texture and _depth to a framebuffer
-pbFilterDemo.prototype.initFramebuffer = function(_texture, _depth)
-{
-    // attach the render-to-texture to a new framebuffer
-	var fb = gl.createFramebuffer();
-	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, _texture, 0);
-    // attach the depth buffer to the framebuffer
-    if (_depth)
-    	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, _depth);
-
-    return fb;
-};
-
-
 // draw _image using _transform, use the _fb framebuffer texture and depth buffers
 pbFilterDemo.prototype.drawSceneToTexture = function(_fb, _image, _transform)
 {
@@ -163,13 +129,13 @@ pbFilterDemo.prototype.update = function()
 	if (this.firstTime)
 	{
 		// create the render-to-texture, depth buffer, and a frame buffer to hold them
-		this.rttTexture = this.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
-		this.rttRenderbuffer = this.initDepth(this.rttTexture);
-		this.rttFramebuffer = this.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
+		this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
+		this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
+		this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 		// create the filter texture
-		this.filterTexture = this.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
-		this.filterFramebuffer = this.initFramebuffer(this.filterTexture, null);
+		this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
+		this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 		// set the transformation for rendering to the render-to-texture
 		this.srcTransform = pbMatrix3.makeTransform(0, 0, 0, 1, 1);
@@ -192,7 +158,7 @@ pbFilterDemo.prototype.update = function()
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(this.filterTexture);
+	this.renderer.graphics.drawTextureToDisplay(0, this.filterTexture);
 };
 
 
@@ -200,10 +166,10 @@ pbFilterDemo.prototype.update = function()
 pbFilterDemo.prototype.setTint = function(_filters)
 {
    	// set the filter program
-	_filters.setProgram(_filters.tintFilterProgram);
+	_filters.setProgram(_filters.tintFilterProgram, 0);
 	// set the tint values in the filter shader program
-	gl.uniform1f( pbWebGlShaders.currentProgram.uRedScale, this.redScale );
-	gl.uniform1f( pbWebGlShaders.currentProgram.uGreenScale, this.greenScale );
-	gl.uniform1f( pbWebGlShaders.currentProgram.uBlueScale, this.blueScale );
+	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uRedScale, this.redScale );
+	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uGreenScale, this.greenScale );
+	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uBlueScale, this.blueScale );
 };
 

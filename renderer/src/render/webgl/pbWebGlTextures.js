@@ -401,3 +401,51 @@ pbWebGlTextures.prototype.createTextureFromCanvas = function(_canvas)
 
 
 
+/**
+ *
+ * static helper functions
+ * 
+ */
+
+// create an empty webgl texture to draw to
+pbWebGlTextures.initTexture = function(_textureRegister, _width, _height)
+{
+	var texture = gl.createTexture();
+    texture.width = _width;
+    texture.height = _height;
+    gl.activeTexture(_textureRegister);
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, texture.width, texture.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	return texture;
+};
+
+
+// create a webgl 'render-to' depth buffer matching the _texture dimensions
+pbWebGlTextures.initDepth = function(_texture)
+{
+    var depth = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, depth);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, _texture.width, _texture.height);
+    return depth;
+};
+
+
+// attach _texture and _depth to a webgl framebuffer
+pbWebGlTextures.initFramebuffer = function(_texture, _depth)
+{
+    // attach the render-to-texture to a new framebuffer
+	var fb = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, _texture, 0);
+    // attach the depth buffer to the framebuffer
+    if (_depth)
+    	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, _depth);
+
+    return fb;
+};
+
+
