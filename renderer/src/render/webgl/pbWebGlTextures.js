@@ -273,16 +273,14 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 {
 	if (this.canReadTexture && this.fb)
 	{
-		var canvas = _ctx.canvas;
-		var imageData = _ctx.createImageData(canvas.width, canvas.height);
-
 		// read the texture pixels into a typed array
 		var buf8 = this.getTextureData(this.fb, this.currentSrcTexture);
 
+		var canvas = _ctx.canvas;
+		var imageData = _ctx.createImageData(canvas.width, canvas.height);
+
 		// copy the typed array data into the ImageData surface
-		var c = imageData.data.length;
-		while(c--)
-			imageData.data[c] = buf8[c];
+		imageData.data.set(buf8);
 
 		// put the ImageData on the _canvas
 		_ctx.putImageData(imageData, 0, 0);
@@ -311,11 +309,7 @@ pbWebGlTextures.prototype.getTextureToSurface = function(_surface)
 			image = new ImageData(wide, high);
 		}
 		// copy the pixels into the new ImageData
-		var c = wide * high * 4;
-		while(c--)
-		{
-			image.data[c] = buf8[c];
-		}
+		image.data.set(buf8);
 
 		// associate the ImageData with the _surface
 		// _wide, _high, _numWide, _numHigh, _imageData)
