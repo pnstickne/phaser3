@@ -88,47 +88,6 @@ pbRenderTextureDemo.prototype.addSprites = function()
 };
 
 
-pbRenderTextureDemo.prototype.initTexture = function(_textureRegister, _width, _height)
-{
-	// create an empty texture to draw to, which matches the display dimensions
-	var texture = gl.createTexture();
-    texture.width = _width;
-    texture.height = _height;
-    gl.activeTexture(_textureRegister);
-	gl.bindTexture(gl.TEXTURE_2D, texture);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, texture.width, texture.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-	return texture;
-}
-
-
-pbRenderTextureDemo.prototype.initDepth = function(_texture)
-{
-	// create a 'render-to' depth buffer
-    var depth = gl.createRenderbuffer();
-    gl.bindRenderbuffer(gl.RENDERBUFFER, depth);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, _texture.width, _texture.height);
-    return depth;
-};
-
-
-pbRenderTextureDemo.prototype.initFramebuffer = function(_texture, _depth)
-{
-    // attach the render-to-texture to a new framebuffer
-	var fb = gl.createFramebuffer();
-	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, _texture, 0);
-    // attach the depth buffer to the framebuffer
-    if (_depth)
-    	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, _depth);
-
-    return fb;
-};
-
-
 pbRenderTextureDemo.prototype.drawSceneToTexture = function(_fb, _image, _transform)
 {
 	// bind the framebuffer so drawing will go to the associated texture and depth buffer
@@ -146,9 +105,9 @@ pbRenderTextureDemo.prototype.update = function()
 	if (this.firstTime)
 	{
 		// create the render-to-texture, depth buffer, and a frame buffer to hold them
-		this.rttTexture = this.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
-		this.rttRenderbuffer = this.initDepth(this.rttTexture);
-		this.rttFramebuffer = this.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
+		this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
+		this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
+		this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 		// set the transformation for rendering to the render-to-texture
 		this.srcTransform = pbMatrix3.makeTransform(10, 10, 0, 1, 1);
