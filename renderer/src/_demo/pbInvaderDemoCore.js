@@ -95,10 +95,13 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	// background
 	var image = this.parent.loader.getFile( this.parent.starsImg );
 	this.bgSurface = new pbSurface();
+	// _wide, _high, _numWide, _numHigh, _image
 	this.bgSurface.create(0, 0, 1, 1, image);
 	this.bgImage = new imageClass();
+	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
 	this.bgImage.create(this.bgSurface, 0, 0, 0, true, true);
 	this.bg = new pbSprite();
+	// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
 	this.bg.create(this.bgImage, 0, 0, 1, 0, 1.0, 1.0);
 	this.layer.addChild(this.bg);
 
@@ -429,22 +432,15 @@ pbInvaderDemoCore.prototype.playerRocketMove = function()
 			this.addSmoke(b.x, b.y);
 		}
 
-		if (b.target)
+		// if we have no target or our target is already dead, don't try to home in on it
+		if (b.target && !b.target.die)
 		{
-			if (b.target.die)
-			{
-				this.addExplosion(b.x, b.y);
-				b.y = -100;
-			}
-			else
-			{
-				var dx = b.target.x - b.x;
-				var dy = b.target.y - b.y;
-				var desired = Math.atan2(dx, dy);
-				if (desired < 0) desired += Math.PI * 2.0;
-				if (desired >= Math.PI * 2.0) desired -= Math.PI * 2.0;
-				b.angleInRadians = turnToFace(b.angleInRadians, desired, Math.PI * 2.0, 0.04);
-			}
+			var dx = b.target.x - b.x;
+			var dy = b.target.y - b.y;
+			var desired = Math.atan2(dx, dy);
+			if (desired < 0) desired += Math.PI * 2.0;
+			if (desired >= Math.PI * 2.0) desired -= Math.PI * 2.0;
+			b.angleInRadians = turnToFace(b.angleInRadians, desired, Math.PI * 2.0, 0.04);
 		}
 
 		// hit alien or off the edges of the screen?
