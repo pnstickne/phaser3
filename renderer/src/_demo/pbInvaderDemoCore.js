@@ -120,7 +120,8 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.bulletSurface.create(0, 0, 1, 1, image);
 	this.bulletPool = [];		// pool for bullets which aren't firing
 	this.bullets = [];			// list of bullets which are firing
-	for(var i = 0; i < 100; i++)
+	var i;
+	for(i = 0; i < 100; i++)
 	{
 		var img = new imageClass();
 		// anchor point at front of bullet for easy collisions...
@@ -137,7 +138,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.rocketSurface.create(32, 32, 8, 1, image);
 	this.rocketPool = [];		// pool for rockets which aren't firing
 	this.rockets = [];			// list of rockets which are firing
-	for(var i = 0; i < 100; i++)
+	for(i = 0; i < 100; i++)
 	{
 		var img = new imageClass();
 		img.create(this.rocketSurface, 0, 0.5, 0.5);
@@ -159,7 +160,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.bombSurface.create(0, 0, 1, 1, image);
 	this.bombPool = [];			// pool for bombs which aren't firing
 	this.bombs = [];			// list of bombs which are firing
-	for(var i = 0; i < 100; i++)
+	for(i = 0; i < 100; i++)
 	{
 		var img = new imageClass();
 		img.create(this.bombSurface, 0);
@@ -177,7 +178,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.explosionPool = [];
 	this.explosions = [];
 	this.explosionSurface.create(128, 128, 16, 1, image);
-	for(var i = 0; i < 100; i++)
+	for(i = 0; i < 100; i++)
 	{
 		var img = new imageClass();
 		img.create(this.explosionSurface, 0);
@@ -192,7 +193,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.smokePool = [];
 	this.smokes = [];
 	this.smokeSurface.create(64, 64, 8, 1, image);
-	for(var i = 0; i < 200; i++)
+	for(i = 0; i < 200; i++)
 	{
 		var img = new imageClass();
 		img.create(this.smokeSurface, 0);
