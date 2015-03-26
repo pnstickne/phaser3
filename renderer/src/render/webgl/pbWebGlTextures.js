@@ -273,14 +273,12 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 {
 	if (this.canReadTexture && this.fb)
 	{
-		// read the texture pixels into a typed array
-		var buf8 = this.getTextureData(this.fb, this.currentSrcTexture);
-
 		var canvas = _ctx.canvas;
 		var imageData = _ctx.createImageData(canvas.width, canvas.height);
 
-		// copy the typed array data into the ImageData surface
-		imageData.data.set(buf8);
+		// create an 8 bit view of the imageData buffer and get the texture data to it
+		var buf8 = new Uint8Array(imageData);
+		this.getTextureData(this.fb, this.currentSrcTexture, buf8);
 
 		// put the ImageData on the _canvas
 		_ctx.putImageData(imageData, 0, 0);
@@ -300,20 +298,19 @@ pbWebGlTextures.prototype.getTextureToSurface = function(_surface)
 		var high = this.currentSrcTexture.height;
 		// console.log("pbWebGlTextures.getTextureToSurface", wide, "x", high);
 
-		// transfer the destination texture pixels from the GPU into a typed array
-		var buf8 = this.getTextureData(this.fb, this.currentSrcTexture);
 		var image = _surface.image;
 		if (!image || image.width != wide || image.height != high)
 		{
 			// create an ImageData to copy the pixels into
 			image = new ImageData(wide, high);
 		}
-		// copy the pixels into the new ImageData
-		image.data.set(buf8);
 
-		// associate the ImageData with the _surface
+		// transfer the destination texture pixels from the GPU into the image data
+		this.getTextureData(this.fb, this.currentSrcTexture, image.data);
+
+		// associate the image with the _surface
 		// _wide, _high, _numWide, _numHigh, _imageData)
-		_surface.create(buf8.width, buf8.height, 1, 1, image);
+		_surface.create(wide, high, 1, 1, image);
 	}
 };
 
@@ -323,7 +320,7 @@ pbWebGlTextures.prototype.getTextureToSurface = function(_surface)
  *
  */
 // from http://learningwebgl.com/blog/?p=1786
-pbWebGlTextures.prototype.getTextureData = function(_fb, _texture)
+pbWebGlTextures.prototype.getTextureData = function(_fb, _texture, _buffer)
 {
 	if (this.canReadTexture && _fb)
 	{
@@ -353,10 +350,23 @@ pbWebGlTextures.prototype.getTextureData = function(_fb, _texture)
 
 		//console.log("pbWebGlTextures.getTextureData", wide, "x", high);
 
-		// read the texture pixels into a typed array
-		var buf8 = new Uint8Array(wide * high * 4);
-		buf8.width = wide;
-		buf8.height = high;
+		var buf8;
+		if (_buffer !== null && _buffer !== undefined)
+		{
+			// create an 8 bit view of the supplied _buffer
+			buf8 = new Uint8Array(_buffer);
+		}
+		else
+		{
+			// create an 8 bit array large enough to hold the data
+			buf8 = new Uint8Array(wide * high * 4);
+
+			// add width & height parameters (this buf8 will be used after it is returned)
+			buf8.width = wide;
+			buf8.height = high;
+		}
+
+		// read the texture pixels into the 8 bit array
 		gl.readPixels(0, 0, wide, high, gl.RGBA, gl.UNSIGNED_BYTE, buf8);
 
 		// unbind the framebuffer
