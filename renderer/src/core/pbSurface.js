@@ -25,7 +25,7 @@ pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _image)
 {
 	if (_wide === 0) _wide = _image.width;
 	if (_high === 0) _high = _image.height;
-
+	
 	this.cellWide = _wide;
 	this.cellHigh = _high;
 	this.cellsWide = _numWide;
@@ -34,8 +34,18 @@ pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _image)
 	this.isNPOT = false;
 
 	// dimensions of one cell in texture coordinates (0 = left/top, 1 = right/bottom)
-	var texWide = 1.0 / (this.image.width / this.cellWide);
-	var texHigh = 1.0 / (this.image.height / this.cellHigh);
+	if (_image)
+	{
+		// _image may have padding around the animation cells
+		texWide = 1.0 / (this.image.width / this.cellWide);
+		texHigh = 1.0 / (this.image.height / this.cellHigh);
+	}
+	else
+	{
+		// there is no image attached, create a surface to exactly fit the animation cells
+		texWide = 1.0 / this.cellsWide;
+		texHigh = 1.0 / this.cellsHigh;
+	}
 
 	// TODO: change cellTextureBounds into a linear list indexed only by pbImage.cellFrame... faster, and more logical when sprites are not grid aligned!
 	this.cellTextureBounds = [];
