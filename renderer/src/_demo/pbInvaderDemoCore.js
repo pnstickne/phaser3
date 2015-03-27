@@ -263,7 +263,7 @@ pbInvaderDemoCore.prototype.update = function()
 		if (this.bulletPool.length > 0)
 			this.playerShoot();
 	// fire player rocket
-	if (Math.random() < 0.02)
+	if (Math.random() < 0.04)
 		if (this.rocketPool.length > 0)
 			this.playerShootRocket();
 
@@ -399,16 +399,16 @@ pbInvaderDemoCore.prototype.playerShootRocket = function()
 		if (target.x < this.player.x)
 		{
 			b.x = this.player.x - 8;
-			b.angleInRadians = Math.PI + 0.8;
+			b.angleInRadians = Math.PI + Math.PI / 3;
 		}
 		else
 		{
 			b.x = this.player.x + 8;
-			b.angleInRadians = Math.PI - 0.8;
+			b.angleInRadians = Math.PI - Math.PI / 3;
 		}
 		b.image.cellFrame = 0;
 		b.y = this.player.y;
-		b.velocity = 2;
+		b.velocity = 5;
 		this.layer.addChild(b);
 
 		this.rockets.push(b);
@@ -440,7 +440,7 @@ pbInvaderDemoCore.prototype.playerRocketMove = function()
 			var desired = Math.atan2(dx, dy);
 			if (desired < 0) desired += Math.PI * 2.0;
 			if (desired >= Math.PI * 2.0) desired -= Math.PI * 2.0;
-			b.angleInRadians = turnToFace(b.angleInRadians, desired, Math.PI * 2.0, 0.04);
+			b.angleInRadians = turnToFace(b.angleInRadians, desired, Math.PI * 2.0, 0.03);
 		}
 
 		// hit alien or off the edges of the screen?
@@ -517,10 +517,12 @@ pbInvaderDemoCore.prototype.invaderBombMove = function()
 			}
 		}
 
+		// track the nearest bomb to the player so the AI can try to dodge them
+		// checks if the bomb is above or almost level with the player too (we don't care if it's beneath us already)
 		var dx = this.player.x - b.x;
 		var dy = this.player.y - b.y;
 		var d2 = dx * dx + dy * dy;
-		if (d2 < nearDist2 && d2 < 40 * 40)
+		if (d2 < nearDist2 && d2 < 45 * 45 && dy > -4)
 		{
 			this.nearest = b;
 			nearDist2 = d2;
