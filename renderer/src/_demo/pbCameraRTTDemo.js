@@ -103,16 +103,10 @@ pbCameraRTTDemo.prototype.update = function()
 		// _wide, _high, _numWide, _numHigh, _image
 		this.textureSurface.create(this.rttTexture.width, this.rttTexture.height, 1, 1, null);
 
-
-		// _x, _y, _angleInRadians, _scaleX, _scaleY
-		this.bgTransform = pbMatrix3.makeTransform(0, 0, 0, 1, 1);
-		this.sprTransform = pbMatrix3.makeTransform(128, 32, 0, 1, 1);
-
 	    // clear the gl bindings
 	    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 	    gl.bindTexture(gl.TEXTURE_2D, null);
 	    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
 
 		// don't do this again...
 		this.firstTime = false;
