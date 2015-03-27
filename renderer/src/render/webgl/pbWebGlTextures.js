@@ -276,9 +276,8 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 		var canvas = _ctx.canvas;
 		var imageData = _ctx.createImageData(canvas.width, canvas.height);
 
-		// create an 8 bit view of the imageData buffer and get the texture data to it
-		var buf8 = new Uint8Array(imageData);
-		this.getTextureData(this.fb, this.currentSrcTexture, buf8);
+		// get the texture data to the image data buffer
+		this.getTextureData(this.fb, this.currentSrcTexture, imageData.data.buffer);
 
 		// put the ImageData on the _canvas
 		_ctx.putImageData(imageData, 0, 0);
@@ -306,7 +305,7 @@ pbWebGlTextures.prototype.getTextureToSurface = function(_surface)
 		}
 
 		// transfer the destination texture pixels from the GPU into the image data
-		this.getTextureData(this.fb, this.currentSrcTexture, image.data);
+		this.getTextureData(this.fb, this.currentSrcTexture, image.data.buffer);
 
 		// associate the image with the _surface
 		// _wide, _high, _numWide, _numHigh, _imageData)
@@ -354,6 +353,7 @@ pbWebGlTextures.prototype.getTextureData = function(_fb, _texture, _buffer)
 		if (_buffer !== null && _buffer !== undefined)
 		{
 			// create an 8 bit view of the supplied _buffer
+			// WARNING: if _buffer is a typed array, this will DUPLICATE it instead of creating a view (slow, and probably not what you wanted!)
 			buf8 = new Uint8Array(_buffer);
 		}
 		else
