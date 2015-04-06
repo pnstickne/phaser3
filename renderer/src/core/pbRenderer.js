@@ -28,6 +28,8 @@ function pbRenderer(_renderMode, _docId, _bootCallback, _updateCallback, _gameCo
 	this.bootCallback = _bootCallback;
 	this.updateCallback = _updateCallback;
 	this.gameContext = _gameContext;
+	this.useFramebuffer = null;
+	this.postUpdate = null;
 
 	// globals
  	webGl = null;
@@ -215,6 +217,12 @@ pbRenderer.prototype.update = function()
 	{
 		// the rootLayer update will iterate the entire display list
 		rootLayer.update();
+	}
+
+	// postUpdate if required
+	if (this.postUpdate !== null)
+	{
+		this.postUpdate.call(this.gameContext);
 	}
 
 	stats.end();
