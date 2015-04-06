@@ -61,7 +61,7 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
     gl.activeTexture( gl.TEXTURE0 );
 
 	var index = this.onGPU.indexOf(_image);
-    if (index != -1)
+    if (index != -1 && !_image.isDirty)
     {
 		// the _image is already on the GPU
 		texture = this.onGPU[index].gpuTexture;
@@ -78,12 +78,14 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
 		    return false;
 	    }
 
-		console.log( "pbWebGlTextures.prepare uploading new source texture : ", _image.width, "x", _image.height );
+	    if (!_image.isDirty)	// only debug when a new texture is sent, not when an old texture is marked 'dirty' (because spam will slow things down)
+			console.log( "pbWebGlTextures.prepare uploading source texture : ", _image.width, "x", _image.height );
 
 	    // link the texture object to the image and vice-versa
 		texture = gl.createTexture();
 		texture.image = _image;
 		_image.gpuTexture = texture;
+	    _image.isDirty = false;
 
 		// bind the texture to the active texture register
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -308,8 +310,9 @@ pbWebGlTextures.prototype.getTextureToSurface = function(_surface)
 		this.getTextureData(this.fb, this.currentSrcTexture, image.data.buffer);
 
 		// associate the image with the _surface
+		_surface.image = image;
 		// _wide, _high, _numWide, _numHigh, _imageData)
-		_surface.create(wide, high, 1, 1, image);
+//		_surface.create(wide, high, 1, 1, image);
 	}
 };
 
