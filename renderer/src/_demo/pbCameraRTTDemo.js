@@ -44,7 +44,7 @@ pbCameraRTTDemo.prototype.allLoaded = function()
 	console.log( "pbCameraRTTDemo.allLoaded" );
 
 	// callback to this.create when ready, callback to this.update once every frame
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
