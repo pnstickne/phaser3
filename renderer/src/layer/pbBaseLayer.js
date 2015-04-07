@@ -78,9 +78,6 @@ pbBaseLayer.prototype.draw = function(_list)
 {
 	var obj = _list[0];
 	
-	// make sure that all drawing goes to the correct place (display if null, or another bound texture and depth buffer)
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.renderer.useFramebuffer);
-
 	if (_list.length === 1)
 	{
 		if (obj.image.isModeZ)

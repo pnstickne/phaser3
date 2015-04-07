@@ -29,6 +29,7 @@ function pbRenderer(_renderMode, _docId, _bootCallback, _updateCallback, _gameCo
 	this.updateCallback = _updateCallback;
 	this.gameContext = _gameContext;
 	this.useFramebuffer = null;
+	this.useRenderbuffer = null;
 	this.postUpdate = null;
 
 	// globals
@@ -207,6 +208,9 @@ pbRenderer.prototype.update = function()
 	pbRenderer.frameCount++;
 
 	// prepare to draw (erase screen)
+	// make sure that all drawing goes to the correct place (display if null, or another bound texture and depth buffer)
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.useFramebuffer);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, this.useRenderbuffer);
 	this.graphics.preRender(pbRenderer.width, pbRenderer.height);
 
 	// update game logic
