@@ -14,7 +14,7 @@ function pbCameraRTTDemo( docId )
 
 	this.docId = docId;
 
-	this.layer = null;
+	this.camera = null;
 	this.game = null;
 	this.firstTime = true;
 	this.rttTexture = null;
@@ -52,11 +52,12 @@ pbCameraRTTDemo.prototype.create = function()
 {
 	console.log("pbCameraRTTDemo.create");
 
-	this.layer = new layerClass();
-	this.layer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
-	rootLayer.addChild(this.layer);
+	this.camera = new layerClass();
+	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
+	this.camera.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1, 1);
+	rootLayer.addChild(this.camera);
 	this.game = new pbInvaderDemoCore();
-	this.game.create(this, this.layer);
+	this.game.create(this, this.camera);
 };
 
 
@@ -64,8 +65,8 @@ pbCameraRTTDemo.prototype.destroy = function()
 {
 	console.log("pbCameraRTTDemo.destroy");
 
-	this.layer.destroy();
-	this.layer = null;
+	this.camera.destroy();
+	this.camera = null;
 
 	this.renderer.destroy();
 	this.renderer = null;
@@ -100,15 +101,17 @@ pbCameraRTTDemo.prototype.update = function()
 		// create a sprite to hold the image
 		this.textureSprite = new pbSprite();
 		// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-		this.textureSprite.create(this.textureImage, 0, 0, 1, 0, 1.0, 1.0);
+		this.textureSprite.create(this.textureImage, 0, 0, 1.0, 0, 1.0, 1.0);
 		this.tx = 0;
 		this.tdx = 3;
 		this.ty = 300;
 		this.tdy = 2;
 		this.tr = 0;
 		this.tdr = 0.01;
+		this.ts = 0.7;
+		this.tds = 0.001;
 		// create a transform matrix to draw this image with
-		this.transform = pbMatrix3.makeTransform(this.tx, this.ty, this.tr, 0.7, -0.7);
+		this.transform = pbMatrix3.makeTransform(this.tx, this.ty, this.tr, this.ts, -this.ts);
 
 	    // clear the gl bindings
 	    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
@@ -127,14 +130,12 @@ pbCameraRTTDemo.prototype.update = function()
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update
    	this.renderer.useFramebuffer = this.rttFramebuffer;
+   	this.renderer.useRenderbuffer = this.rttRenderbuffer;
 };
 
 
 pbCameraRTTDemo.prototype.postUpdate = function()
 {
-//	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-//	this.renderer.graphics.drawTextureToDisplay(0, this.rttTexture);
-
 	// get the scene we just drew to the rttTexture into the prepared RAM surface
 	this.renderer.graphics.textures.prepareTextureForAccess(this.rttTexture);
 	this.renderer.graphics.textures.getTextureToSurface(this.textureSurface);
@@ -148,11 +149,14 @@ pbCameraRTTDemo.prototype.postUpdate = function()
 	if (this.ty <= 0 || this.ty >= pbRenderer.height) this.tdy = -this.tdy;
 	this.tr += this.tdr;
 	if (this.tr >= Math.PI * 2.0) this.tr -= Math.PI * 2.0;
-
-	this.transform = pbMatrix3.makeTransform(this.tx, this.ty, this.tr, 0.7, -0.7);
+	this.ts += this.tds;
+	if (this.ts <= 0.4 || this.ts >= 0.8) this.tds = -this.tds;
+	this.transform = pbMatrix3.makeTransform(this.tx, this.ty, this.tr, this.ts, -this.ts);
 
 	// draw the sprite holding the RAM surface to the visible display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawImageWithTransform( this.textureImage, this.transform, 0.0 );
+	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	// _image, _transform, _z
+	this.renderer.graphics.drawImageWithTransform( this.textureImage, this.transform, 1.0 );
 };
 

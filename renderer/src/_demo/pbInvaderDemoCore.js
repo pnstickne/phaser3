@@ -36,6 +36,7 @@ pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer)
 
 	this.layer = _rootLayer;
 	this.uiLayer = new layerClass();
+	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
 	this.uiLayer.create(this.layer, this.parent.renderer, 0, 0, 0, 0, 1, 1);
 	this.layer.addChild(this.uiLayer);
 
@@ -102,7 +103,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.bgImage.create(this.bgSurface, 0, 0, 0, true, true);
 	this.bg = new pbSprite();
 	// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-	this.bg.create(this.bgImage, 0, 0, 1, 0, 1.0, 1.0);
+	this.bg.create(this.bgImage, 0, 0, 1.0, 0, 1.0, 1.0);
 	this.layer.addChild(this.bg);
 
 	// player
@@ -112,7 +113,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.playerImage = new imageClass();
 	this.playerImage.create(this.playerSurface, 0);
 	this.player = new pbSprite();
-	this.player.create(this.playerImage, pbRenderer.width * 0.5, pbRenderer.height * 0.9, 0, 0, 1.0, 1.0);
+	this.player.create(this.playerImage, pbRenderer.width * 0.5, pbRenderer.height * 0.9, 0.0, 0, 1.0, 1.0);
 	this.layer.addChild(this.player);
 	this.player.die = false;
 	this.playerDirX = -2;
@@ -233,7 +234,7 @@ pbInvaderDemoCore.prototype.addInvaders = function()
 pbInvaderDemoCore.prototype.update = function()
 {
 	// scroll the background by adjusting the start point of the texture read y coordinate
-	this.bgSurface.cellTextureBounds[0][0].y -= 1 / pbRenderer.height;
+	//this.bgSurface.cellTextureBounds[0][0].y -= 1 / pbRenderer.height;
 
 
 	//
