@@ -128,8 +128,12 @@ pbWebGl.prototype.destroy = function()
 };
 
 
-pbWebGl.prototype.preRender = function(_width, _height)
+pbWebGl.prototype.preRender = function(_width, _height, _fb, _rb)
 {
+	// make sure that all drawing goes to the correct place
+	gl.bindFramebuffer(gl.FRAMEBUFFER, _fb);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, _rb);
+
 	// clear the viewport
 	gl.disable( gl.SCISSOR_TEST );
 	gl.viewport( 0, 0, _width, _height);
