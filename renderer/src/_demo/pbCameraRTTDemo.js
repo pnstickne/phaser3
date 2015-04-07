@@ -97,11 +97,12 @@ pbCameraRTTDemo.prototype.update = function()
 		// create an image to hold the surface
 		this.textureImage = new imageClass();
 		// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
-		this.textureImage.create(this.textureSurface, 0, 0, 0, false, false);
+		this.textureImage.create(this.textureSurface, 0, 0.5, 0.5, false, false);
 		// create a sprite to hold the image
 		this.textureSprite = new pbSprite();
 		// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
 		this.textureSprite.create(this.textureImage, 0, 0, 1.0, 0, 1.0, 1.0);
+		// bouncing, scaling, spinning variables
 		this.tx = 0;
 		this.tdx = 3;
 		this.ty = 300;
@@ -121,21 +122,25 @@ pbCameraRTTDemo.prototype.update = function()
     	// set up the renderer postUpdate callback to draw the rendered scene from the RAM surface to the display
 	    this.renderer.postUpdate = this.postUpdate;
 
+		// set the frame buffer to be used as the destination during the draw phase of renderer.update
+	   	this.renderer.useFramebuffer = this.rttFramebuffer;
+	   	this.renderer.useRenderbuffer = this.rttRenderbuffer;
+
 		// don't do this again...
 		this.firstTime = false;
 	}
 
 	// update the invaders demo core
 	this.game.update();
-
-	// set the frame buffer to be used as the destination during the draw phase of renderer.update
-   	this.renderer.useFramebuffer = this.rttFramebuffer;
-   	this.renderer.useRenderbuffer = this.rttRenderbuffer;
 };
 
 
 pbCameraRTTDemo.prototype.postUpdate = function()
 {
+	// TODO: why isn't the background dark green from the pbWebGl.prerender clear?  Something is filling it with black and that probably means some wasted cycles.
+	// TODO: remove this download then upload.  Add code to register a render-to-texture target as onGPU for the purposes of drawing a camera/layer
+	// TODO: then look into multiple bouncing, spinning, scaling cameras for a new demo
+
 	// get the scene we just drew to the rttTexture into the prepared RAM surface
 	this.renderer.graphics.textures.prepareTextureForAccess(this.rttTexture);
 	this.renderer.graphics.textures.getTextureToSurface(this.textureSurface);
