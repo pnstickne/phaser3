@@ -325,7 +325,13 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 
 
 
-// single texture instances
+/**
+ * drawTextureWithTransform - draw a texture that is on the GPU using the transform provided
+ *
+ * @param  {ImageData} _texture - the gl.createTexture reference to the texture, must have width and height members (eg. if pbWebGlTextures.initTexture created it)
+ * @param  {pbMatrix3} _transform - the transform to apply, can specify translation, rotation and scaling, plus anything else that goes into a 3x3 homogenous matrix
+ * @param  {Number} _z - the z depth at which to draw
+ */
 pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z )
 {
 	// console.log("drawTextureWithTransform", _texture);
@@ -338,13 +344,10 @@ pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z 
 	// split off a small part of the big buffer, for a single display object
 	var buffer = this.drawingArray.subarray(0, 16);
 
-	// set up the animation frame
-	var rect = new pbRectangle(0,0,1,1);
-
 	var wide, high;
 	// half width, half height (of source frame)
-	wide = 512;
-	high = 512;
+	wide = _texture.width;
+	high = _texture.height;
 
 	// screen destination position
 	// l, b,		0,1
@@ -355,23 +358,21 @@ pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z 
 	{
 		l = -wide * 0.5;
 		r = wide + l;
-		t = -high * 0.5;
-		b = high + t;
+		t = high * 0.5;
+		b = -high + t;
 		buffer[ 0 ] = buffer[ 4 ] = l;
 		buffer[ 1 ] = buffer[ 9 ] = b;
 		buffer[ 8 ] = buffer[ 12] = r;
 		buffer[ 5 ] = buffer[ 13] = t;
 	}
 
-	// texture source position
+	// texture source position (use the whole texture)
 	// x, b,		2,3
 	// x, y,		6,7
 	// r, b,		10,11
 	// r, y,		14,15
-	buffer[ 2 ] = buffer[ 6 ] = rect.x;
-	buffer[ 3 ] = buffer[ 11] = rect.y + rect.height;
-	buffer[ 10] = buffer[ 14] = rect.x + rect.width;
-	buffer[ 7 ] = buffer[ 15] = rect.y;
+	buffer[ 2 ] = buffer[ 6 ] = buffer[ 7 ] = buffer[ 15] = 0;
+	buffer[ 3 ] = buffer[ 11] = buffer[ 10] = buffer[ 14] = 1.0;
 
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
     // bind the source buffer
