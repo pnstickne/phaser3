@@ -79,7 +79,7 @@ pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _npot, _tiling)
 /**
  * prepare - prepare a texture to be rendered with webGl
  *
- * @param  {ImageData} _image  [description]
+ * @param  {ImageData} _imageData  [description]
  * @param  {Boolean} _tiling - true if the image will repeat to tile a larger area
  * @param  {Boolean} _npot - true if the image has a non-power-of-two dimension
  *
@@ -87,7 +87,7 @@ pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _npot, _tiling)
  */
 pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot )
 {
-	// this _image is already the selected texture
+	// this _imageData is already the selected texture
 	if (this.currentSrcTexture && this.currentSrcTexture.imageData === _imageData)
 		return false;
 
@@ -99,7 +99,7 @@ pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot )
 	var index = this.onGPU.indexOf(_imageData);
     if (index != -1 && !_imageData.isDirty)
     {
-		// the _image is already on the GPU
+		// the _imageData is already on the GPU
 		texture = this.onGPU[index].gpuTexture;
 		// bind the texture to the active texture register
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -108,20 +108,20 @@ pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot )
     {
     	// upload it to the GPU
 	    var maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-	    if (_image.width > maxSize || _image.height > maxSize)
+	    if (_imageData.width > maxSize || _imageData.height > maxSize)
 	    {
-		    alert("ERROR: Texture size not supported by this video card!", _image.width, _image.height, " > ", maxSize);
+		    alert("ERROR: Texture size not supported by this video card!", _imageData.width, _imageData.height, " > ", maxSize);
 		    return false;
 	    }
 
-	    if (!_image.isDirty)	// only debug when a new texture is sent, not when an old texture is marked 'dirty' (because spam will slow things down)
-			console.log( "pbWebGlTextures.prepare uploading source texture : ", _image.width, "x", _image.height );
+	    if (!_imageData.isDirty)	// only debug when a new texture is sent, not when an old texture is marked 'dirty' (because spam will slow things down)
+			console.log( "pbWebGlTextures.prepare uploading source texture : ", _imageData.width, "x", _imageData.height );
 
 	    // link the texture object to the imageData and vice-versa
 		texture = gl.createTexture();
 		texture.imageData = _imageData;
-		_image.gpuTexture = texture;
-	    _image.isDirty = false;
+		_imageData.gpuTexture = texture;
+	    _imageData.isDirty = false;
 
 		// bind the texture to the active texture register
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
