@@ -79,7 +79,7 @@ pbCameraRTTDemo.prototype.create = function()
 	this.ts = 0.7;
 	this.tds = 0.001;
 	// create a transform matrix to draw this image with
-	this.transform = pbMatrix3.makeTransform(this.tx, this.ty, this.tr, this.ts, -this.ts);
+	this.transform = pbMatrix3.makeTransform(this.tx, this.ty, this.tr, this.ts, this.ts);
 
 	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
     this.renderer.postUpdate = this.postUpdate;
