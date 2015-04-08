@@ -329,7 +329,10 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z )
 {
 	// console.log("drawTextureWithTransform", _texture);
-	
+
+	// _texture, _npot, _tiling
+	this.textures.prepareOnGPU(_texture, true, false);
+
 	this.shaders.setProgram(this.shaders.imageShaderProgram, 0);
 
 	// split off a small part of the big buffer, for a single display object

@@ -1,6 +1,8 @@
 /**
  *
  * A camera demo using render-to-texture for the new Phaser 3 renderer.
+ * This demo draws an instance of the Invaders Core demo to texture, then it directly accesses that texture
+ * using pbWebGl.drawTextureWithTransform as the source surface for a bouncing, rotating, scaling camera sprite.
  *
  *
  */
@@ -89,19 +91,6 @@ pbCameraRTTDemo.prototype.update = function()
 		this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 		this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
-		// create a RAM surface to download the texture to
-		this.textureSurface = new pbSurface();
-		// _wide, _high, _numWide, _numHigh, _image
-		this.textureSurface.create(this.rttTexture.width, this.rttTexture.height, 1, 1, null);
-		this.textureSurface.isNPOT = true;
-		// create an image to hold the surface
-		this.textureImage = new imageClass();
-		// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
-		this.textureImage.create(this.textureSurface, 0, 0.5, 0.5, false, false);
-		// create a sprite to hold the image
-		this.textureSprite = new pbSprite();
-		// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-		this.textureSprite.create(this.textureImage, 0, 0, 1.0, 0, 1.0, 1.0);
 		// bouncing, scaling, spinning variables
 		this.tx = 0;
 		this.tdx = 3;
@@ -114,12 +103,7 @@ pbCameraRTTDemo.prototype.update = function()
 		// create a transform matrix to draw this image with
 		this.transform = pbMatrix3.makeTransform(this.tx, this.ty, this.tr, this.ts, -this.ts);
 
-	    // clear the gl bindings
-	    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-	    gl.bindTexture(gl.TEXTURE_2D, null);
-	    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-    	// set up the renderer postUpdate callback to draw the rendered scene from the RAM surface to the display
+    	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
 	    this.renderer.postUpdate = this.postUpdate;
 
 		// set the frame buffer to be used as the destination during the draw phase of renderer.update
@@ -135,17 +119,14 @@ pbCameraRTTDemo.prototype.update = function()
 };
 
 
+/**
+ * postUpdate - draw the camera sprite using the render-to-texture surface on the GPU
+ *
+ */
 pbCameraRTTDemo.prototype.postUpdate = function()
 {
 	// TODO: why isn't the background dark green from the pbWebGl.prerender clear?  Something is filling it with black and that probably means some wasted cycles.
-	// TODO: remove this download then upload.  Add code to register a render-to-texture target as onGPU for the purposes of drawing a camera/layer
-	// TODO: then look into multiple bouncing, spinning, scaling cameras for a new demo
-
-	// get the scene we just drew to the rttTexture into the prepared RAM surface
-	this.renderer.graphics.textures.prepareTextureForAccess(this.rttTexture);
-	this.renderer.graphics.textures.getTextureToSurface(this.textureSurface);
-	// make sure the new surface contents are uploaded to the GPU when it's time to draw
-	this.textureSurface.image.isDirty = true;
+	// TODO: look into multiple bouncing, spinning, scaling cameras for a new demo
 
 	// move the draw image around
 	this.tx += this.tdx;
@@ -158,10 +139,11 @@ pbCameraRTTDemo.prototype.postUpdate = function()
 	if (this.ts <= 0.4 || this.ts >= 0.8) this.tds = -this.tds;
 	this.transform = pbMatrix3.makeTransform(this.tx, this.ty, this.tr, this.ts, -this.ts);
 
-	// draw the sprite holding the RAM surface to the visible display
+	// don't render to texture any more, render to the display instead
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+
 	// _image, _transform, _z
-	this.renderer.graphics.drawImageWithTransform( this.textureImage, this.transform, 1.0 );
+	this.renderer.graphics.drawTextureWithTransform( this.rttTexture, this.transform, 1.0 );
 };
 

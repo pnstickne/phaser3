@@ -41,11 +41,47 @@ pbWebGlTextures.prototype.destroy = function()
 
 
 /**
+ * prepareOnGPU - prepare a texture which is on the GPU to be used as a source surface
+ *
+ */
+pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _npot, _tiling)
+{
+	// bind the texture to the active texture register
+    gl.bindTexture(gl.TEXTURE_2D, _texture);
+
+    if (_npot)
+    {
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    }
+    else if (_tiling)
+    {
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+	    gl.generateMipmap(gl.TEXTURE_2D);
+    }
+	else
+	{
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+	    gl.generateMipmap(gl.TEXTURE_2D);
+	}
+
+    this.currentSrcTexture = _texture;
+};
+
+
+/**
  * prepare - prepare a texture to be rendered with webGl
  *
- * @param  {[type]} _image  [description]
- * @param  {[type]} _tiling [description]
- * @param  {[type]} _npot   [description]
+ * @param  {ImageData} _image  [description]
+ * @param  {Boolean} _tiling - true if the image will repeat to tile a larger area
+ * @param  {Boolean} _npot - true if the image has a non-power-of-two dimension
  *
  * @return {Boolean} true if successfully prepared a new texture, false if failed or it was already prepared
  */
