@@ -35,7 +35,7 @@ pbRenderTextureDemo.prototype.allLoaded = function()
 {
 	console.log( "pbRenderTextureDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
