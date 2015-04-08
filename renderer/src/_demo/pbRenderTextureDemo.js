@@ -77,10 +77,10 @@ pbRenderTextureDemo.prototype.addSprites = function()
 {
 	console.log("pbRenderTextureDemo.addSprites");
 
-	var image = this.loader.getFile( this.spriteImg );
+	var imageData = this.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
 	// _wide, _high, _numWide, _numHigh, _image
-	this.surface.create(0, 0, 1, 1, image);
+	this.surface.create(0, 0, 1, 1, imageData);
 
 	this.srcImage = new imageClass();
 	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen

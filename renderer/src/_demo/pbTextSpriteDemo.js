@@ -69,10 +69,10 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	console.log("pbTextSpriteDemo.addSprites");
 
 	// get the source image, it's NPOT so duplicate it into a larger canvas which is power of two in both dimensions (webgl requirement)
-	var image = this.loader.getFile( this.spriteImg );
-	image = imageToPowerOfTwo(image);
+	var imageData = this.loader.getFile( this.spriteImg );
+	imageData = imageToPowerOfTwo(imageData);
 	this.surface = new pbSurface();
-	this.surface.create(16, 16, 95, 7, image);		// there are 7 rows of 95 characters which are 16x16 pixels each
+	this.surface.create(16, 16, 95, 7, imageData);		// there are 7 rows of 95 characters which are 16x16 pixels each
 
 	this.greenLayer = new layerClass();
 	this.greenLayer.create(rootLayer, this.renderer, 0, 0, 0, 0, 1, 1);
@@ -179,17 +179,17 @@ function imageToPowerOfTwo( _image )
 }
 
 
-function imageToPowerOfTwo(image)
+function imageToPowerOfTwo(imageData)
 {
-    if (!isPowerOfTwo(image.width) || !isPowerOfTwo(image.height))
+    if (!isPowerOfTwo(imageData.width) || !isPowerOfTwo(imageData.height))
     {
         // Scale up the texture to the next highest power of two dimensions.
         var canvas = document.createElement("canvas");
-        canvas.width = nextHighestPowerOfTwo(image.width);
-        canvas.height = nextHighestPowerOfTwo(image.height);
+        canvas.width = nextHighestPowerOfTwo(imageData.width);
+        canvas.height = nextHighestPowerOfTwo(imageData.height);
         var ctx = canvas.getContext("2d");
-        ctx.drawImage(image, 0, 0, image.width, image.height);
-        image = canvas;
+        ctx.drawImage(imageData, 0, 0, imageData.width, imageData.height);
+        imageData = canvas;
     }
-    return image;
+    return imageData;
 }

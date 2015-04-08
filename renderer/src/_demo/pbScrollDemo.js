@@ -139,9 +139,9 @@ pbScrollDemo.prototype.createSurfaces = function()
 	console.log("pbScrollDemo.createSurfaces");
 
 	// the background image (tiled and stretched to fill the whole viewport)
-	var image = this.loader.getFile( this.bgImg );
+	var imageData = this.loader.getFile( this.bgImg );
 	var surface = new pbSurface();
-	surface.create(0, 0, 1, 1, image);
+	surface.create(0, 0, 1, 1, imageData);
 	surface.cellTextureBounds[0][0].width = pbRenderer.width / surface.cellWide;
 	var img = new imageClass();
 	img.create(surface, 0, 0, 0, true, false);
@@ -153,9 +153,9 @@ pbScrollDemo.prototype.createSurfaces = function()
 	rootLayer.addChild(this.bgSpr);
 
 	// set up the tiles in a pbSprite
-	image = this.loader.getFile( this.tileImg );
+	imageData = this.loader.getFile( this.tileImg );
 	this.tileSurface = new pbSurface();
-	this.tileSurface.create(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, image);
+	this.tileSurface.create(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, imageData);
 	this.tileSurface.isNPOT = true;
 
 	// create all the scrolling layers to draw from the tileSurface

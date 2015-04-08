@@ -65,9 +65,9 @@ pbTransformDemo.prototype.addSprites = function()
 	console.log("pbTransformDemo.addSprites");
 
 	// create animation data and set destination for movement
-	var image = this.loader.getFile( this.spriteImg );
+	var imageData = this.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
-	this.surface.create(0, 0, 1, 1, image);
+	this.surface.create(0, 0, 1, 1, imageData);
 
 	var img = new imageClass();
 	img.create(this.surface, 0, 0.5, 1.0);		// anchorY = 1.0 - make movement appear more complex

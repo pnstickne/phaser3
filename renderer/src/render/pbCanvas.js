@@ -72,7 +72,7 @@ pbCanvas.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, _angle
 pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
 {
 	var srf = _image.surface;
-	var srcImageData = srf.image;
+	var srcImageData = srf.imageData;
 	var w, h;
 
 	// TODO: use the Pixi style 'object' matrix which is kept as elements so I don't need to extract from array.. after speed tests vs the glMatrix approach!
@@ -232,7 +232,7 @@ pbCanvas.prototype.blitListDirect = function( _list, _listLength, _surface )
 		// round to integer positions for faster rendering
 		var x = (0.5 + _list[c].x - w) | 0;
 		var y = (0.5 + _list[c].y - h) | 0;
-		this.ctx.drawImage(_surface.image, x, y);
+		this.ctx.drawImage(_surface.imageData, x, y);
 	}
 };
 
@@ -251,7 +251,7 @@ pbCanvas.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface 
 		// round to integer positions for faster rendering
 		var y = (0.5 + _list[c--] - h) | 0;
 		var x = (0.5 + _list[c] - w) | 0;
-		this.ctx.drawImage(_surface.image, x, y);
+		this.ctx.drawImage(_surface.imageData, x, y);
 	}
 };
 
@@ -268,12 +268,12 @@ pbCanvas.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surf
 	var h2 = h * 0.5;
 	while(c--)
 	{
-		var v = _list[c--] * _surface.image.height;
-		var u = _list[c--] * _surface.image.width;
+		var v = _list[c--] * _surface.imageData.height;
+		var u = _list[c--] * _surface.imageData.width;
 		// round to integer positions for faster rendering
 		var y = (0.5 + _list[c--] - h2) | 0;
 		var x = (0.5 + _list[c] - w2) | 0;
-		this.ctx.drawImage(_surface.image, u, v, w, h, x, y, w, h);
+		this.ctx.drawImage(_surface.imageData, u, v, w, h, x, y, w, h);
 	}
 };
 

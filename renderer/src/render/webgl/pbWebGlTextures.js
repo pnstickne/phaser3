@@ -85,10 +85,10 @@ pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _npot, _tiling)
  *
  * @return {Boolean} true if successfully prepared a new texture, false if failed or it was already prepared
  */
-pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
+pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot )
 {
 	// this _image is already the selected texture
-	if (this.currentSrcTexture && this.currentSrcTexture.image === _image)
+	if (this.currentSrcTexture && this.currentSrcTexture.imageData === _imageData)
 		return false;
 
 	var texture = null;
@@ -96,8 +96,8 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
 	// activate the first texture register
     gl.activeTexture( gl.TEXTURE0 );
 
-	var index = this.onGPU.indexOf(_image);
-    if (index != -1 && !_image.isDirty)
+	var index = this.onGPU.indexOf(_imageData);
+    if (index != -1 && !_imageData.isDirty)
     {
 		// the _image is already on the GPU
 		texture = this.onGPU[index].gpuTexture;
@@ -117,16 +117,16 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
 	    if (!_image.isDirty)	// only debug when a new texture is sent, not when an old texture is marked 'dirty' (because spam will slow things down)
 			console.log( "pbWebGlTextures.prepare uploading source texture : ", _image.width, "x", _image.height );
 
-	    // link the texture object to the image and vice-versa
+	    // link the texture object to the imageData and vice-versa
 		texture = gl.createTexture();
-		texture.image = _image;
+		texture.imageData = _imageData;
 		_image.gpuTexture = texture;
 	    _image.isDirty = false;
 
 		// bind the texture to the active texture register
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
 	    
-	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _image);
+	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _imageData);
 	    if (_npot)
 	    {
 		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -151,7 +151,7 @@ pbWebGlTextures.prototype.prepare = function( _image, _tiling, _npot )
     	}
 
 	    // remember that this texture has been uploaded
-	    this.onGPU.push(_image);
+	    this.onGPU.push(_imageData);
 	}
 
     this.currentSrcTexture = texture;
@@ -196,11 +196,11 @@ pbWebGlTextures.prototype.prepareRenderToTexture = function( _width, _height )
     //gl.generateMipmap(gl.TEXTURE_2D);
 
 	// create a new ImageData to hold the texture pixels
-	this.currentDstTexture.image = new ImageData(_width, _height);
-	// link the image to the destination texture
-	this.currentDstTexture.image.gpuTexture = this.currentDstTexture;
+	this.currentDstTexture.imageData = new ImageData(_width, _height);
+	// link the imageData to the destination texture
+	this.currentDstTexture.imageData.gpuTexture = this.currentDstTexture;
 
-	var dataTypedArray = new Uint8Array(this.currentDstTexture.image.data);
+	var dataTypedArray = new Uint8Array(this.currentDstTexture.imageData.data);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.rttFb.width, this.rttFb.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, dataTypedArray);
 
 
@@ -249,19 +249,19 @@ pbWebGlTextures.prototype.stopRenderTexture = function()
 };
 
 
-pbWebGlTextures.prototype.setRenderSourceImage = function( _image )
+pbWebGlTextures.prototype.setRenderSourceImage = function( _imageData )
 {
 	// make sure that _image is the current source texture
-	if (!this.currentSrcTexture || this.currentSrcTexture.image !== _image)
+	if (!this.currentSrcTexture || this.currentSrcTexture.imageData !== _imageData)
 	{
-		console.log("pbWebGlTextures.setRenderSourceImage", _image.width, "x", _image.height);
+		console.log("pbWebGlTextures.setRenderSourceImage", _imageData.width, "x", _imageData.height);
 
-		var index = this.onGPU.indexOf(_image);
+		var index = this.onGPU.indexOf(_imageData);
 		if (index == -1)
-			this.onGPU.push(_image);
-		texture = _image.gpuTexture;
+			this.onGPU.push(_imageData);
+		texture = _imageData.gpuTexture;
 		if (texture === null)
-			console.log("WARNING: image has null for gpuTexture.");
+			console.log("WARNING: imageData has null for gpuTexture.");
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 		this.currentSrcTexture = texture;
 		gl.activeTexture( gl.TEXTURE0 );
@@ -277,8 +277,8 @@ pbWebGlTextures.prototype.prepareTextureForAccess = function(_texture)
 {
 	// if (_texture.canvas)
 	// 	console.log("pbWebGlTextures.prepareTextureForAccess", _texture.canvas.width, "x", _texture.canvas.height);
-	// else if (_texture.image)
-	// 	console.log("pbWebGlTextures.prepareTextureForAccess", _texture.image.width, "x", _texture.image.height);
+	// else if (_texture.imageData)
+	// 	console.log("pbWebGlTextures.prepareTextureForAccess", _texture.imageData.width, "x", _texture.imageData.height);
 	// else
 	// 	console.log("pbWebGlTextures.prepareTextureForAccess", _texture.width, "x", _texture.height);
 
@@ -314,7 +314,7 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 		var canvas = _ctx.canvas;
 		var imageData = _ctx.createImageData(canvas.width, canvas.height);
 
-		// get the texture data to the image data buffer
+		// get the texture data to the ImageData buffer
 		this.getTextureData(this.fb, this.currentSrcTexture, imageData.data.buffer);
 
 		// put the ImageData on the _canvas
@@ -335,20 +335,20 @@ pbWebGlTextures.prototype.getTextureToSurface = function(_surface)
 		var high = this.currentSrcTexture.height;
 		// console.log("pbWebGlTextures.getTextureToSurface", wide, "x", high);
 
-		var image = _surface.image;
-		if (!image || image.width != wide || image.height != high)
+		var imageData = _surface.imageData;
+		if (!imageData || imageData.width != wide || imageData.height != high)
 		{
 			// create an ImageData to copy the pixels into
-			image = new ImageData(wide, high);
+			imageData = new ImageData(wide, high);
 		}
 
 		// transfer the destination texture pixels from the GPU into the image data
-		this.getTextureData(this.fb, this.currentSrcTexture, image.data.buffer);
+		this.getTextureData(this.fb, this.currentSrcTexture, imageData.data.buffer);
 
-		// associate the image with the _surface
-		_surface.image = image;
+		// associate the ImageData with the _surface
+		_surface.imageData = imageData;
 		// _wide, _high, _numWide, _numHigh, _imageData)
-//		_surface.create(wide, high, 1, 1, image);
+//		_surface.create(wide, high, 1, 1, imageData);
 	}
 };
 
@@ -375,10 +375,10 @@ pbWebGlTextures.prototype.getTextureData = function(_fb, _texture, _buffer)
 			wide = _texture.canvas.width;
 			high = _texture.canvas.height;
 		}
-		else if (_texture.image)
+		else if (_texture.imageData)
 		{
-			wide = _texture.image.width;
-			high = _texture.image.height;
+			wide = _texture.imageData.width;
+			high = _texture.imageData.height;
 		}
 		else
 		{
@@ -434,7 +434,7 @@ pbWebGlTextures.prototype.createTextureFromCanvas = function(_canvas)
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-	// upload the canvas image into the texture
+	// upload the canvas ImageData into the texture
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _canvas);
 
 	// activate the texture

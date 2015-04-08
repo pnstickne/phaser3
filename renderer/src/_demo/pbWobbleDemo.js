@@ -84,9 +84,9 @@ pbWobbleDemo.prototype.addSprites = function()
 {
 	console.log("pbWobbleDemo.addSprites");
 
-	var image = this.loader.getFile( this.spriteImg );
+	var imageData = this.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
-	this.surface.create(80, 100, 10, 6, image);
+	this.surface.create(80, 100, 10, 6, imageData);
 
 	var c = 0, x, y;
 

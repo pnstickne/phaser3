@@ -81,9 +81,9 @@ pbBunnyDemoNPOT.prototype.addSprites = function(num)
 	// create animation data and set destination for movement
 	if (!this.surface)
 	{
-		var image = this.loader.getFile( this.spriteImg );
+		var imageData = this.loader.getFile( this.spriteImg );
 		this.surface = new pbSurface();
-		this.surface.create(0, 0, 1, 1, image);
+		this.surface.create(0, 0, 1, 1, imageData);
 		this.surface.isNPOT = true;
 
 		// tell the layer what surface it will draw from

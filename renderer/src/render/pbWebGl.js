@@ -235,7 +235,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 	this.shaders.setProgram(this.shaders.imageShaderProgram, 0);
 
 	var surface = _image.surface;
-	if (this.textures.prepare( surface.image, _image.tiling, surface.isNPOT ))
+	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
 		this.prepareShader();
@@ -465,14 +465,14 @@ pbWebGl.prototype.drawImageToTextureWithTransform = function( _width, _height, _
 
 	// create the source texture and initialise webgl (once only)
 	var surface = _image.surface;
-	if (this.textures.prepare( surface.image, _image.tiling, surface.isNPOT ))
+	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
 		this.prepareShader();
 	}
 
-	// set up the source image as the render source
-	this.textures.setRenderSourceImage( surface.image );
+	// set up the source imageData as the render source
+	this.textures.setRenderSourceImage( surface.imageData );
 
 	// create the destination texture
 	this.textures.setRenderTargetToTexture(_width, _height);
@@ -569,7 +569,7 @@ pbWebGl.prototype.drawModeZ = function( _image, _transform, _z )
 	this.shaders.setProgram(this.shaders.modezShaderProgram, 0);
 
 	var surface = _image.surface;
-	if (this.textures.prepare( surface.image, _image.tiling, surface.isNPOT ))
+	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
 		this.prepareShader();
@@ -663,7 +663,7 @@ pbWebGl.prototype.drawImageWithTransform3D = function( _image, _transform, _z )
 	this.shaders.setProgram(this.shaders.imageShaderProgram3D, 0);
 
 	var surface = _image.surface;
-	if (this.textures.prepare( surface.image, _image.tiling, surface.isNPOT ))
+	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
 		this.prepareShader();
@@ -723,7 +723,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram, 0);
 
-	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
 		this.prepareShader();
@@ -800,7 +800,7 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface 
 {
 	this.shaders.setProgram(this.shaders.blitShaderProgram, 0);
 
-	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
 		this.prepareShader();
@@ -881,7 +881,7 @@ pbWebGl.prototype.blitListDirect = function( _list, _listLength, _surface )
 {
 	this.shaders.setProgram(this.shaders.blitShaderProgram, 0);
 
-	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
 		this.prepareShader();
@@ -962,7 +962,7 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 {
 	this.shaders.setProgram(this.shaders.blitShaderProgram, 0);
 
-	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
 		this.prepareShader();
@@ -1045,7 +1045,7 @@ pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 {
 	this.shaders.setProgram(this.shaders.blitShaderPointProgram, 0);
 
-	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
 		this.prepareShader();
@@ -1081,7 +1081,7 @@ pbWebGl.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surfa
 {
 	this.shaders.setProgram(this.shaders.blitShaderPointAnimProgram, 0);
 
-	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
 		this.prepareShader();
@@ -1126,7 +1126,7 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 {
 	this.shaders.setProgram(this.shaders.batchImageShaderProgram, 0);
 
-	if (this.textures.prepare( _surface.image, null, _surface.isNPOT ))
+	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
 		this.prepareShader();
@@ -1266,7 +1266,7 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 
 	this.shaders.setProgram(this.shaders.rawBatchImageShaderProgram, 0);
 
-	if (this.textures.prepare( surface.image, _list[0].image.tiling, surface.isNPOT ))
+	if (this.textures.prepare( surface.imageData, _list[0].image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
 		this.prepareShader();

@@ -42,10 +42,10 @@ pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer, _useFrame)
 	this.uiLayer.create(this.layer, this.parent.renderer, 0, 0, 0, 0, 1, 1);
 	this.layer.addChild(this.uiLayer);
 
-	var image = this.parent.loader.getFile( this.parent.fontImg );
-	image = imageToPowerOfTwo(image);
+	var imageData = this.parent.loader.getFile( this.parent.fontImg );
+	imageData = imageToPowerOfTwo(imageData);
 	this.textSurface = new pbSurface();
-	this.textSurface.create(16, 16, 95, 7, image);		// there are 7 rows of 95 characters which are 16x16 pixels each, first character is Space
+	this.textSurface.create(16, 16, 95, 7, imageData);		// there are 7 rows of 95 characters which are 16x16 pixels each, first character is Space
 
 	this.text = new pbText();
 	this.text.create(this.textSurface, this.uiLayer, " ".charCodeAt(0));
@@ -96,10 +96,10 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	// TODO: use different pbLayers for each part of this demo
 
 	// background
-	var image = this.parent.loader.getFile( this.parent.starsImg );
+	var imageData = this.parent.loader.getFile( this.parent.starsImg );
 	this.bgSurface = new pbSurface();
 	// _wide, _high, _numWide, _numHigh, _image
-	this.bgSurface.create(0, 0, 1, 1, image);
+	this.bgSurface.create(0, 0, 1, 1, imageData);
 	this.bgImage = new imageClass();
 	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
 	this.bgImage.create(this.bgSurface, 0, 0, 0, true, true);
@@ -109,9 +109,9 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.layer.addChild(this.bg);
 
 	// player
-	image = this.parent.loader.getFile( this.parent.playerImg );
+	imageData = this.parent.loader.getFile( this.parent.playerImg );
 	this.playerSurface = new pbSurface();
-	this.playerSurface.create(0, 0, 1, 1, image);
+	this.playerSurface.create(0, 0, 1, 1, imageData);
 	this.playerImage = new imageClass();
 	this.playerImage.create(this.playerSurface, 0);
 	this.player = new pbSprite();
@@ -121,9 +121,9 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.playerDirX = -2;
 
 	// player bullets
-	image = this.parent.loader.getFile( this.parent.bulletImg );
+	imageData = this.parent.loader.getFile( this.parent.bulletImg );
 	this.bulletSurface = new pbSurface();
-	this.bulletSurface.create(0, 0, 1, 1, image);
+	this.bulletSurface.create(0, 0, 1, 1, imageData);
 	this.bulletPool = [];		// pool for bullets which aren't firing
 	this.bullets = [];			// list of bullets which are firing
 	var i;
@@ -139,9 +139,9 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	}
 
 	// player rockets
-	image = this.parent.loader.getFile( this.parent.rocketImg );
+	imageData = this.parent.loader.getFile( this.parent.rocketImg );
 	this.rocketSurface = new pbSurface();
-	this.rocketSurface.create(32, 32, 8, 1, image);
+	this.rocketSurface.create(32, 32, 8, 1, imageData);
 	this.rocketPool = [];		// pool for rockets which aren't firing
 	this.rockets = [];			// list of rockets which are firing
 	for(i = 0; i < 100; i++)
@@ -155,15 +155,15 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	}
 
 	// aliens
-	image = this.parent.loader.getFile( this.parent.invaderImg );
+	imageData = this.parent.loader.getFile( this.parent.invaderImg );
 	this.invaderSurface = new pbSurface();
-	this.invaderSurface.create(32, 32, 4, 1, image);
+	this.invaderSurface.create(32, 32, 4, 1, imageData);
 	this.addInvaders();
 
 	// alien bombs
-	image = this.parent.loader.getFile( this.parent.bombImg );
+	imageData = this.parent.loader.getFile( this.parent.bombImg );
 	this.bombSurface = new pbSurface();
-	this.bombSurface.create(0, 0, 1, 1, image);
+	this.bombSurface.create(0, 0, 1, 1, imageData);
 	this.bombPool = [];			// pool for bombs which aren't firing
 	this.bombs = [];			// list of bombs which are firing
 	for(i = 0; i < 100; i++)
@@ -179,11 +179,11 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.nearest = null;
 
 	// explosions
-	image = this.parent.loader.getFile( this.parent.explosionImg );
+	imageData = this.parent.loader.getFile( this.parent.explosionImg );
 	this.explosionSurface = new pbSurface();
 	this.explosionPool = [];
 	this.explosions = [];
-	this.explosionSurface.create(128, 128, 16, 1, image);
+	this.explosionSurface.create(128, 128, 16, 1, imageData);
 	for(i = 0; i < 100; i++)
 	{
 		var img = new imageClass();
@@ -194,11 +194,11 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	}
 
 	// smoke puffs
-	image = this.parent.loader.getFile( this.parent.smokeImg );
+	imageData = this.parent.loader.getFile( this.parent.smokeImg );
 	this.smokeSurface = new pbSurface();
 	this.smokePool = [];
 	this.smokes = [];
-	this.smokeSurface.create(64, 64, 8, 1, image);
+	this.smokeSurface.create(64, 64, 8, 1, imageData);
 	for(i = 0; i < 200; i++)
 	{
 		var img = new imageClass();
@@ -210,9 +210,9 @@ pbInvaderDemoCore.prototype.addSprites = function()
 
 	if (this.useFrame)
 	{
-		image = this.parent.loader.getFile( this.parent.frame_l );
+		imageData = this.parent.loader.getFile( this.parent.frame_l );
 		var surface = new pbSurface();
-		surface.create(0, 0, 1, 1, image);
+		surface.create(0, 0, 1, 1, imageData);
 		surface.isNPOT = true;
 		var img = new imageClass();
 		img.create(surface, 0, 0, 0, false, false);
@@ -220,9 +220,9 @@ pbInvaderDemoCore.prototype.addSprites = function()
 		sprite.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		this.uiLayer.addChild(sprite);
 
-		image = this.parent.loader.getFile( this.parent.frame_t );
+		imageData = this.parent.loader.getFile( this.parent.frame_t );
 		surface = new pbSurface();
-		surface.create(0, 0, 1, 1, image);
+		surface.create(0, 0, 1, 1, imageData);
 		surface.isNPOT = true;
 		img = new imageClass();
 		img.create(surface, 0, 0, 0, false, false);
@@ -230,9 +230,9 @@ pbInvaderDemoCore.prototype.addSprites = function()
 		sprite.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		this.uiLayer.addChild(sprite);
 
-		image = this.parent.loader.getFile( this.parent.frame_r );
+		imageData = this.parent.loader.getFile( this.parent.frame_r );
 		surface = new pbSurface();
-		surface.create(0, 0, 1, 1, image);
+		surface.create(0, 0, 1, 1, imageData);
 		surface.isNPOT = true;
 		img = new imageClass();
 		img.create(surface, 0, 1, 0, false, false);
@@ -240,9 +240,9 @@ pbInvaderDemoCore.prototype.addSprites = function()
 		sprite.create(img, pbRenderer.width, 0, 0, 0, 1.0, 1.0);
 		this.uiLayer.addChild(sprite);
 
-		image = this.parent.loader.getFile( this.parent.frame_b );
+		imageData = this.parent.loader.getFile( this.parent.frame_b );
 		surface = new pbSurface();
-		surface.create(0, 0, 1, 1, image);
+		surface.create(0, 0, 1, 1, imageData);
 		surface.isNPOT = true;
 		img = new imageClass();
 		img.create(surface, 0, 0, 1, false, false);

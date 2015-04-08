@@ -56,10 +56,10 @@ pbMultiFilterDemo.prototype.create = function()
 {
 	console.log("pbMultiFilterDemo.create");
 
-	var image = this.loader.getFile( this.spriteImg );
+	var imageData = this.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
 	// _wide, _high, _numWide, _numHigh, _image
-	this.surface.create(0, 0, 1, 1, image);
+	this.surface.create(0, 0, 1, 1, imageData);
 
 	this.srcImage = new imageClass();
 	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
@@ -78,10 +78,6 @@ pbMultiFilterDemo.prototype.destroy = function()
 	if (this.surface)
 		this.surface.destroy();
 	this.surface = null;
-
-	if (this.image)
-		this.image.destroy();
-	this.image = null;
 
 	if (this.renderer)
 		this.renderer.destroy();

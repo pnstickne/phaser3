@@ -67,9 +67,9 @@ pbTiltDemo.prototype.addSprites = function()
 	console.log("pbTiltDemo.addSprites");
 
 	// create surface from raw image data
-	var image = this.loader.getFile( this.spriteImg );
+	var imageData = this.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
-	this.surface.create(0, 0, 1, 1, image);
+	this.surface.create(0, 0, 1, 1, imageData);
 
 	// create an image holder for the surface
 	var img = new imageClass();

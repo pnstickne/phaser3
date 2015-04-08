@@ -15,30 +15,30 @@ function pbSurface()
 	this.cellHigh = 0;
 	this.cellsWide = 0;
 	this.cellsHigh = 0;
-	this.image = null;
+	this.imageData = null;
 	this.cellTextureBounds = null;
 	this.isNPOT = false;
 }
 
 
-pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _image)
+pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageData)
 {
-	if (_wide === 0) _wide = _image.width;
-	if (_high === 0) _high = _image.height;
+	if (_wide === 0) _wide = _imageData.width;
+	if (_high === 0) _high = _imageData.height;
 	
 	this.cellWide = _wide;
 	this.cellHigh = _high;
 	this.cellsWide = _numWide;
 	this.cellsHigh = _numHigh;
-	this.image = _image;
+	this.imageData = _imageData;
 	this.isNPOT = false;
 
 	// dimensions of one cell in texture coordinates (0 = left/top, 1 = right/bottom)
-	if (_image)
+	if (_imageData)
 	{
 		// _image may have padding around the animation cells
-		texWide = 1.0 / (this.image.width / this.cellWide);
-		texHigh = 1.0 / (this.image.height / this.cellHigh);
+		texWide = 1.0 / (this.imageData.width / this.cellWide);
+		texHigh = 1.0 / (this.imageData.height / this.cellHigh);
 	}
 	else
 	{
@@ -60,7 +60,7 @@ pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _image)
 
 pbSurface.prototype.destroy = function()
 {
-	this.image = null;
+	this.imageData = null;
 	this.cellTextureBounds = null;
 };
 
