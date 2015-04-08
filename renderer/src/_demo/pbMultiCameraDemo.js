@@ -37,6 +37,10 @@ function pbMultiCameraDemo( docId )
 	this.smokeImg = this.loader.loadImage( "../img/invader/smoke64x64x8.png" );
 	this.explosionImg = this.loader.loadImage( "../img/invader/explode.png" );
 	this.fontImg = this.loader.loadImage( "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png" );
+	this.frame_l = this.loader.loadImage( "../img/frame_l.png" );
+	this.frame_r = this.loader.loadImage( "../img/frame_r.png" );
+	this.frame_t = this.loader.loadImage( "../img/frame_t.png" );
+	this.frame_b = this.loader.loadImage( "../img/frame_b.png" );
 
 	console.log( "pbMultiCameraDemo c'tor exit" );
 }
@@ -63,7 +67,7 @@ pbMultiCameraDemo.prototype.create = function()
 	// because otherwise the renderer.update won't update the game's sprite
 	// transforms or draw them to the render-to-texture
 	this.game = new pbInvaderDemoCore();
-	this.game.create(this, this.gameLayer);
+	this.game.create(this, this.gameLayer, true);
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);

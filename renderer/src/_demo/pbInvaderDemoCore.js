@@ -22,19 +22,21 @@ function pbInvaderDemoCore()
 	this.text = null;
 	this.score = 0;
 	this.level = 0;
+	this.useFrame = false;
 	this.parent = null;
 
 	console.log( "pbInvaderDemoCore c'tor exit" );
 }
 
 
-pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer)
+pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer, _useFrame)
 {
 	console.log("pbInvaderDemoCore.create");
 
 	this.parent = _parent;
-
+	this.useFrame = _useFrame;
 	this.layer = _rootLayer;
+
 	this.uiLayer = new layerClass();
 	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
 	this.uiLayer.create(this.layer, this.parent.renderer, 0, 0, 0, 0, 1, 1);
@@ -204,6 +206,50 @@ pbInvaderDemoCore.prototype.addSprites = function()
 		var smoke = new pbSprite();
 		smoke.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		this.smokePool.push(smoke);
+	}
+
+	if (this.useFrame)
+	{
+		image = this.parent.loader.getFile( this.parent.frame_l );
+		var surface = new pbSurface();
+		surface.create(0, 0, 1, 1, image);
+		surface.isNPOT = true;
+		var img = new imageClass();
+		img.create(surface, 0, 0, 0, false, false);
+		var sprite = new pbSprite();
+		sprite.create(img, 0, 0, 0, 0, 1.0, 1.0);
+		this.uiLayer.addChild(sprite);
+
+		image = this.parent.loader.getFile( this.parent.frame_t );
+		surface = new pbSurface();
+		surface.create(0, 0, 1, 1, image);
+		surface.isNPOT = true;
+		img = new imageClass();
+		img.create(surface, 0, 0, 0, false, false);
+		sprite = new pbSprite();
+		sprite.create(img, 0, 0, 0, 0, 1.0, 1.0);
+		this.uiLayer.addChild(sprite);
+
+		image = this.parent.loader.getFile( this.parent.frame_r );
+		surface = new pbSurface();
+		surface.create(0, 0, 1, 1, image);
+		surface.isNPOT = true;
+		img = new imageClass();
+		img.create(surface, 0, 1, 0, false, false);
+		sprite = new pbSprite();
+		sprite.create(img, pbRenderer.width, 0, 0, 0, 1.0, 1.0);
+		this.uiLayer.addChild(sprite);
+
+		image = this.parent.loader.getFile( this.parent.frame_b );
+		surface = new pbSurface();
+		surface.create(0, 0, 1, 1, image);
+		surface.isNPOT = true;
+		img = new imageClass();
+		img.create(surface, 0, 0, 1, false, false);
+		sprite = new pbSprite();
+		sprite.create(img, 0, pbRenderer.height, 0, 0, 1.0, 1.0);
+		this.uiLayer.addChild(sprite);
+
 	}
 };
 
