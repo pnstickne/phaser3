@@ -15,7 +15,6 @@ function pbRenderTextureDemo( docId )
 
 	this.docId = docId;
 
-	this.firstTime = true;
 	this.surface = null;
 	this.srcImage = null;
 	this.renderSurface = null;
@@ -45,6 +44,19 @@ pbRenderTextureDemo.prototype.create = function()
 	console.log("pbRenderTextureDemo.create");
 
 	this.addSprites();
+
+	// create the render-to-texture, depth buffer, and a frame buffer to hold them
+	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
+	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
+	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
+
+	// set the transformation for rendering to the render-to-texture
+	this.srcTransform = pbMatrix3.makeTransform(10, 10, 0, 1, 1);
+
+    // clear the gl bindings
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
 
 
@@ -102,30 +114,11 @@ pbRenderTextureDemo.prototype.drawSceneToTexture = function(_fb, _image, _transf
 
 pbRenderTextureDemo.prototype.update = function()
 {
-	if (this.firstTime)
-	{
-		// create the render-to-texture, depth buffer, and a frame buffer to hold them
-		this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
-		this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
-		this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
-
-		// set the transformation for rendering to the render-to-texture
-		this.srcTransform = pbMatrix3.makeTransform(10, 10, 0, 1, 1);
-
-	    // clear the gl bindings
-	    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-	    gl.bindTexture(gl.TEXTURE_2D, null);
-	    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-		// don't do this again...
-		this.firstTime = false;
-	}
-
 	// draw srcImage using the render-to-texture framebuffer
 	this.drawSceneToTexture(this.rttFramebuffer, this.srcImage, this.srcTransform);
 
 	// draw the render-to-texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(this.rttTexture);
+	this.renderer.graphics.drawTextureToDisplay(0, this.rttTexture);
 };
 
