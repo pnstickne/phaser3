@@ -1,6 +1,7 @@
 /**
  *
  * A render-to-texture demo for the new Phaser 3 renderer.
+ * Shows the very simplest way to render to a texture then have that texture displayed on screen.
  *
  */
 
