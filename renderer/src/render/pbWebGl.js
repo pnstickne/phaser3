@@ -89,7 +89,7 @@ pbWebGl.prototype.create = function( _canvas )
 		gl.enable( gl.BLEND );
 
 		// set the parameters to clear the render area
-		gl.clearColor( 0.1, 0.2, 0.1, 1.0 );
+		gl.clearColor( 0.0, 0.0, 0.0, 1.0 );
 		gl.clearDepth( 1.0 );
 
 		// precalculate the drawing buffer's half-width and height values
@@ -392,9 +392,12 @@ pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z 
 };
 
 
-pbWebGl.prototype.drawTextureToDisplay = function(_textureNumber, _texture)
+pbWebGl.prototype.drawTextureToDisplay = function(_textureNumber, _texture, _shaderProgram)
 {
-	this.shaders.setProgram(this.shaders.simpleShaderProgram, _textureNumber);
+	if (_shaderProgram !== undefined)
+		this.shaders.setProgram(_shaderProgram, _textureNumber);
+	else
+		this.shaders.setProgram(this.shaders.simpleShaderProgram, _textureNumber);
 
 	if (!this.positionBuffer)
 		this.prepareBuffer();

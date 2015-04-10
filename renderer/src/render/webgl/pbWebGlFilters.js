@@ -7,6 +7,93 @@
  */
 
 
+/**
+ * lightingShader
+ * 
+ */
+
+// based on code by Olivier de Schaetzen (citiral), posted on www.shadertoy.com
+var pointLightSources = {
+	fragment:
+		" precision lowp float;\n" +
+		" " +
+		" #define STEPS 128\n" +
+		" #define STEPS2 64\n" +
+		" #define LIGHT_TINT vec3(0.6, 0.6, 0.6)\n" +
+		" #define LIGHT_POWER 0.05\n" +
+		" #define AMBIENT_LIGHT vec4(0.2, 0.2, 0.5, 1.0)\n" +
+		" " +
+		" varying mediump vec2 v_texcoord;" +
+		" uniform sampler2D uImageSampler;" +
+		" uniform float uLightPosX;" +
+		" uniform float uLightPosY;" +
+		" " +
+		" bool blocked(vec2 p)" +
+		" {	" +
+		"//   return ( texture2D(uImageSampler, p).a > 0.1 );\n" +
+		"   return ( texture2D(uImageSampler, p).rgb != vec3(0.0, 0.0, 0.0) );\n" +
+		" }" +
+		" " +
+		" vec4 getColor(vec2 p)" +
+		" {	" +
+		"   vec4 col = texture2D(uImageSampler, p);" +
+		"//   if ( col.a > 0.1 ) {\n" +
+		"   if ( col.rgb != vec3(0.0, 0.0, 0.0) ) {\n" +
+		"     return col;" +
+		"   }" +
+		"   return AMBIENT_LIGHT;" +
+		" }" +
+		" " +
+		" vec3 getLighting(vec2 p, vec2 lp)" +
+		" {" +
+		"   float d = distance(p, lp);" +
+		"   if (d * 800.0 >= float(STEPS)) {" +
+		"     vec2 sp = p;" +
+		"     vec2 v = (lp - p) / float(STEPS);" +
+		"     for (int i = 0 ; i < STEPS; i++) {" +
+		"       if ( blocked(sp) ) {" +
+		"         return vec3(d, d, d) + LIGHT_POWER * LIGHT_TINT / d;" +
+		"       }" +
+		"       sp += v;" +
+		"     }" +
+		"     return vec3(1.0, 1.0, 1.0) + LIGHT_POWER * LIGHT_TINT / d;" +
+		"   }" +
+		"   // distance is less than STEPS, use fewer steps to process faster\n" +
+		"   vec2 sp = p;" +
+		"   vec2 v = (lp - p) / float(STEPS2);" +
+		"   for (int i = 0 ; i < STEPS2; i++) {" +
+		"     if ( blocked(sp) ) {" +
+		"       return vec3(d, d, d) + LIGHT_POWER * LIGHT_TINT / d;" +
+		"     }" +
+		"     sp += v;" +
+		"   }" +
+		"   return vec3(1.0, 1.0, 1.0) + LIGHT_POWER * LIGHT_TINT / d;" +
+		" }" +
+		" " +
+		" void main() {" +
+		"   vec2 lp = vec2(uLightPosX, uLightPosY);" +
+		"   gl_FragColor = getColor(v_texcoord.xy) * vec4(getLighting(v_texcoord.xy, lp), 1.);" +
+		" }" ,
+
+	vertex:
+    	" attribute vec4 aPosition;" +
+    	" varying vec2 v_texcoord;" +
+		" void main() {" +
+		"   gl_Position = aPosition;" +
+		"   v_texcoord = aPosition.xy * 0.5 + 0.5;" +
+		" }",
+
+	attributes:
+		[ "aPosition" ],
+
+	uniforms:
+		[ "uLightPosX", "uLightPosY" ],
+
+	sampler:
+		"uImageSampler"
+};
+
+
 var tintFilterSources = {
 	// tint the image using a separate multiplication factor for each of r,g and b
 	fragment:
@@ -81,6 +168,7 @@ function pbWebGlFilters()
 	// TODO: change this into a list
 	this.tintFilterProgram = null;
 	this.waveFilterProgram = null;
+	this.pointLightShaderProgram = null;
 }
 
 
@@ -91,6 +179,7 @@ pbWebGlFilters.prototype.create = function()
 	
 	this.tintFilterProgram = this.createProgram( tintFilterSources );
 	this.waveFilterProgram = this.createProgram( waveFilterSources );
+	this.pointLightShaderProgram = this.createProgram( pointLightSources );
 };
 
 
@@ -100,6 +189,7 @@ pbWebGlFilters.prototype.destroy = function()
 	this.clearProgram();
 	this.tintFilterProgram = null;
 	this.waveFilterProgram = null;
+	this.pointLightShaderProgram = null;
 };
 
 
@@ -200,7 +290,7 @@ pbWebGlFilters.prototype.createProgram = function( _source )
 		}
 	}
 
-	// establish link to the texture sampler
+	// establish link to the texture sampler (source)
 	if (_source.sampler)
 	{
 		program.samplerUniform = gl.getUniformLocation( program, _source.sampler );

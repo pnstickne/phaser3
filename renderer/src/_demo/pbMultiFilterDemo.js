@@ -114,7 +114,7 @@ pbMultiFilterDemo.prototype.update = function()
 		this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
 		this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
-		// create the filter texture
+		// create the 2nd filter texture
 		this.filter2Texture = pbWebGlTextures.initTexture(gl.TEXTURE2, pbRenderer.width, pbRenderer.height);
 		this.filter2Framebuffer = pbWebGlTextures.initFramebuffer(this.filter2Texture, null);
 

@@ -95,18 +95,23 @@ pbInvaderDemoCore.prototype.addSprites = function()
 
 	// TODO: use different pbLayers for each part of this demo
 
+	var imageData;
+
 	// background
-	var imageData = this.parent.loader.getFile( this.parent.starsImg );
-	this.bgSurface = new pbSurface();
-	// _wide, _high, _numWide, _numHigh, _image
-	this.bgSurface.create(0, 0, 1, 1, imageData);
-	this.bgImage = new imageClass();
-	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
-	this.bgImage.create(this.bgSurface, 0, 0, 0, true, true);
-	this.bg = new pbSprite();
-	// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-	this.bg.create(this.bgImage, 0, 0, 1.0, 0, 1.0, 1.0);
-	this.layer.addChild(this.bg);
+	if (this.parent.starsImg !== undefined)
+	{
+		imageData = this.parent.loader.getFile( this.parent.starsImg );
+		this.bgSurface = new pbSurface();
+		// _wide, _high, _numWide, _numHigh, _image
+		this.bgSurface.create(0, 0, 1, 1, imageData);
+		this.bgImage = new imageClass();
+		// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
+		this.bgImage.create(this.bgSurface, 0, 0, 0, true, true);
+		this.bg = new pbSprite();
+		// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
+		this.bg.create(this.bgImage, 0, 0, 1.0, 0, 1.0, 1.0);
+		this.layer.addChild(this.bg);
+	}
 
 	// player
 	imageData = this.parent.loader.getFile( this.parent.playerImg );

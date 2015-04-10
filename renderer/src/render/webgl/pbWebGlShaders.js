@@ -137,7 +137,7 @@ var imageShaderSources = {
 		"  varying vec2 vTexCoord;" +
 		"  void main(void) {" +
 		"    gl_FragColor = texture2D(uImageSampler, vTexCoord);" +
-		"    if (gl_FragColor.a < 0.80) discard;" +
+		"//    if (gl_FragColor.a < 0.80) discard;\n" +
 		"  }",
 
 	vertex:
@@ -412,6 +412,7 @@ function pbWebGlShaders()
 	this.blitShaderPointAnimProgram = null;
 	this.batchImageShaderProgram = null;
 	this.rawBatchImageShaderProgram = null;
+
 	pbWebGlShaders.currentProgram = null;
 }
 
@@ -436,6 +437,7 @@ pbWebGlShaders.prototype.create = function()
 	this.blitShaderPointAnimProgram = this.createProgram( blitShaderPointAnimSources );
 	this.batchImageShaderProgram = this.createProgram( batchImageShaderSources );
 	this.rawBatchImageShaderProgram = this.createProgram( rawBatchImageShaderSources );
+
 };
 
 
@@ -453,6 +455,7 @@ pbWebGlShaders.prototype.destroy = function()
 	this.blitShaderPointAnimProgram = null;
 	this.batchImageShaderProgram = null;
 	this.rawBatchImageShaderProgram = null;
+
 	pbWebGlShaders.currentProgram = null;
 };
 
@@ -584,7 +587,7 @@ pbWebGlShaders.prototype.setProgram = function(_program, _textureNumber)
 	}
 
 	if (pbWebGlShaders.currentProgram.samplerUniform)
-		// set the fragment shader sampler to use TEXTURE0
+		// set the fragment shader sampler to use _textureNumber
 	   	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniform, _textureNumber );
 };
 
