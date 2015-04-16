@@ -64,16 +64,20 @@ pbInvaderDemoCore.prototype.destroy = function()
 {
 	console.log("pbInvaderDemoCore.destroy");
 
-	this.bgSurface.destroy();
+	if (this.bgSurface)
+		this.bgSurface.destroy();
 	this.bgSurface = null;
 
-	this.text.destroy();
+	if (this.text)
+		this.text.destroy();
 	this.text = null;
 
-	this.uiLayer.destroy();
+	if (this.uiLayer)
+		this.uiLayer.destroy();
 	this.uiLayer = null;
 
-	this.textSurface.destroy();
+	if (this.textSurface)
+		this.textSurface.destroy();
 	this.textSurface = null;
 
 	this.layer = null;
