@@ -67,18 +67,15 @@ pbPointLightsDemo.prototype.create = function()
 	this.shipTransform = pbMatrix3.makeTransform(pbRenderer.width * 0.5, pbRenderer.height * 0.75, 0, 3, 3);
 
 	//
-	// draw an instance of invaders as a shadow-caster
+	// draw an instance of invaders
 	//
 
 	this.gameLayer = new layerClass();
 	this.gameLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.gameLayer);
 
-	// add the game instance to a layer which is attached to the rootLayer
-	// because otherwise the renderer.update won't update the game's sprite
-	// transforms or draw them to the render-to-texture
 	this.game = new pbInvaderDemoCore();
-	this.game.create(this, this.gameLayer, false, false);
+	this.game.create(this, this.gameLayer, false, true);
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
@@ -139,12 +136,88 @@ pbPointLightsDemo.prototype.postUpdate = function()
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
 	this.renderer.graphics.applyFilterToTexture(0, this.rttTexture, this.setFilter, this);
 
-	// draw sprites that are not shadow casters
-	this.renderer.graphics.drawImageWithTransform(this.shipImage, this.game.player.transform, 1.0);
+	// update transforms and draw sprites that are not shadow casters
+	this.game.layer.update();
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	this.renderer.graphics.drawTextureToDisplay(1, this.filterTexture);
+};
+
+
+var lightData = [
+// x, y, power/color, range
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0,
+];
+
+
+// pack bytes _r, _g and _b into a single float with four precision bits each
+function pack(_r, _g, _b)
+{
+	return (Math.floor(_r * 16.0) + Math.floor(_g * 16.0) * 256.0 + Math.floor(_b * 16.0) * 256.0 * 256.0);
+}
+
+
+pbPointLightsDemo.prototype.setLightData = function()
+{
+	// first light is attached to the player ship
+	lightData[0 * 4 + 0] = this.game.player.x / pbRenderer.width;
+	lightData[0 * 4 + 1] = 1.0 - this.game.player.y / pbRenderer.height;
+	lightData[0 * 4 + 2] = pack(0.0, 0.75, 0.0);
+	lightData[0 * 4 + 3] = 0.05 + Math.abs((pbRenderer.frameCount % 64) - 32.0) / 32.0 * 0.05;
+
+	var i, j;
+	// next 7 lights are attached to explosions
+	for(i = 0; i < Math.min(this.game.explosions.length, 7); i++)
+	{
+		var explosion = this.game.explosions[i];
+		var life = explosion.image.cellFrame / 16.0;
+
+		j = (i + 1) * 4;
+		lightData[j + 0] = explosion.x / pbRenderer.width;
+		lightData[j + 1] = 1.0 - explosion.y / pbRenderer.height;
+		// fade from orange/yellow through to blue as the explosion ages
+		lightData[j + 2] = pack(5.0 * (1.0 - life), 3.0 * (1.0 - life), 1.0 * life);
+		// grow as the explosion ages
+		lightData[j + 3] = 0.02 + life * 0.20;
+	}
+	for(;i < 7; i++)
+	{
+		j = (i + 1) * 4;
+		// a light with power/colour of zero is switched off
+		lightData[j + 2] = 0.0;
+	}
+	// the last 8 lights are attached to enemy bombs
+	for(i = 0; i < Math.min(this.game.bombs.length, 8); i++)
+	{
+		var bomb = this.game.bombs[i];
+
+		j = (i + 8) * 4;
+		lightData[j + 0] = bomb.x / pbRenderer.width;
+		lightData[j + 1] = 1.0 - bomb.y / pbRenderer.height;
+		lightData[j + 2] = pack(1.0, 0, 0);
+		lightData[j + 3] = 0.1;
+	}
+	for(;i < 8; i++)
+	{
+		j = (i + 8) * 4;
+		lightData[j + 2] = 0.0;
+	}
 };
 
 
@@ -155,8 +228,10 @@ pbPointLightsDemo.prototype.setFilter = function(_filters, _textureNumber)
 	_filters.setProgram(_filters.multiLightShaderProgram, _textureNumber);
 
 	// set the parameters for the filter shader program
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uLightPosX, this.game.player.x / pbRenderer.width );
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uLightPosY, 1.0 - this.game.player.y / pbRenderer.height );
+	this.setLightData();
+
+	// send them to the shader
+	gl.uniform4fv( pbWebGlShaders.currentProgram.uniforms.uLights, lightData );
 };
 
    	

@@ -29,16 +29,22 @@ function pbInvaderDemoCore()
 }
 
 
-pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer, _useFrame, _playerVisible)
+pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer, _useFrame, _separateShadowLayer)
 {
 	console.log("pbInvaderDemoCore.create");
 
-	if (_playerVisible === undefined)
-		_playerVisible = true;
+	if (_separateShadowLayer === undefined)
+		_separateShadowLayer = false;
 
 	this.parent = _parent;
 	this.useFrame = _useFrame;
-	this.layer = _rootLayer;
+	this.shadowLayer = _rootLayer;
+
+	this.layer = new layerClass();
+	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
+	this.layer.create(this.layer, this.parent.renderer, 0, 0, 0, 0, 1, 1);
+	if (!_separateShadowLayer)
+		this.shadowLayer.addChild(this.layer);
 
 	this.uiLayer = new layerClass();
 	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
@@ -59,7 +65,7 @@ pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer, _useFrame, _p
 	this.level = 1;
 	this.invaderSpeed = 10;
 
-	this.addSprites(_addPlayer);
+	this.addSprites();
 };
 
 
@@ -74,6 +80,10 @@ pbInvaderDemoCore.prototype.destroy = function()
 	if (this.text)
 		this.text.destroy();
 	this.text = null;
+
+	if (this.shadowLayer)
+		this.shadowLayer.destroy();
+	this.shadowLayer = null;
 
 	if (this.uiLayer)
 		this.uiLayer.destroy();
@@ -96,7 +106,7 @@ pbInvaderDemoCore.prototype.restart = function()
 };
 
 
-pbInvaderDemoCore.prototype.addSprites = function(_addPlayer)
+pbInvaderDemoCore.prototype.addSprites = function()
 {
 	console.log("pbInvaderDemoCore.addSprites");
 
@@ -128,7 +138,7 @@ pbInvaderDemoCore.prototype.addSprites = function(_addPlayer)
 	this.playerImage.create(this.playerSurface, 0);
 	this.player = new pbSprite();
 	this.player.create(this.playerImage, pbRenderer.width * 0.5, pbRenderer.height * 0.9, 0.0, 0, 1.0, 1.0);
-	this.player.visible = _playerVisible;
+//	this.player.visible = _separateShadowLayer;
 	this.layer.addChild(this.player);
 	this.player.die = false;
 	this.playerDirX = -2;
@@ -277,7 +287,7 @@ pbInvaderDemoCore.prototype.addInvaders = function()
 			img.create(this.invaderSurface, Math.floor(Math.random() * 3));
 			var invader = new pbSprite();
 			invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
-			this.layer.addChild(invader);
+			this.shadowLayer.addChild(invader);
 			invader.row = y;
 			invader.die = false;
 			this.invaders.push(invader);
@@ -370,7 +380,7 @@ pbInvaderDemoCore.prototype.update = function()
 
 		if (invader.die)
 		{
-			this.layer.removeChild(invader);
+			this.shadowLayer.removeChild(invader);
 			this.invaders.splice(i, 1);
 		}
 	}

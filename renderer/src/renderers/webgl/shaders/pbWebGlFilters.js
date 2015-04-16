@@ -10,17 +10,24 @@
 
 var multiLightSources = {
 	fragment:
-		" precision lowp float;\n" +
+		" precision highp float;\n" +
 		" " +
-		" #define RANGE 0.25\n" +
+		" #define MAX_LIGHTS 16\n" +
 		" #define STEPS 64.0\n" +
-		" #define LIGHT_SOURCE vec4(3.0, 3.0, 0.0, 1.0)\n" +
-		" #define AMBIENT_LIGHT vec4(0.2, 0.2, 0.5, 1.0)\n" +
+		" #define AMBIENT_LIGHT vec4(0.0, 0.0, 0.0, 1.0)\n" +
 		" " +
 		" varying mediump vec2 v_texcoord;\n" +
 		" uniform sampler2D uImageSampler;\n" +
-		" uniform float uLightPosX;\n" +
-		" uniform float uLightPosY;\n" +
+		" uniform vec4 uLights[MAX_LIGHTS];\n" +
+		" " +
+		" vec3 unpack(float val)\n" +
+		" {\n" +
+		"   vec3 col;\n" +
+		"   col.b = floor(val / 256. / 256.);\n" +
+		"   col.g = floor((val - col.b * 256. * 256.) / 256.);\n" +
+		"   col.r = floor(val - col.b * 256. * 256. - col.g * 256.);\n" +
+		"   return col / 16.;\n" +
+		" }\n" +
 		" " +
 		" bool blocked(vec2 p)\n" +
 		" {	\n" +
@@ -35,22 +42,35 @@ var multiLightSources = {
 		"   return AMBIENT_LIGHT;\n" +
 		" }\n" +
 		" " +
-		" vec4 getLighting(vec2 p, vec2 lp)\n" +
+		" vec4 getLight(vec2 p, vec2 lp, float power, float range)\n" +
 		" {\n" +
-		"   float d = distance(lp, p) / RANGE;\n" +
+		"   float d = distance(lp, p) / range;\n" +
 		"   if (d >= 1.0)\n" +
-		"     return AMBIENT_LIGHT;\n" +
+		"     return vec4(0.);\n" +
 		"   vec2 sp = p;\n" +
 		"   vec2 step = (lp - p) / STEPS;\n" +
 		"   // 800 == screen width: convert 0->1.0 coordinates into pixels\n" +
 		"   for(float i = 0.0; i < 1.0; i += 1.0 / STEPS)\n" +
 		"   {\n" +
 		"     if ( blocked(sp) )\n" +
-		"       return AMBIENT_LIGHT;\n" +
+		"       return vec4(0.);\n" +
 		"     sp += step;\n" +
 		"   }\n" +
 		"   float id = 1.0 - d;\n" +
-		"   return LIGHT_SOURCE * id * id + AMBIENT_LIGHT;\n" +
+		"   vec4 pow = vec4(unpack(power), 0.0);\n" +
+		"   return pow * id * id;\n" +
+		" }\n" +
+		" " +
+		" vec4 getLighting(vec2 p)\n" +
+		" {\n" +
+		"   vec4 light = vec4(0.);\n" +
+		"   for(int i = 0; i < MAX_LIGHTS; i++)\n" +
+		"   {\n" +
+		"     vec4 data = uLights[i];\n" +
+		"     if (data.z > 0.)\n" +
+		"       light += getLight(p, data.xy, data.z, data.w);\n" +
+		"   }\n" +
+		"   return light + AMBIENT_LIGHT;\n" +
 		" }\n" +
 		" " +
 		" " +
@@ -58,10 +78,7 @@ var multiLightSources = {
 		"   if ( blocked(v_texcoord.xy) )\n" +
 		"     gl_FragColor = texture2D(uImageSampler, v_texcoord.xy);\n" +
 		"   else\n" +
-		"   {\n" +
-		"     vec2 lp = vec2(uLightPosX, uLightPosY);\n" +
-		"     gl_FragColor = getColor(v_texcoord.xy) * getLighting(v_texcoord.xy, lp);\n" +
-		"   }\n" +
+		"     gl_FragColor = getColor(v_texcoord.xy) + getLighting(v_texcoord.xy);\n" +
 		" }" ,
 
 	vertex:
@@ -76,7 +93,7 @@ var multiLightSources = {
 		[ "aPosition" ],
 
 	uniforms:
-		[ "uLightPosX", "uLightPosY" ],
+		[ "uLights" ],
 
 	sampler:
 		"uImageSampler"
