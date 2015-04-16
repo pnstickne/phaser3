@@ -7,6 +7,81 @@
  */
 
 
+
+var multiLightSources = {
+	fragment:
+		" precision lowp float;\n" +
+		" " +
+		" #define RANGE 0.25\n" +
+		" #define STEPS 64.0\n" +
+		" #define LIGHT_SOURCE vec4(3.0, 3.0, 0.0, 1.0)\n" +
+		" #define AMBIENT_LIGHT vec4(0.2, 0.2, 0.5, 1.0)\n" +
+		" " +
+		" varying mediump vec2 v_texcoord;\n" +
+		" uniform sampler2D uImageSampler;\n" +
+		" uniform float uLightPosX;\n" +
+		" uniform float uLightPosY;\n" +
+		" " +
+		" bool blocked(vec2 p)\n" +
+		" {	\n" +
+		"   return ( texture2D(uImageSampler, p).rgb != vec3(0.0, 0.0, 0.0) );\n" +
+		" }\n" +
+		" " +
+		" vec4 getColor(vec2 p)\n" +
+		" {	\n" +
+		"   vec4 col = texture2D(uImageSampler, p);\n" +
+		"   if ( col.rgb != vec3(0.0, 0.0, 0.0) )\n" +
+		"     return col;\n" +
+		"   return AMBIENT_LIGHT;\n" +
+		" }\n" +
+		" " +
+		" vec4 getLighting(vec2 p, vec2 lp)\n" +
+		" {\n" +
+		"   float d = distance(lp, p) / RANGE;\n" +
+		"   if (d >= 1.0)\n" +
+		"     return AMBIENT_LIGHT;\n" +
+		"   vec2 sp = p;\n" +
+		"   vec2 step = (lp - p) / STEPS;\n" +
+		"   // 800 == screen width: convert 0->1.0 coordinates into pixels\n" +
+		"   for(float i = 0.0; i < 1.0; i += 1.0 / STEPS)\n" +
+		"   {\n" +
+		"     if ( blocked(sp) )\n" +
+		"       return AMBIENT_LIGHT;\n" +
+		"     sp += step;\n" +
+		"   }\n" +
+		"   float id = 1.0 - d;\n" +
+		"   return LIGHT_SOURCE * id * id + AMBIENT_LIGHT;\n" +
+		" }\n" +
+		" " +
+		" " +
+		" void main() {\n" +
+		"   if ( blocked(v_texcoord.xy) )\n" +
+		"     gl_FragColor = texture2D(uImageSampler, v_texcoord.xy);\n" +
+		"   else\n" +
+		"   {\n" +
+		"     vec2 lp = vec2(uLightPosX, uLightPosY);\n" +
+		"     gl_FragColor = getColor(v_texcoord.xy) * getLighting(v_texcoord.xy, lp);\n" +
+		"   }\n" +
+		" }" ,
+
+	vertex:
+    	" attribute vec4 aPosition;\n" +
+    	" varying vec2 v_texcoord;\n" +
+		" void main() {\n" +
+		"   gl_Position = aPosition;\n" +
+		"   v_texcoord = aPosition.xy * 0.5 + 0.5;\n" +
+		" }",
+
+	attributes:
+		[ "aPosition" ],
+
+	uniforms:
+		[ "uLightPosX", "uLightPosY" ],
+
+	sampler:
+		"uImageSampler"
+};
+
 /**
  * lightingShader
  * 
@@ -169,6 +244,7 @@ function pbWebGlFilters()
 	this.tintFilterProgram = null;
 	this.waveFilterProgram = null;
 	this.pointLightShaderProgram = null;
+	this.multiLightShaderProgram = null;
 }
 
 
@@ -180,6 +256,7 @@ pbWebGlFilters.prototype.create = function()
 	this.tintFilterProgram = this.createProgram( tintFilterSources );
 	this.waveFilterProgram = this.createProgram( waveFilterSources );
 	this.pointLightShaderProgram = this.createProgram( pointLightSources );
+	this.multiLightShaderProgram = this.createProgram( multiLightSources );
 };
 
 
@@ -190,6 +267,7 @@ pbWebGlFilters.prototype.destroy = function()
 	this.tintFilterProgram = null;
 	this.waveFilterProgram = null;
 	this.pointLightShaderProgram = null;
+	this.multiLightShaderProgram = null;
 };
 
 
