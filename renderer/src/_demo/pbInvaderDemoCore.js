@@ -29,9 +29,12 @@ function pbInvaderDemoCore()
 }
 
 
-pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer, _useFrame)
+pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer, _useFrame, _playerVisible)
 {
 	console.log("pbInvaderDemoCore.create");
+
+	if (_playerVisible === undefined)
+		_playerVisible = true;
 
 	this.parent = _parent;
 	this.useFrame = _useFrame;
@@ -56,7 +59,7 @@ pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer, _useFrame)
 	this.level = 1;
 	this.invaderSpeed = 10;
 
-	this.addSprites();
+	this.addSprites(_addPlayer);
 };
 
 
@@ -93,7 +96,7 @@ pbInvaderDemoCore.prototype.restart = function()
 };
 
 
-pbInvaderDemoCore.prototype.addSprites = function()
+pbInvaderDemoCore.prototype.addSprites = function(_addPlayer)
 {
 	console.log("pbInvaderDemoCore.addSprites");
 
@@ -125,6 +128,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.playerImage.create(this.playerSurface, 0);
 	this.player = new pbSprite();
 	this.player.create(this.playerImage, pbRenderer.width * 0.5, pbRenderer.height * 0.9, 0.0, 0, 1.0, 1.0);
+	this.player.visible = _playerVisible;
 	this.layer.addChild(this.player);
 	this.player.die = false;
 	this.playerDirX = -2;
