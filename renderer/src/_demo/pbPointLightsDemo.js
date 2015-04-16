@@ -36,6 +36,8 @@ function pbPointLightsDemo( docId )
 	this.explosionImg = this.loader.loadImage( "../img/invader/explode.png" );
 	this.fontImg = this.loader.loadImage( "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png" );
 
+	this.logoImg = this.loader.loadImage( "../img/phaser_128x32.png" );
+
 	console.log( "pbPointLightsDemo c'tor exit" );
 }
 
@@ -53,6 +55,17 @@ pbPointLightsDemo.prototype.create = function()
 {
 	console.log("pbPointLightsDemo.create");
 
+	// create a player ship which is not a shadow caster
+	var imageData = this.loader.getFile( this.playerImg );
+	this.surface = new pbSurface();
+	// _wide, _high, _numWide, _numHigh, _image
+	this.surface.create(0, 0, 1, 1, imageData);
+	this.shipImage = new imageClass();
+	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
+	this.shipImage.create(this.surface, 0, 0.5, 0.5);
+	// create a transform matrix to draw this image with
+	this.shipTransform = pbMatrix3.makeTransform(pbRenderer.width * 0.5, pbRenderer.height * 0.75, 0, 3, 3);
+
 	//
 	// draw an instance of invaders as a shadow-caster
 	//
@@ -65,7 +78,7 @@ pbPointLightsDemo.prototype.create = function()
 	// because otherwise the renderer.update won't update the game's sprite
 	// transforms or draw them to the render-to-texture
 	this.game = new pbInvaderDemoCore();
-	this.game.create(this, this.gameLayer);
+	this.game.create(this, this.gameLayer, false, false);
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
@@ -126,6 +139,9 @@ pbPointLightsDemo.prototype.postUpdate = function()
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
 	this.renderer.graphics.applyFilterToTexture(0, this.rttTexture, this.setFilter, this);
 
+	// draw sprites that are not shadow casters
+	this.renderer.graphics.drawImageWithTransform(this.shipImage, this.game.player.transform, 1.0);
+
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	this.renderer.graphics.drawTextureToDisplay(1, this.filterTexture);
@@ -136,11 +152,11 @@ pbPointLightsDemo.prototype.postUpdate = function()
 pbPointLightsDemo.prototype.setFilter = function(_filters, _textureNumber)
 {
    	// set the filter program
-	_filters.setProgram(_filters.pointLightShaderProgram, _textureNumber);
+	_filters.setProgram(_filters.multiLightShaderProgram, _textureNumber);
 
 	// set the parameters for the filter shader program
 	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uLightPosX, this.game.player.x / pbRenderer.width );
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uLightPosY, 1.0 - (this.game.player.y + 20) / pbRenderer.height );
+	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uLightPosY, 1.0 - this.game.player.y / pbRenderer.height );
 };
 
    	
