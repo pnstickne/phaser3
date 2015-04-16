@@ -127,7 +127,7 @@ pbSprite.prototype.update2D = function(_drawDictionary)
 		pbMatrix3.setFastMultiply(this.transform, this.parent.transform);
 	
 	// draw if this sprite has an image
-	if (this.image)
+	if (this.image && this.visible)
 		this.image.draw(_drawDictionary, this.transform, this.z);
 
 	if (this.children)
