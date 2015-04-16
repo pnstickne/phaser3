@@ -21,36 +21,35 @@
     <script type="text/javascript" src="lib/dat.gui.js"></script>
     <script type="text/javascript" src="lib/stats.js"></script>
 
-    <script type="text/javascript" src="core/pbRenderer.js"></script>
-    <script type="text/javascript" src="core/pbSprite.js"></script>
-    <script type="text/javascript" src="core/pbSurface.js"></script>
+    <script type="text/javascript" src="root/pbRenderer.js"></script>
+    <script type="text/javascript" src="root/pbRootTimer.js"></script>
 
-    <script type="text/javascript" src="system/pbRootTimer.js"></script>
-    <script type="text/javascript" src="system/pbLoader.js"></script>
+    <script type="text/javascript" src="logical_sprites/pbSprite.js"></script>
+    <script type="text/javascript" src="logical_sprites/pbSurface.js"></script>
+    <script type="text/javascript" src="logical_sprites/layers/pbBaseLayer.js"></script>
+    <script type="text/javascript" src="logical_sprites/layers/pbSimpleLayer.js"></script>
+    <script type="text/javascript" src="logical_sprites/layers/canvas/pbCanvasLayer.js"></script>
+    <script type="text/javascript" src="logical_sprites/layers/webgl/pbWebGlLayer.js"></script>
+    <script type="text/javascript" src="logical_sprites/images/pbBaseImage.js"></script>
+    <script type="text/javascript" src="logical_sprites/images/canvas/pbCanvasImage.js"></script>
+    <script type="text/javascript" src="logical_sprites/images/webgl/pbWebGlImage.js"></script>
 
-    <script type="text/javascript" src="render/pbBaseGraphics.js"></script>
-    <script type="text/javascript" src="render/pbWebGl.js"></script>
-    <script type="text/javascript" src="render/webgl/pbWebGlShaders.js"></script>
-    <script type="text/javascript" src="render/webgl/pbWebGlTextures.js"></script>
-    <script type="text/javascript" src="render/webgl/pbWebGlFilters.js"></script>
-    <script type="text/javascript" src="render/pbCanvas.js"></script>
+    <script type="text/javascript" src="renderers/pbBaseGraphics.js"></script>
+    <script type="text/javascript" src="renderers/canvas/pbCanvas.js"></script>
+    <script type="text/javascript" src="renderers/webgl/pbWebGl.js"></script>
+    <script type="text/javascript" src="renderers/webgl/pbWebGlTextures.js"></script>
+    <script type="text/javascript" src="renderers/webgl/shaders/pbWebGlShaders.js"></script>
+    <script type="text/javascript" src="renderers/webgl/shaders/pbWebGlFilters.js"></script>
+    
+    <script type="text/javascript" src="file_handling/pbLoader.js"></script>
 
-    <script type="text/javascript" src="layer/pbSimpleLayer.js"></script>
-    <script type="text/javascript" src="layer/pbBaseLayer.js"></script>
-    <script type="text/javascript" src="layer/pbCanvasLayer.js"></script>
-    <script type="text/javascript" src="layer/pbWebGlLayer.js"></script>
+    <script type="text/javascript" src="features/pbText.js"></script>
+    <script type="text/javascript" src="features/pbTiles.js"></script>
     
-    <script type="text/javascript" src="image/pbBaseImage.js"></script>
-    <script type="text/javascript" src="image/pbCanvasImage.js"></script>
-    <script type="text/javascript" src="image/pbWebGlImage.js"></script>
-    
-    <script type="text/javascript" src="helper/pbText.js"></script>
-    <script type="text/javascript" src="helper/pbTiles.js"></script>
-    
-    <script type="text/javascript" src="util/pbMatrix3.js"></script>
-    <script type="text/javascript" src="util/pbMatrix4.js"></script>
-    <script type="text/javascript" src="util/pbRectangle.js"></script>
-    <script type="text/javascript" src="util/pbDictionary.js"></script>
+    <script type="text/javascript" src="data_structures/pbMatrix3.js"></script>
+    <script type="text/javascript" src="data_structures/pbMatrix4.js"></script>
+    <script type="text/javascript" src="data_structures/pbRectangle.js"></script>
+    <script type="text/javascript" src="data_structures/pbDictionary.js"></script>
 
     <script type="text/javascript" src="_demo/pbSoldierDemo.js"></script>
     <script type="text/javascript" src="_demo/pbTransformDemo.js"></script>
