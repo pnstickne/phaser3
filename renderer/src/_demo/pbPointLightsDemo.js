@@ -122,6 +122,7 @@ pbPointLightsDemo.prototype.postUpdate = function()
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
+	gl.activeTexture(gl.TEXTURE0);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
 	this.renderer.graphics.applyFilterToTexture(0, this.rttTexture, this.setFilter, this);
 
@@ -129,6 +130,7 @@ pbPointLightsDemo.prototype.postUpdate = function()
 	this.game.layer.update();
 
 	// draw the filter texture to the display
+	gl.activeTexture(gl.TEXTURE1);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	this.renderer.graphics.drawTextureToDisplay(1, this.filterTexture);
 };

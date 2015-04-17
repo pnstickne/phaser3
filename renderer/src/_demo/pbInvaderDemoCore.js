@@ -272,7 +272,6 @@ pbInvaderDemoCore.prototype.addSprites = function()
 		sprite = new pbSprite();
 		sprite.create(img, 0, pbRenderer.height, 0, 0, 1.0, 1.0);
 		this.uiLayer.addChild(sprite);
-
 	}
 };
 

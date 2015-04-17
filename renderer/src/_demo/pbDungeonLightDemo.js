@@ -34,7 +34,7 @@ pbDungeonLightDemo.prototype.allLoaded = function()
 {
 	console.log( "pbDungeonLightDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
+	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
@@ -77,12 +77,10 @@ pbDungeonLightDemo.prototype.create = function()
 	// properties: object
 	// version: number
 	this.tileMap = JSON.parse(tileMapJSON);
-
 	this.createSurfaces();
 
-
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
+	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
@@ -91,7 +89,7 @@ pbDungeonLightDemo.prototype.create = function()
    	this.renderer.useRenderbuffer = this.rttRenderbuffer;
 
 	// create the filter destination texture and framebuffer
-	this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
+	this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE2, pbRenderer.width, pbRenderer.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
@@ -153,6 +151,7 @@ pbDungeonLightDemo.prototype.addLayer = function(_surface)
 	var layer = new layerClass();
 	layer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
 	rootLayer.addChild(layer);
+
 	var i = this.tileLayers.length;
 	// draw map tiles into the new layer
 	this.drawMap(layer);
@@ -226,15 +225,15 @@ pbDungeonLightDemo.prototype.postUpdate = function()
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
+	gl.activeTexture(gl.TEXTURE1);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyFilterToTexture(0, this.rttTexture, this.setFilter, this);
-
-	// TODO: this shouldn't be needed but removing it from pbPointLightsDemo breaks it also... work out why!
-	this.tileLayers[0].update();
+	this.renderer.graphics.applyFilterToTexture(1, this.rttTexture, this.setFilter, this);
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(1, this.filterTexture);
+	gl.activeTexture(gl.TEXTURE2);
+	this.renderer.graphics.drawTextureToDisplay(2, this.filterTexture);
+//	this.renderer.graphics.drawTextureToDisplay(1, this.rttTexture);
 };
 
 
@@ -278,8 +277,8 @@ pbDungeonLightDemo.prototype.setLightData = function()
 	// first light is attached to the player ship
 	lightData[0 * 4 + 0] = this.bouncex / pbRenderer.width;
 	lightData[0 * 4 + 1] = 1.0 - this.bouncey / pbRenderer.height;
-	lightData[0 * 4 + 2] = pack(0.0, 0.75, 0.0);
-	lightData[0 * 4 + 3] = 0.05 + Math.abs((pbRenderer.frameCount % 64) - 32.0) / 32.0 * 0.05;
+	lightData[0 * 4 + 2] = pack(1.0, 0.8, 0.5);
+	lightData[0 * 4 + 3] = 0.25;
 
 	var i, j;
 	for(i = 0; i < 15; i++)
