@@ -55,17 +55,6 @@ pbPointLightsDemo.prototype.create = function()
 {
 	console.log("pbPointLightsDemo.create");
 
-	// create a player ship which is not a shadow caster
-	var imageData = this.loader.getFile( this.playerImg );
-	this.surface = new pbSurface();
-	// _wide, _high, _numWide, _numHigh, _image
-	this.surface.create(0, 0, 1, 1, imageData);
-	this.shipImage = new imageClass();
-	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
-	this.shipImage.create(this.surface, 0, 0.5, 0.5);
-	// create a transform matrix to draw this image with
-	this.shipTransform = pbMatrix3.makeTransform(pbRenderer.width * 0.5, pbRenderer.height * 0.75, 0, 3, 3);
-
 	//
 	// draw an instance of invaders
 	//
