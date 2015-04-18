@@ -95,10 +95,27 @@ pbDungeonLightDemo.prototype.create = function()
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     this.renderer.postUpdate = this.postUpdate;
 
-    this.bouncex = 0;
-    this.bouncey = 0;
-    this.bouncedx = 1.5;
-    this.bouncedy = 1.0;
+    this.wiz = { x : 1000, y : 1000, dx : 0, dy : 0, speed: 200, r : 0.0, g : 0.0, b : 1.0 };
+    this.enemy = [];
+    for(var e = 0; e < 14; e++)
+    {
+    	this.enemy[e] = { x : 1000, y : 1000, dx : 0, dy : 0, speed: 25 + Math.floor(Math.random() * 50), r : 0.25 + Math.random() * 0.5, g : 0.25 + Math.random() * 0.5, b : 0.0 };
+    	this.moveToRandomEmptyLocation(this.enemy[e]);
+    }
+};
+
+
+pbDungeonLightDemo.prototype.moveToRandomEmptyLocation = function(_who)
+{
+	var w = this.tileMap.layers[0].width;
+	var h = this.tileMap.layers[0].height;
+	var rx, ry;
+	do{
+		rx = Math.floor(Math.random() * w);
+		ry = Math.floor(Math.random() * h);
+	}while(this.collide(rx, ry));
+	_who.x = rx * 1000;
+	_who.y = ry * 1000;
 };
 
 
@@ -211,8 +228,180 @@ pbDungeonLightDemo.prototype.addSprites = function()
 };
 
 
+pbDungeonLightDemo.prototype.collide = function(_x, _y)
+{
+	var tile = this.tileMap.layers[0].data[_x + _y * this.tileMap.layers[0].width];
+	return (tile !== 0);
+};
+
+
+pbDungeonLightDemo.prototype.dirChoose = function(_who, _dir)
+{
+	if (_who.x % 1000 !== 0 || _who.y % 1000 !== 0)
+		return;
+
+	var wx = _who.x / 1000;
+	var wy = _who.y / 1000;
+	do {
+		// pick a direction at random (0 = right, 1 = left, 2 = down, 3 = up)
+		var d = Math.floor(Math.random() * 4);
+		// decrease chance of reversing direction
+		if (_dir !== undefined)
+		{
+			var reverse = [ 1, 0, 3, 2 ];
+			if (d === reverse[_dir])
+				d = Math.floor(Math.random() * 4);
+			if (d === reverse[_dir])
+				d = Math.floor(Math.random() * 4);
+			if (d === reverse[_dir])
+				d = Math.floor(Math.random() * 4);
+		}
+		switch(d)
+		{
+			case 0:
+				if (!this.collide(wx + 1, wy))
+				{
+					_who.dx = _who.speed;
+					_who.dy = 0;
+					return;
+				}
+				break;
+			case 1:
+				if (!this.collide(wx - 1, wy))
+				{
+					_who.dx = -_who.speed;
+					_who.dy = 0;
+					return;
+				}
+				break;
+			case 2:
+				if (!this.collide(wx, wy + 1))
+				{
+					_who.dx = 0;
+					_who.dy = _who.speed;
+					return;
+				}
+				break;
+			case 3:
+				if (!this.collide(wx, wy - 1))
+				{
+					_who.dx = 0;
+					_who.dy = -_who.speed;
+					return;
+				}
+				break;
+		}
+	} while(true);
+};
+
+
+function fract(_value)
+{
+	return _value % 1000;
+}
+
+
+pbDungeonLightDemo.prototype.wizWalk = function()
+{
+	var wx = Math.floor(this.wiz.x / 1000);
+	var wy = Math.floor(this.wiz.y / 1000);
+
+	// sometimes we just turn
+	if (Math.random() < 0.1)
+		this.dirChoose(this.wiz);
+
+	if (this.wiz.dx > 0)
+	{
+		if (this.wiz.dx >= 1000 - fract(this.wiz.x) && this.collide(wx + 2, wy))
+		{
+			this.wiz.x = (wx + 1) * 1000;
+			this.dirChoose(this.wiz, 0);
+		}
+	}
+	if (this.wiz.dx < 0)
+	{
+		if (this.wiz.dx < -fract(this.wiz.x) && this.collide(wx - 1, wy))
+		{
+			this.wiz.x -= this.wiz.x % 1000;
+			this.dirChoose(this.wiz, 1);
+		}
+	}
+	if (this.wiz.dy > 0)
+	{
+		if (this.wiz.dy >= 1000 - fract(this.wiz.y) && this.collide(wx, wy + 2))
+		{
+			this.wiz.y = (wy + 1) * 1000;
+			this.dirChoose(this.wiz, 2);
+		}
+	}
+	if (this.wiz.dy < 0)
+	{
+		if (this.wiz.dy < -fract(this.wiz.y) && this.collide(wx, wy - 1))
+		{
+			this.wiz.y -= this.wiz.y % 1000;
+			this.dirChoose(this.wiz, 3);
+		}
+	}
+
+	this.wiz.x += this.wiz.dx;
+	this.wiz.y += this.wiz.dy;
+};
+
+
+pbDungeonLightDemo.prototype.enemyWalk = function()
+{
+	for(var e = 0, l = this.enemy.length; e < l; e++)
+	{
+		var wx = Math.floor(this.enemy[e].x / 1000);
+		var wy = Math.floor(this.enemy[e].y / 1000);
+
+		// sometimes we just turn
+		if (Math.random() < 0.1)
+			this.dirChoose(this.enemy[e]);
+
+		if (this.enemy[e].dx > 0)
+		{
+			if (this.enemy[e].dx >= 1000 - fract(this.enemy[e].x) && this.collide(wx + 2, wy))
+			{
+				this.enemy[e].x = (wx + 1) * 1000;
+				this.dirChoose(this.enemy[e], 0);
+			}
+		}
+		if (this.enemy[e].dx < 0)
+		{
+			if (this.enemy[e].dx < -fract(this.enemy[e].x) && this.collide(wx - 1, wy))
+			{
+				this.enemy[e].x -= this.enemy[e].x % 1000;
+				this.dirChoose(this.enemy[e], 1);
+			}
+		}
+		if (this.enemy[e].dy > 0)
+		{
+			if (this.enemy[e].dy >= 1000 - fract(this.enemy[e].y) && this.collide(wx, wy + 2))
+			{
+				this.enemy[e].y = (wy + 1) * 1000;
+				this.dirChoose(this.enemy[e], 2);
+			}
+		}
+		if (this.enemy[e].dy < 0)
+		{
+			if (this.enemy[e].dy < -fract(this.enemy[e].y) && this.collide(wx, wy - 1))
+			{
+				this.enemy[e].y -= this.enemy[e].y % 1000;
+				this.dirChoose(this.enemy[e], 3);
+			}
+		}
+
+		this.enemy[e].x += this.enemy[e].dx;
+		this.enemy[e].y += this.enemy[e].dy;
+	}
+};
+
+
 pbDungeonLightDemo.prototype.update = function()
 {
+	this.wizWalk();
+	this.enemyWalk();
 };
 
 
@@ -267,25 +456,27 @@ function pack(_r, _g, _b)
 
 pbDungeonLightDemo.prototype.setLightData = function()
 {
-	this.bouncex += this.bouncedx;
-	if (this.bouncex < 0) this.bouncedx = Math.abs(this.bouncedx);
-	if (this.bouncex > pbRenderer.width) this.bouncedx = -Math.abs(this.bouncedx);
-	this.bouncey += this.bouncedy;
-	if (this.bouncey < 0) this.bouncedy = Math.abs(this.bouncedy);
-	if (this.bouncey > pbRenderer.height) this.bouncedy = -Math.abs(this.bouncedy);
-
 	// first light is attached to the player ship
-	lightData[0 * 4 + 0] = this.bouncex / pbRenderer.width;
-	lightData[0 * 4 + 1] = 1.0 - this.bouncey / pbRenderer.height;
-	lightData[0 * 4 + 2] = pack(1.0, 0.8, 0.5);
-	lightData[0 * 4 + 3] = 0.25;
+	var w = this.tileMap.tilesets[0].tilewidth;
+	var h = this.tileMap.tilesets[0].tileheight;
+	lightData[0 * 4 + 0] = (this.wiz.x / 1000 * w + w * 0.5) / pbRenderer.width;
+	lightData[0 * 4 + 1] = 1.0 - (this.wiz.y / 1000 * h + h * 0.5) / pbRenderer.height;
+	lightData[0 * 4 + 2] = pack(this.wiz.r, this.wiz.g, this.wiz.b);
+	lightData[0 * 4 + 3] = 0.30;
 
-	var i, j;
-	for(i = 0; i < 15; i++)
+	var i = 1;
+	for(var e = 0, l = this.enemy.length; e < l; e++)
 	{
-		j = (i + 1) * 4;
-		// a light with power/colour of zero is switched off
-		lightData[j + 2] = 0.0;
+		lightData[i * 4 + 0] = (this.enemy[e].x / 1000 * w + w * 0.5) / pbRenderer.width;
+		lightData[i * 4 + 1] = 1.0 - (this.enemy[e].y / 1000 * h + h * 0.5) / pbRenderer.height;
+		lightData[i * 4 + 2] = pack(this.enemy[e].r, this.enemy[e].g, this.enemy[e].b);
+		lightData[i * 4 + 3] = 0.15;
+		if (++i >= 16) break;
+	}
+	for(; i < 16; i++)
+	{
+	 	// a light with power/colour of zero is switched off
+	 	lightData[i] = 0.0;
 	}
 };
 
