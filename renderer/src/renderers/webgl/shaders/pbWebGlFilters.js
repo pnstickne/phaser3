@@ -7,6 +7,17 @@
  */
 
 var multiLightBgSources = {
+// for all pixels on screen
+//   if pixel is not blocked by wall in the walls texture
+//     for all light sources
+//       scan from the pixel to each light source
+//       if any scan location is blocked by wall abort scan immediately
+//       else accumulate colour based on the light source and distance
+//     end for
+//     set pixel to the floor texture pixel multiplied by the accumulated light colour
+//   else
+//     we're in a wall, so set the pixel from the walls texture
+// end for
 	fragment:
 		" precision highp float;\n" +
 		" " +
