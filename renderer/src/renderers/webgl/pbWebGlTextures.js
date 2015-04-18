@@ -85,7 +85,7 @@ pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _npot, _tiling)
  *
  * @return {Boolean} true if successfully prepared a new texture, false if failed or it was already prepared
  */
-pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot )
+pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textureRegister )
 {
 	// this _imageData is already the selected texture
 	if (this.currentSrcTexture && this.currentSrcTexture.imageData === _imageData)
@@ -94,7 +94,10 @@ pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot )
 	var texture = null;
 
 	// activate the first texture register
-    gl.activeTexture( gl.TEXTURE0 );
+	if (_textureRegister === undefined)
+    	gl.activeTexture( gl.TEXTURE0 );
+    else
+    	gl.activeTexture( _textureRegister );
 
 	var index = this.onGPU.indexOf(_imageData);
     if (index != -1 && !_imageData.isDirty)
@@ -126,6 +129,7 @@ pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot )
 		// bind the texture to the active texture register
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
 	    
+	    // target, level, internalformat, width, height, border, format, type, pixels
 	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _imageData);
 	    if (_npot)
 	    {
