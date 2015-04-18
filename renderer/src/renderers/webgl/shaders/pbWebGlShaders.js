@@ -47,8 +47,8 @@ var blitShaderPointAnimSources = {
 	uniforms:
 		[ "uProjectionMatrix", "uSize", "uTextureSize" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 
@@ -88,8 +88,8 @@ var blitShaderPointSources = {
 	uniforms:
 		[ "uProjectionMatrix", "uSize", "uTextureSize" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 
@@ -121,8 +121,8 @@ var blitShaderSources = {
 	attributes:
 		[ "aPosition" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 
@@ -158,8 +158,8 @@ var imageShaderSources = {
 	uniforms:
 		[ "uZ", "uProjectionMatrix", "uModelMatrix" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 
@@ -201,8 +201,8 @@ var batchImageShaderSources = {
 	uniforms:
 		[ "uProjectionMatrix" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 
@@ -245,8 +245,8 @@ var rawBatchImageShaderSources = {
 	uniforms:
 		[ "uProjectionMatrix" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 
@@ -315,8 +315,8 @@ var imageShaderSource3D = {
 	uniforms:
 		[ "uZ", "uProjectionMatrix4", "uModelMatrix4" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 
@@ -362,8 +362,8 @@ var modezShaderSources = {
 	uniforms:
 		[ "uZ", "uProjectionMatrix", "uModelMatrix" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 
@@ -387,8 +387,8 @@ var simpleShaderSources = {
 	attributes:
 		[ "aPosition" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 
@@ -528,7 +528,7 @@ pbWebGlShaders.prototype.createProgram = function( _source )
 	// add the parameter lists from the shader source object
 	program.attributes = _source.attributes;
 	program.uniforms = _source.uniforms;
-	program.sampler = _source.sampler;
+	program.samplers = _source.samplers;
 
 	return program;
 };
@@ -579,16 +579,31 @@ pbWebGlShaders.prototype.setProgram = function(_program, _textureNumber)
 			}
 		}
 
-		// establish link to the texture sampler
-		if (pbWebGlShaders.currentProgram.sampler)
+		// establish links to the texture samplers
+		if (pbWebGlShaders.currentProgram.samplers)
 		{
-			pbWebGlShaders.currentProgram.samplerUniform = gl.getUniformLocation( pbWebGlShaders.currentProgram, pbWebGlShaders.currentProgram.sampler );
+			pbWebGlShaders.currentProgram.samplerUniforms = {};
+			for(var s in pbWebGlShaders.currentProgram.samplers)
+			{
+				if (pbWebGlShaders.currentProgram.samplers.hasOwnProperty(s))
+				{
+					var sampler = pbWebGlShaders.currentProgram.samplers[s];
+					pbWebGlShaders.currentProgram.samplerUniforms[sampler] = gl.getUniformLocation( pbWebGlShaders.currentProgram, sampler );
+					if (pbWebGlShaders.currentProgram.samplerUniforms[sampler] === null)
+						console.log("WARNING (pbWebGlShaders.setProgram): shader sampler returned NULL for", sampler, "it's probably unused in the shader");
+				}
+			}
 		}
+
+		// if (pbWebGlShaders.currentProgram.samplers)
+		// {
+		// 	pbWebGlShaders.currentProgram.samplerUniform = gl.getUniformLocation( pbWebGlShaders.currentProgram, pbWebGlShaders.currentProgram.sampler );
+		// }
 	}
 
-	if (pbWebGlShaders.currentProgram.samplerUniform)
+	if (pbWebGlShaders.currentProgram.samplerUniforms && pbWebGlShaders.currentProgram.samplerUniforms.uImageSampler)
 		// set the fragment shader sampler to use _textureNumber
-	   	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniform, _textureNumber );
+	   	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniforms.uImageSampler, _textureNumber );
 };
 
 

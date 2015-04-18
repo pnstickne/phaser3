@@ -6,6 +6,97 @@
  * 
  */
 
+// var multiLightBgSources = {
+// 	fragment:
+// 		" precision highp float;\n" +
+// 		" " +
+// 		" #define MAX_LIGHTS 16\n" +
+// 		" #define STEPS 64.0\n" +
+// 		" #define AMBIENT_LIGHT vec4(0.1, 0.1, 0.1, 1.0)\n" +
+// 		" " +
+// 		" varying mediump vec2 v_texcoord;\n" +
+// 		" uniform sampler2D uImageSampler;\n" +
+// 		" uniform sampler2D uBgSampler;\n" +
+// 		" uniform vec4 uLights[MAX_LIGHTS];\n" +
+// 		" " +
+// 		" vec3 unpack(float val)\n" +
+// 		" {\n" +
+// 		"   vec3 col;\n" +
+// 		"   col.b = floor(val / 256. / 256.);\n" +
+// 		"   col.g = floor((val - col.b * 256. * 256.) / 256.);\n" +
+// 		"   col.r = floor(val - col.b * 256. * 256. - col.g * 256.);\n" +
+// 		"   return col / 16.;\n" +
+// 		" }\n" +
+// 		" " +
+// 		" bool blocked(vec2 p)\n" +
+// 		" {	\n" +
+// 		"   return ( texture2D(uImageSampler, p).rgb != vec3(0.0, 0.0, 0.0) );\n" +
+// 		" }\n" +
+// 		" " +
+// 		" vec4 getColor(vec2 p)\n" +
+// 		" {	\n" +
+// 		"   vec4 col = texture2D(uImageSampler, p);\n" +
+// 		"   if ( col.rgb != vec3(0.0, 0.0, 0.0) )\n" +
+// 		"     return col;\n" +
+// 		"   return texture2D(uBgSampler, p);\n//AMBIENT_LIGHT;\n" +
+// 		" }\n" +
+// 		" " +
+// 		" vec4 getLight(vec2 p, vec2 lp, float power, float range)\n" +
+// 		" {\n" +
+// 		"   float d = distance(lp, p) / range;\n" +
+// 		"   if (d >= 1.0)\n" +
+// 		"     return vec4(0.);\n" +
+// 		"   vec2 sp = p;\n" +
+// 		"   vec2 step = (lp - p) / STEPS;\n" +
+// 		"   // 800 == screen width: convert 0->1.0 coordinates into pixels\n" +
+// 		"   for(float i = 0.0; i < 1.0; i += 1.0 / STEPS)\n" +
+// 		"   {\n" +
+// 		"     if ( blocked(sp) )\n" +
+// 		"       return vec4(0.);\n" +
+// 		"     sp += step;\n" +
+// 		"   }\n" +
+// 		"   float id = 1.0 - d;\n" +
+// 		"   vec4 pow = vec4(unpack(power), 0.0);\n" +
+// 		"   return pow * id * id;\n" +
+// 		" }\n" +
+// 		" " +
+// 		" vec4 getLighting(vec2 p)\n" +
+// 		" {\n" +
+// 		"   vec4 light = vec4(0.);\n" +
+// 		"   for(int i = 0; i < MAX_LIGHTS; i++)\n" +
+// 		"   {\n" +
+// 		"     vec4 data = uLights[i];\n" +
+// 		"     if (data.z > 0.)\n" +
+// 		"       light += getLight(p, data.xy, data.z, data.w);\n" +
+// 		"   }\n" +
+// 		"   return light + AMBIENT_LIGHT;\n" +
+// 		" }\n" +
+// 		" " +
+// 		" " +
+// 		" void main() {\n" +
+// 		"   if ( blocked(v_texcoord.xy) )\n" +
+// 		"     gl_FragColor = texture2D(uImageSampler, v_texcoord.xy);\n" +
+// 		"   else\n" +
+// 		"     gl_FragColor = getColor(v_texcoord.xy) + getLighting(v_texcoord.xy);\n" +
+// 		" }" ,
+
+// 	vertex:
+//     	" attribute vec4 aPosition;\n" +
+//     	" varying vec2 v_texcoord;\n" +
+// 		" void main() {\n" +
+// 		"   gl_Position = aPosition;\n" +
+// 		"   v_texcoord = aPosition.xy * 0.5 + 0.5;\n" +
+// 		" }",
+
+// 	attributes:
+// 		[ "aPosition" ],
+
+// 	uniforms:
+// 		[ "uLights" ],
+
+// 	samplers:
+// 		[ "uImageSampler", "uBgSampler" ]
+// };
 
 
 var multiLightSources = {
@@ -14,7 +105,7 @@ var multiLightSources = {
 		" " +
 		" #define MAX_LIGHTS 16\n" +
 		" #define STEPS 64.0\n" +
-		" #define AMBIENT_LIGHT vec4(0.0, 0.0, 0.0, 1.0)\n" +
+		" #define AMBIENT_LIGHT vec4(0.1, 0.1, 0.1, 1.0)\n" +
 		" " +
 		" varying mediump vec2 v_texcoord;\n" +
 		" uniform sampler2D uImageSampler;\n" +
@@ -95,8 +186,8 @@ var multiLightSources = {
 	uniforms:
 		[ "uLights" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 /**
@@ -181,8 +272,8 @@ var pointLightSources = {
 	uniforms:
 		[ "uLightPosX", "uLightPosY" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 
@@ -214,8 +305,8 @@ var tintFilterSources = {
 	uniforms:
 		[ "uRedScale", "uGreenScale", "uBlueScale" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 
@@ -249,8 +340,8 @@ var waveFilterSources = {
 	uniforms:
 		[ "uOffsetX", "uOffsetY" ],
 
-	sampler:
-		"uImageSampler"
+	samplers:
+		[ "uImageSampler" ]
 };
 
 
@@ -386,10 +477,22 @@ pbWebGlFilters.prototype.createProgram = function( _source )
 	}
 
 	// establish link to the texture sampler (source)
-	if (_source.sampler)
+	if (_source.samplers)
 	{
-		program.samplerUniform = gl.getUniformLocation( program, _source.sampler );
+		program.samplerUniforms = {};
+		for(var s in _source.samplers)
+		{
+			if (_source.samplers.hasOwnProperty(s))
+			{
+				var sampler = _source.samplers[s];
+				program.samplerUniforms[sampler] = gl.getUniformLocation( program, sampler );
+				if (program.samplerUniforms[sampler] === null)
+					console.log("WARNING (pbWebGlFilters.setProgram): filter sampler returned NULL for", sampler, "it's probably unused in the filter");
+			}
+		}
 	}
+
+//	program.samplerUniform = gl.getUniformLocation( program, _source.sampler );
 
 	return program;
 };
@@ -414,9 +517,9 @@ pbWebGlFilters.prototype.setProgram = function(_program, _textureNumber)
 				if (pbWebGlShaders.currentProgram.attributes.hasOwnProperty(a))
 					gl.enableVertexAttribArray( pbWebGlShaders.currentProgram.attributes[a] );
 
-		if (pbWebGlShaders.currentProgram.samplerUniform)
+		if (pbWebGlShaders.currentProgram.samplerUniforms && pbWebGlShaders.currentProgram.samplerUniforms.uImageSampler)
 			// set the fragment shader sampler to use the correct texture
-	   		gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniform, _textureNumber );
+	   		gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniforms.uImageSampler, _textureNumber );
 	}
 };
 

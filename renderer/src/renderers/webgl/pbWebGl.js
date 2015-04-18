@@ -153,9 +153,9 @@ pbWebGl.prototype.prepareBuffer = function()
 
 pbWebGl.prototype.prepareShader = function()
 {
-	// set the fragment shader sampler to use TEXTURE0
-	if (pbWebGlShaders.currentProgram.samplerUniform)
-   		gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniform, 0 );
+	// set the shader to use TEXTURE0 and the first sampler uniform
+	if (pbWebGlShaders.currentProgram.samplerUniforms && pbWebGlShaders.currentProgram.samplerUniforms.uImageSampler)
+   		gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniforms.uImageSampler, 0 );
 
 	// set up a projection matrix in the vertex shader
 	if (pbWebGlShaders.currentProgram.uProjectionMatrix)
@@ -1448,7 +1448,7 @@ pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transfor
 		// create a webGl texture from the canvas
 		this.textures.createTextureFromCanvas(_canvas);
 	    // set the fragment shader sampler to use TEXTURE0
-	   	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniform, 0 );
+	   	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniforms.uImageSampler, 0 );
 		// prepare the projection matrix in the vertex shader
 		gl.uniformMatrix3fv( pbWebGlShaders.currentProgram.uProjectionMatrix, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
 	}
