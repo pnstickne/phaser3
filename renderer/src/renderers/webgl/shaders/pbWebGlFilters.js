@@ -67,9 +67,10 @@ var multiLightBgSources = {
 		"       return vec4(0.);\n" +
 		"     sp += step;\n" +
 		"   }\n" +
-		"   float id = 1.0 - d;\n" +
+		"   //float id = 1. - d;\n" +
 		"   vec4 pow = vec4(unpack(power), 0.0);\n" +
-		"   return pow * id * id;\n" +
+		"   float od = d * 3. + .3;\n" +
+		"   return pow * (.09 / (od * od));\n" +
 		" }\n" +
 		" " +
 		" vec4 getLighting(vec2 p)\n" +
