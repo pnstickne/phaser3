@@ -106,7 +106,7 @@ pbDungeonLightDemo.prototype.create = function()
     // _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
     this.wiz.create(this.wizImage, 32, 32, 1.0, 0, 1.0, 1.0);
     this.wiz.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 50 };
-    this.wiz.light = { x : 0, y : 0, r : 0.0, g : 0.0, b : 8.0, range : 0.25 };
+    this.wiz.light = { x : 0, y : 0, r : 0.0, g : 0.0, b : 10.0, range : 0.40 };
 
     // create a top layer that doesn't cast shadows
 	this.topLayer = new layerClass();
@@ -329,8 +329,8 @@ pbDungeonLightDemo.prototype.wizWalk = function()
 	var wy = Math.floor(this.wiz.move.y / 1000);
 
 	// sometimes we just turn
-	if (Math.random() < 0.1)
-		this.dirChoose(this.wiz.move);
+	if (Math.random() < 0.25)
+		this.dirChoose(this.wiz.move, [ 0, 1, 2, 3 ][this.wiz.move.dx > 0 ? 0 : this.wiz.move.dx < 0 ? 1 : this.wiz.move.dy > 0 ? 2 : 3]);
 
 	if (this.wiz.move.dx > 0)
 	{
