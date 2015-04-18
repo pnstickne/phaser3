@@ -118,7 +118,7 @@ var multiLightSources = {
 		" " +
 		" #define MAX_LIGHTS 16\n" +
 		" #define STEPS 64.0\n" +
-		" #define AMBIENT_LIGHT vec4(0.1, 0.1, 0.1, 1.0)\n" +
+		" #define AMBIENT_LIGHT vec4(0.0, 0.01, 0.00, 1.0)\n" +
 		" " +
 		" varying mediump vec2 v_texcoord;\n" +
 		" uniform sampler2D uImageSampler;\n" +
@@ -377,7 +377,8 @@ pbWebGlFilters.prototype.create = function()
 	this.tintFilterProgram = this.createProgram( tintFilterSources );
 	this.waveFilterProgram = this.createProgram( waveFilterSources );
 	this.pointLightShaderProgram = this.createProgram( pointLightSources );
-	this.multiLightShaderProgram = this.createProgram( multiLightBgSources );
+	this.multiLightShaderProgram = this.createProgram( multiLightSources );
+	this.multiLightBgShaderProgram = this.createProgram( multiLightBgSources );
 };
 
 
@@ -389,6 +390,7 @@ pbWebGlFilters.prototype.destroy = function()
 	this.waveFilterProgram = null;
 	this.pointLightShaderProgram = null;
 	this.multiLightShaderProgram = null;
+	this.multiLightBgShaderProgram = null;
 };
 
 

@@ -525,7 +525,7 @@ pbDungeonLightDemo.prototype.setLightData = function()
 pbDungeonLightDemo.prototype.setFilter = function(_filters, _textureNumber)
 {
    	// set the filter program
-	_filters.setProgram(_filters.multiLightShaderProgram, _textureNumber);
+	_filters.setProgram(_filters.multiLightBgShaderProgram, _textureNumber);
 
 	// set the secondary source texture for the filter - this draws the floors using the ImageData in register 3
 	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniforms.uFloorSampler, 3 );
