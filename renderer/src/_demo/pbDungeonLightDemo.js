@@ -24,7 +24,7 @@ function pbDungeonLightDemo( docId )
 	this.levelData = this.loader.loadFile( "../img/tiles/dungeon.json" );
 	this.tileImg = this.loader.loadImage( "../img/tiles/gridtiles.png" );
 	this.wizImg = this.loader.loadImage( "../img/wiz.png" );
-
+	this.floorImg = this.loader.loadImage( "../img/dungeon__floor_2.jpg" );
 
 	console.log( "pbDungeonLightDemo c'tor exit" );
 }
@@ -95,13 +95,19 @@ pbDungeonLightDemo.prototype.create = function()
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     this.renderer.postUpdate = this.postUpdate;
 
-    this.wiz = { x : 1000, y : 1000, dx : 0, dy : 0, speed: 200, r : 0.0, g : 0.0, b : 1.0 };
+    this.wiz = { x : 1000, y : 1000, dx : 0, dy : 0, speed: 100, r : 0.0, g : 0.0, b : 1.0 };
     this.enemy = [];
     for(var e = 0; e < 14; e++)
     {
-    	this.enemy[e] = { x : 1000, y : 1000, dx : 0, dy : 0, speed: 25 + Math.floor(Math.random() * 50), r : 0.25 + Math.random() * 0.5, g : 0.25 + Math.random() * 0.5, b : 0.0 };
+    	this.enemy[e] = { x : 1000, y : 1000, dx : 0, dy : 0, speed: 10 + Math.floor(Math.random() * 40), r : 0.25 + Math.random() * 0.5, g : 0.25 + Math.random() * 0.5, b : 0.0 };
     	this.moveToRandomEmptyLocation(this.enemy[e]);
     }
+
+
+    // get the ImageData for the floor
+	var imageData = this.loader.getFile( this.floorImg );
+	// upload the floor image directly to the correct texture register on the GPU (it's hardwired in pbWebGlFilters to texture number 3)
+	this.renderer.graphics.textures.prepare(imageData, false, true, gl.TEXTURE3 );
 };
 
 
@@ -420,9 +426,9 @@ pbDungeonLightDemo.prototype.postUpdate = function()
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
 	gl.activeTexture(gl.TEXTURE2);
 	this.renderer.graphics.drawTextureToDisplay(2, this.filterTexture);
-//	this.renderer.graphics.drawTextureToDisplay(1, this.rttTexture);
 };
 
 
@@ -462,7 +468,7 @@ pbDungeonLightDemo.prototype.setLightData = function()
 	lightData[0 * 4 + 0] = (this.wiz.x / 1000 * w + w * 0.5) / pbRenderer.width;
 	lightData[0 * 4 + 1] = 1.0 - (this.wiz.y / 1000 * h + h * 0.5) / pbRenderer.height;
 	lightData[0 * 4 + 2] = pack(this.wiz.r, this.wiz.g, this.wiz.b);
-	lightData[0 * 4 + 3] = 0.30;
+	lightData[0 * 4 + 3] = 0.50;
 
 	var i = 1;
 	for(var e = 0, l = this.enemy.length; e < l; e++)
@@ -470,7 +476,7 @@ pbDungeonLightDemo.prototype.setLightData = function()
 		lightData[i * 4 + 0] = (this.enemy[e].x / 1000 * w + w * 0.5) / pbRenderer.width;
 		lightData[i * 4 + 1] = 1.0 - (this.enemy[e].y / 1000 * h + h * 0.5) / pbRenderer.height;
 		lightData[i * 4 + 2] = pack(this.enemy[e].r, this.enemy[e].g, this.enemy[e].b);
-		lightData[i * 4 + 3] = 0.15;
+		lightData[i * 4 + 3] = 0.25;
 		if (++i >= 16) break;
 	}
 	for(; i < 16; i++)
@@ -486,6 +492,9 @@ pbDungeonLightDemo.prototype.setFilter = function(_filters, _textureNumber)
 {
    	// set the filter program
 	_filters.setProgram(_filters.multiLightShaderProgram, _textureNumber);
+
+	// set the secondary source texture for the filter - this draws the floors using the ImageData in register 3
+	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniforms.uFloorSampler, 3 );
 
 	// set the parameters for the filter shader program
 	this.setLightData();
