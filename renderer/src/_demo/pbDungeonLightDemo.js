@@ -95,14 +95,30 @@ pbDungeonLightDemo.prototype.create = function()
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     this.renderer.postUpdate = this.postUpdate;
 
-    this.wiz = { x : 1000, y : 1000, dx : 0, dy : 0, speed: 100, r : 0.0, g : 0.0, b : 1.0 };
+    this.wizSurface = new pbSurface();
+    // _wide, _high, _numWide, _numHigh, _imageData
+    this.wizSurface.create(32, 32, 30, 4, this.loader.getFile( this.wizImg ));
+    this.wizSurface.isNPOT = true;
+    this.wizImage = new imageClass();
+    // _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
+    this.wizImage.create(this.wizSurface, 0, 0.0, 0.0, false, false);
+    this.wiz = new pbSprite();
+    // _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
+    this.wiz.create(this.wizImage, 32, 32, 1.0, 0, 1.0, 1.0);
+    this.wiz.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 50 };
+    this.wiz.light = { x : 0, y : 0, r : 0.0, g : 0.0, b : 8.0, range : 0.25 };
+
+    // create a top layer that doesn't cast shadows
+	this.topLayer = new layerClass();
+	this.topLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
+	this.topLayer.addChild(this.wiz);
+
     this.enemy = [];
     for(var e = 0; e < 14; e++)
     {
     	this.enemy[e] = { x : 1000, y : 1000, dx : 0, dy : 0, speed: 10 + Math.floor(Math.random() * 40), r : 0.25 + Math.random() * 0.5, g : 0.25 + Math.random() * 0.5, b : 0.0 };
     	this.moveToRandomEmptyLocation(this.enemy[e]);
     }
-
 
     // get the ImageData for the floor
 	var imageData = this.loader.getFile( this.floorImg );
@@ -309,48 +325,64 @@ function fract(_value)
 
 pbDungeonLightDemo.prototype.wizWalk = function()
 {
-	var wx = Math.floor(this.wiz.x / 1000);
-	var wy = Math.floor(this.wiz.y / 1000);
+	var wx = Math.floor(this.wiz.move.x / 1000);
+	var wy = Math.floor(this.wiz.move.y / 1000);
 
 	// sometimes we just turn
 	if (Math.random() < 0.1)
-		this.dirChoose(this.wiz);
+		this.dirChoose(this.wiz.move);
 
-	if (this.wiz.dx > 0)
+	if (this.wiz.move.dx > 0)
 	{
-		if (this.wiz.dx >= 1000 - fract(this.wiz.x) && this.collide(wx + 2, wy))
+		if (this.wiz.move.dx >= 1000 - fract(this.wiz.move.x) && this.collide(wx + 2, wy))
 		{
-			this.wiz.x = (wx + 1) * 1000;
-			this.dirChoose(this.wiz, 0);
+			this.wiz.move.x = (wx + 1) * 1000;
+			this.dirChoose(this.wiz.move, 0);
 		}
 	}
-	if (this.wiz.dx < 0)
+	if (this.wiz.move.dx < 0)
 	{
-		if (this.wiz.dx < -fract(this.wiz.x) && this.collide(wx - 1, wy))
+		if (this.wiz.move.dx < -fract(this.wiz.move.x) && this.collide(wx - 1, wy))
 		{
-			this.wiz.x -= this.wiz.x % 1000;
-			this.dirChoose(this.wiz, 1);
+			this.wiz.move.x -= this.wiz.move.x % 1000;
+			this.dirChoose(this.wiz.move, 1);
 		}
 	}
-	if (this.wiz.dy > 0)
+	if (this.wiz.move.dy > 0)
 	{
-		if (this.wiz.dy >= 1000 - fract(this.wiz.y) && this.collide(wx, wy + 2))
+		if (this.wiz.move.dy >= 1000 - fract(this.wiz.move.y) && this.collide(wx, wy + 2))
 		{
-			this.wiz.y = (wy + 1) * 1000;
-			this.dirChoose(this.wiz, 2);
+			this.wiz.move.y = (wy + 1) * 1000;
+			this.dirChoose(this.wiz.move, 2);
 		}
 	}
-	if (this.wiz.dy < 0)
+	if (this.wiz.move.dy < 0)
 	{
-		if (this.wiz.dy < -fract(this.wiz.y) && this.collide(wx, wy - 1))
+		if (this.wiz.move.dy < -fract(this.wiz.move.y) && this.collide(wx, wy - 1))
 		{
-			this.wiz.y -= this.wiz.y % 1000;
-			this.dirChoose(this.wiz, 3);
+			this.wiz.move.y -= this.wiz.move.y % 1000;
+			this.dirChoose(this.wiz.move, 3);
 		}
 	}
 
-	this.wiz.x += this.wiz.dx;
-	this.wiz.y += this.wiz.dy;
+	this.wiz.move.x += this.wiz.move.dx;
+	this.wiz.move.y += this.wiz.move.dy;
+
+	// update wizard sprite
+	this.wiz.x = (this.wiz.move.x / 1000) * this.tileMap.tilesets[0].tilewidth;
+	this.wiz.y = (this.wiz.move.y / 1000) * this.tileMap.tilesets[0].tileheight;
+
+	this.wiz.move.cellFrame += 1;
+	if (this.wiz.move.cellFrame >= 30)
+		this.wiz.move.cellFrame = 0;
+	if (this.wiz.move.dx > 0)
+		this.wiz.image.cellFrame = this.wiz.move.cellFrame + 90;
+	else if (this.wiz.move.dx < 0)
+		this.wiz.image.cellFrame = this.wiz.move.cellFrame + 30;
+	else if (this.wiz.move.dy > 0)
+		this.wiz.image.cellFrame = this.wiz.move.cellFrame + 0;
+	else if (this.wiz.move.dy < 0)
+		this.wiz.image.cellFrame = this.wiz.move.cellFrame + 60;
 };
 
 
@@ -424,9 +456,11 @@ pbDungeonLightDemo.prototype.postUpdate = function()
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
 	this.renderer.graphics.applyFilterToTexture(1, this.rttTexture, this.setFilter, this);
 
+	// update transforms and draw sprites that are not shadow casters
+	this.topLayer.update();
+
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
 	gl.activeTexture(gl.TEXTURE2);
 	this.renderer.graphics.drawTextureToDisplay(2, this.filterTexture);
 };
@@ -465,10 +499,10 @@ pbDungeonLightDemo.prototype.setLightData = function()
 	// first light is attached to the player ship
 	var w = this.tileMap.tilesets[0].tilewidth;
 	var h = this.tileMap.tilesets[0].tileheight;
-	lightData[0 * 4 + 0] = (this.wiz.x / 1000 * w + w * 0.5) / pbRenderer.width;
-	lightData[0 * 4 + 1] = 1.0 - (this.wiz.y / 1000 * h + h * 0.5) / pbRenderer.height;
-	lightData[0 * 4 + 2] = pack(this.wiz.r, this.wiz.g, this.wiz.b);
-	lightData[0 * 4 + 3] = 0.50;
+	lightData[0 * 4 + 0] = (this.wiz.move.x / 1000 * w + w * 0.5 + this.wiz.light.x) / pbRenderer.width;
+	lightData[0 * 4 + 1] = 1.0 - (this.wiz.move.y / 1000 * h + h * 0.5 + this.wiz.light.y) / pbRenderer.height;
+	lightData[0 * 4 + 2] = pack(this.wiz.light.r, this.wiz.light.g, this.wiz.light.b);
+	lightData[0 * 4 + 3] = this.wiz.light.range;
 
 	var i = 1;
 	for(var e = 0, l = this.enemy.length; e < l; e++)
