@@ -105,7 +105,7 @@ pbBunnyPointAnimDemo.prototype.addSprites = function(num)
 		img.isParticle = true;							// use fast batch drawing, object doesn't rotate
 		img.cellFrame = Math.floor(Math.random() * 8);	// pick a random picture for this bunny to start on
 
-		var spr = new pbSprite();
+		var spr = new pbTransformObject();
 		spr.create(img, 13, 37, 1.0, 0, 1.0, 1.0);
 		this.layer.addChild(spr);
 

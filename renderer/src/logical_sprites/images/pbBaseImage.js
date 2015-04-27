@@ -3,10 +3,10 @@
  * Surface holder with a single pbSurface and a cellFrame index for the current animation cell.
  * 
  * This information cannot be stored in pbSurface (they are reused so the cellFrame needs to be unique)
- * and should not be in pbSprite (it's a logical transform object with an optional image attached).
+ * and should not be in pbTransformObject (it's a logical transform object with an optional image attached).
  *
- * These objects will usually be one per pbSprite, but can safely be shared if a large number of pbSprite
- * objects will animate entirely in sync.  Be careful not to update the cellFrame in every pbSprite though!
+ * These objects will usually be one per pbTransformObject, but can safely be shared if a large number of pbTransformObject
+ * objects will animate entirely in sync.  Be careful not to update the cellFrame in every pbTransformObject though!
  *
  */
 

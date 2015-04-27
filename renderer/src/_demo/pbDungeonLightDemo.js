@@ -102,7 +102,7 @@ pbDungeonLightDemo.prototype.create = function()
     this.wizImage = new imageClass();
     // _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
     this.wizImage.create(this.wizSurface, 0, 0.0, 0.0, false, false);
-    this.wiz = new pbSprite();
+    this.wiz = new pbTransformObject();
     // _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
     this.wiz.create(this.wizImage, 32, 32, 1.0, 0, 1.0, 1.0);
     this.wiz.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 50 };
@@ -166,7 +166,7 @@ pbDungeonLightDemo.prototype.createSurfaces = function()
 {
 	console.log("pbScrollDemo.createSurfaces");
 
-	// set up the tiles in a pbSprite
+	// set up the tiles in a pbTransformObject
 	imageData = this.loader.getFile( this.tileImg );
 	this.tileSurface = new pbSurface();
 	this.tileSurface.create(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, imageData);
@@ -228,7 +228,7 @@ pbDungeonLightDemo.prototype.createTile = function(_x, _y, _cell)
 {
 	var img = new imageClass();
 	img.create(this.tileSurface, _cell, 0, 0, false, false);
-	var spr = new pbSprite();
+	var spr = new pbTransformObject();
 	spr.create(img, _x, _y, 0.5, 0, 1, 1);
 	return spr;
 };

@@ -91,7 +91,7 @@ pbRoadDemo.prototype.addSprites = function()
 	img.isModeZ = true;
 
 	// create a sprite to draw using mode z
-	this.spr = new pbSprite();
+	this.spr = new pbTransformObject();
 	// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
 	this.spr.create(img, pbRenderer.width * 0.5, 100.0, 1.0, 0, pbRenderer.width / this.surface.cellWide, 4.0);
 	this.layer.addChild(this.spr);

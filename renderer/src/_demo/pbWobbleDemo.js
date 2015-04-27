@@ -106,7 +106,7 @@ pbWobbleDemo.prototype.addSprites = function()
 			var cy = y * this.surface.cellHigh + this.surface.cellHigh * 0.5;
 			this.grid[y][x] = { gx:cx, gy:cy, x:cx, y:cy, vx:0.0, vy:0.0, dx: 0, dy: 0 };
 
-			this.sprList[c] = new pbSprite();
+			this.sprList[c] = new pbTransformObject();
 			this.sprList[c].create(img, cx, cy, 1.0, 0, 1.0, 1.0);
 
 			rootLayer.addChild(this.sprList[c]);

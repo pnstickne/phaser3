@@ -1,6 +1,6 @@
 /**
  *
- * pbBaseLayer - Base class for Layers, contains one layer of multiple pbSprite objects.
+ * pbBaseLayer - Base class for Layers, contains one layer of multiple pbTransformObject objects.
  *
  */
 
@@ -15,19 +15,19 @@ function pbBaseLayer()
 	this.clip = null;
 }
 
-// pbBaseLayer extends from the pbSprite prototype chain
+// pbBaseLayer extends from the pbTransformObject prototype chain
 // permits multiple levels of inheritance 	http://jsfiddle.net/ZWZP6/2/  
 // improvement over original answer at 		http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
-pbBaseLayer.prototype = new pbSprite();
+pbBaseLayer.prototype = new pbTransformObject();
 pbBaseLayer.prototype.constructor = pbBaseLayer;
-pbBaseLayer.prototype.__super__ = pbSprite;
+pbBaseLayer.prototype.__super__ = pbTransformObject;
 
 
 pbBaseLayer.prototype.create = function(_parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
 {
 	// console.log("pbBaseLayer.create", _x, _y);
 	
-	// call the pbSprite create for this pbBaseLayer
+	// call the pbTransformObject create for this pbBaseLayer
 	this.super(pbBaseLayer, 'create', null, _x, _y, _z, _angleInRadians, _scaleX, _scaleY);
 
 	// TODO: add pass-through option so that layers can choose not to inherit their parent's transforms and will use the rootLayer transform instead
@@ -48,7 +48,7 @@ pbBaseLayer.prototype.setClipping = function(_x, _y, _width, _height)
 
 pbBaseLayer.prototype.destroy = function()
 {
-	// call the pbSprite destroy for this pbBaseLayer
+	// call the pbTransformObject destroy for this pbBaseLayer
 	this.super(pbBaseLayer, 'destroy');
 
 	this.clip = null;
@@ -69,7 +69,7 @@ pbBaseLayer.prototype.destroy = function()
 pbBaseLayer.prototype.update = function(_drawList)
 {
 	// console.log("pbBaseLayer.update");
-	// call the pbSprite update for this pbBaseLayer to access the child hierarchy
+	// call the pbTransformObject update for this pbBaseLayer to access the child hierarchy
 	this.super(pbBaseLayer, 'update', _drawList);
 };
 
@@ -101,7 +101,7 @@ pbBaseLayer.prototype.draw = function(_list)
 
 
 /**
- * override the pbSprite addChild function to handle case where a pbBaseLayer is added to a pbBaseLayer
+ * override the pbTransformObject addChild function to handle case where a pbBaseLayer is added to a pbBaseLayer
  * in that case it should go into list instead of children in order to provide the correct order of processing
  *
  * @param {[type]} _child [description]

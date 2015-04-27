@@ -1,6 +1,6 @@
 /**
  *
- * pbSimpleLayer - Contains one layer of multiple pbSprite objects, simple layer does not permit rotation/scaling or nested children.
+ * pbSimpleLayer - Contains one layer of multiple pbTransformObject objects, simple layer does not permit rotation/scaling or nested children.
  *
  */
 
@@ -15,17 +15,17 @@ function pbSimpleLayer()
 	this.prepareCall = null;
 }
 
-// pbSimpleLayer extends from the pbSprite prototype chain
-pbSimpleLayer.prototype = new pbSprite();
+// pbSimpleLayer extends from the pbTransformObject prototype chain
+pbSimpleLayer.prototype = new pbTransformObject();
 // create property to store the class' parent
-pbSimpleLayer.prototype.__super__ = pbSprite;		// http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
+pbSimpleLayer.prototype.__super__ = pbTransformObject;		// http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
 
 
 pbSimpleLayer.prototype.create = function(_parent, _renderer, _x, _y, _surface)
 {
 	this.parent = _parent;
 	this.renderer = _renderer;
-	// call the pbSprite create for this pbSimpleLayer
+	// call the pbTransformObject create for this pbSimpleLayer
 	this.__super__.prototype.create.call(this, null, _x, _y);
 	this.surface = _surface;
 	this.drawList = new Float32Array(MAX_SPRITES * 4);
@@ -37,7 +37,7 @@ pbSimpleLayer.prototype.create = function(_parent, _renderer, _x, _y, _surface)
 
 pbSimpleLayer.prototype.destroy = function()
 {
-	// call the pbSprite destroy for this pbSimpleLayer
+	// call the pbTransformObject destroy for this pbSimpleLayer
 	this.__super__.prototype.destroy.call(this);
 	this.parent = null;
 	this.renderer = null;
@@ -175,20 +175,20 @@ pbSimpleLayer.prototype.drawPointAnim = function(_length)
 
 
 /**
- * override the pbSprite addChild function to ensure that only pbSprite is added to this pbSimpleLayer
+ * override the pbTransformObject addChild function to ensure that only pbTransformObject is added to this pbSimpleLayer
  *
  * @param {[type]} _child [description]
  */
 pbSimpleLayer.prototype.addChild = function( _child )
 {
-	if (_child instanceof pbSprite)
+	if (_child instanceof pbTransformObject)
 	{
 		// call the super.addChild function
 		this.__super__.prototype.addChild.call( this, _child );
 	}
 	else
 	{
-		console.log("ERROR: can ONLY addChild a pbSprite to a pbSimpleLayer!");
+		console.log("ERROR: can ONLY addChild a pbTransformObject to a pbSimpleLayer!");
 	}
 };
 

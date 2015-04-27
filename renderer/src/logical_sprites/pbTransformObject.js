@@ -5,7 +5,7 @@
  */
 
 
-function pbSprite()
+function pbTransformObject()
 {
 	this.alive = false;
 	this.visible = false;
@@ -38,9 +38,9 @@ function pbSprite()
  *
  * @return {[type]}                 [description]
  */
-pbSprite.prototype.create = function(_image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
+pbTransformObject.prototype.create = function(_image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
 {
-	// console.log("pbSprite.create");
+	// console.log("pbTransformObject.create");
 
 	if (_image === undefined) _image = null;
 
@@ -61,9 +61,9 @@ pbSprite.prototype.create = function(_image, _x, _y, _z, _angleInRadians, _scale
 };
 
 
-pbSprite.prototype.create3D = function(_image, _x, _y, _z, _rx, _ry, _rz, _scaleX, _scaleY, _scaleZ)
+pbTransformObject.prototype.create3D = function(_image, _x, _y, _z, _rx, _ry, _rz, _scaleX, _scaleY, _scaleZ)
 {
-	// console.log("pbSprite.create3D");
+	// console.log("pbTransformObject.create3D");
 
 	if (_image === undefined) _image = null;
 
@@ -87,7 +87,7 @@ pbSprite.prototype.create3D = function(_image, _x, _y, _z, _rx, _ry, _rz, _scale
 };
 
 
-pbSprite.prototype.destroy = function()
+pbTransformObject.prototype.destroy = function()
 {
 	// destroy all my children too
 	if (this.children)
@@ -105,7 +105,7 @@ pbSprite.prototype.destroy = function()
 };
 
 
-pbSprite.prototype.update = function(_drawDictionary)
+pbTransformObject.prototype.update = function(_drawDictionary)
 {
 	if (this.image && this.image.is3D)
 		return this.update3D(_drawDictionary);
@@ -113,9 +113,9 @@ pbSprite.prototype.update = function(_drawDictionary)
 };
 
 
-pbSprite.prototype.update2D = function(_drawDictionary)
+pbTransformObject.prototype.update2D = function(_drawDictionary)
 {
-	// console.log("pbSprite.update");
+	// console.log("pbTransformObject.update");
 
 	if (!this.alive)
 		return true;
@@ -151,7 +151,7 @@ pbSprite.prototype.update2D = function(_drawDictionary)
 };
 
 
-pbSprite.prototype.update3D = function(_drawDictionary)
+pbTransformObject.prototype.update3D = function(_drawDictionary)
 {
 	// console.log("pbSprite3D.update");
 
@@ -195,31 +195,31 @@ pbSprite.prototype.update3D = function(_drawDictionary)
 };
 
 
-pbSprite.prototype.kill = function()
+pbTransformObject.prototype.kill = function()
 {
 	this.alive = false;
 };
 
 
-pbSprite.prototype.revive = function()
+pbTransformObject.prototype.revive = function()
 {
 	this.alive = true;
 };
 
 
-pbSprite.prototype.addChild = function(_child)
+pbTransformObject.prototype.addChild = function(_child)
 {
 	if (!this.children)
 		this.children = [];
 
-	// console.log("pbSprite.addChild", this.children.length);
+	// console.log("pbTransformObject.addChild", this.children.length);
 	
 	this.children.push(_child);
 	_child.parent = this;
 };
 
 
-pbSprite.prototype.addChildAt = function(_child, _index)
+pbTransformObject.prototype.addChildAt = function(_child, _index)
 {
 	if (!this.children)
 		this.children = [];
@@ -232,7 +232,7 @@ pbSprite.prototype.addChildAt = function(_child, _index)
 };
 
 
-pbSprite.prototype.removeChild = function(_child)
+pbTransformObject.prototype.removeChild = function(_child)
 {
 	if (!this.children) return;
 	var index = this.children.indexOf(_child);
@@ -244,7 +244,7 @@ pbSprite.prototype.removeChild = function(_child)
 };
 
 
-pbSprite.prototype.removeChildAt = function(_index)
+pbTransformObject.prototype.removeChildAt = function(_index)
 {
 	if (!this.children) return;
 	if (this.children.length <= _index) return;
@@ -256,9 +256,9 @@ pbSprite.prototype.removeChildAt = function(_index)
 // allow this class to be extended
 // permits multiple levels of inheritance 	http://jsfiddle.net/ZWZP6/2/  
 // improvement over original answer at 		http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
-pbSprite.prototype.super = function(clazz, functionName)
+pbTransformObject.prototype.super = function(clazz, functionName)
 {
-	// console.log("pbSprite.super", functionName);
+	// console.log("pbTransformObject.super", functionName);
     var args = Array.prototype.slice.call(arguments, 2);
     clazz.prototype.__super__.prototype[functionName].apply(this, args);
 };

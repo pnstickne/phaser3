@@ -104,7 +104,7 @@ pbBunnyPointDemo.prototype.addSprites = function(num)
 		img.create(this.surface, 0, 0.5, 1.0);
 		img.isParticle = true;			// use fast batch drawing, object doesn't rotate
 
-		var spr = new pbSprite();
+		var spr = new pbTransformObject();
 		spr.create(img, 13, 37, 1.0, 0, 1.0, 1.0);
 		this.layer.addChild(spr);
 

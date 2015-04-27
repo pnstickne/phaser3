@@ -124,7 +124,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 		this.bgImage = new imageClass();
 		// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
 		this.bgImage.create(this.bgSurface, 0, 0, 0, true, true);
-		this.bg = new pbSprite();
+		this.bg = new pbTransformObject();
 		// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
 		this.bg.create(this.bgImage, 0, 0, 1.0, 0, 1.0, 1.0);
 		this.layer.addChild(this.bg);
@@ -136,7 +136,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.playerSurface.create(0, 0, 1, 1, imageData);
 	this.playerImage = new imageClass();
 	this.playerImage.create(this.playerSurface, 0);
-	this.player = new pbSprite();
+	this.player = new pbTransformObject();
 	this.player.create(this.playerImage, pbRenderer.width * 0.5, pbRenderer.height * 0.9, 0.0, 0, 1.0, 1.0);
 //	this.player.visible = _separateShadowLayer;
 	this.layer.addChild(this.player);
@@ -155,7 +155,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 		var img = new imageClass();
 		// anchor point at front of bullet for easy collisions...
 		img.create(this.bulletSurface, 0, 0.5, 0.0);
-		var bullet = new pbSprite();
+		var bullet = new pbTransformObject();
 		bullet.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		// don't add it to the layer until it's fired
 		this.bulletPool.push(bullet);
@@ -171,7 +171,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	{
 		var img = new imageClass();
 		img.create(this.rocketSurface, 0, 0.5, 0.5);
-		var rocket = new pbSprite();
+		var rocket = new pbTransformObject();
 		rocket.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		// don't add it to the layer until it's fired
 		this.rocketPool.push(rocket);
@@ -193,7 +193,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	{
 		var img = new imageClass();
 		img.create(this.bombSurface, 0);
-		var bomb = new pbSprite();
+		var bomb = new pbTransformObject();
 		bomb.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		// don't add it to the layer until it's fired
 		this.bombPool.push(bomb);
@@ -211,7 +211,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	{
 		var img = new imageClass();
 		img.create(this.explosionSurface, 0);
-		var explosion = new pbSprite();
+		var explosion = new pbTransformObject();
 		explosion.create(img, 0, 0, 0, 0, 0.5, 0.5);
 		this.explosionPool.push(explosion);
 	}
@@ -226,7 +226,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	{
 		var img = new imageClass();
 		img.create(this.smokeSurface, 0);
-		var smoke = new pbSprite();
+		var smoke = new pbTransformObject();
 		smoke.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		this.smokePool.push(smoke);
 	}
@@ -239,7 +239,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 		surface.isNPOT = true;
 		var img = new imageClass();
 		img.create(surface, 0, 0, 0, false, false);
-		var sprite = new pbSprite();
+		var sprite = new pbTransformObject();
 		sprite.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		this.uiLayer.addChild(sprite);
 
@@ -249,7 +249,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 		surface.isNPOT = true;
 		img = new imageClass();
 		img.create(surface, 0, 0, 0, false, false);
-		sprite = new pbSprite();
+		sprite = new pbTransformObject();
 		sprite.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		this.uiLayer.addChild(sprite);
 
@@ -259,7 +259,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 		surface.isNPOT = true;
 		img = new imageClass();
 		img.create(surface, 0, 1, 0, false, false);
-		sprite = new pbSprite();
+		sprite = new pbTransformObject();
 		sprite.create(img, pbRenderer.width, 0, 0, 0, 1.0, 1.0);
 		this.uiLayer.addChild(sprite);
 
@@ -269,7 +269,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 		surface.isNPOT = true;
 		img = new imageClass();
 		img.create(surface, 0, 0, 1, false, false);
-		sprite = new pbSprite();
+		sprite = new pbTransformObject();
 		sprite.create(img, 0, pbRenderer.height, 0, 0, 1.0, 1.0);
 		this.uiLayer.addChild(sprite);
 	}
@@ -284,7 +284,7 @@ pbInvaderDemoCore.prototype.addInvaders = function()
 		{
 			var img = new imageClass();
 			img.create(this.invaderSurface, Math.floor(Math.random() * 3));
-			var invader = new pbSprite();
+			var invader = new pbTransformObject();
 			invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
 			this.shadowLayer.addChild(invader);
 			invader.row = y;

@@ -145,14 +145,14 @@ pbScrollPointSpriteDemo.prototype.createSurfaces = function()
 	surface.cellTextureBounds[0][0].width = pbRenderer.width / surface.cellWide;
 	var img = new imageClass();
 	img.create(surface, 0, 0, 0, true, false);
-	this.bgSpr = new pbSprite();
+	this.bgSpr = new pbTransformObject();
 
 	// scale the tiled background to compensate for the extra drawn width from tiling
 	// TODO: create a simple API to fix surface and sprite scaling, or add a separate variable to handle tiling properly
 	this.bgSpr.create(img, 0, 0, 1.0, 0, pbRenderer.width / surface.cellWide, pbRenderer.height / surface.cellHigh);
 	rootLayer.addChild(this.bgSpr);
 
-	// set up the tiles in a pbSprite
+	// set up the tiles in a pbTransformObject
 	imageData = this.loader.getFile( this.tileImg );
 	this.tileSurface = new pbSurface();
 	this.tileSurface.create(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, imageData);
@@ -217,7 +217,7 @@ pbScrollPointSpriteDemo.prototype.createTile = function(_x, _y, _cell)
 {
 	var img = new imageClass();
 	img.create(this.tileSurface, _cell, 0, 0, false, false);
-	var spr = new pbSprite();
+	var spr = new pbTransformObject();
 	spr.create(img, _x, _y, 0.5, 0, 1, 1);
 	return spr;
 };

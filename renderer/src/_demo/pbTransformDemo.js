@@ -73,31 +73,31 @@ pbTransformDemo.prototype.addSprites = function()
 	img.create(this.surface, 0, 0.5, 1.0);		// anchorY = 1.0 - make movement appear more complex
 
 	this.dirx = 2;
-	this.spr = new pbSprite();
+	this.spr = new pbTransformObject();
 	this.spr.create(img, 200, 200, 1.0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.spr);
 
-	this.child = new pbSprite();
+	this.child = new pbTransformObject();
 	this.child.create(img, 0, -75, 1.0, 0, 0.75, 0.75);
 	this.spr.addChild(this.child);
 
-	this.childchild = new pbSprite();
+	this.childchild = new pbTransformObject();
 	this.childchild.create(img, 0, -75, 1.0, 0, 0.75, 0.75);
 	this.child.addChild(this.childchild);
 
-	var childchildchild = new pbSprite();
+	var childchildchild = new pbTransformObject();
 	childchildchild.create(img, 0, -50, 1.0, 0, 0.5, 0.5);
 	this.childchild.addChild(childchildchild);
 
-	childchildchild = new pbSprite();
+	childchildchild = new pbTransformObject();
 	childchildchild.create(img, 0, 50, 1.0, 0, 0.5, 0.5);
 	this.childchild.addChild(childchildchild);
 
-	childchildchild = new pbSprite();
+	childchildchild = new pbTransformObject();
 	childchildchild.create(img, -50, 0, 1.0, 0, 0.5, 0.5);
 	this.childchild.addChild(childchildchild);
 
-	childchildchild = new pbSprite();
+	childchildchild = new pbTransformObject();
 	childchildchild.create(img, 50, 0, 1.0, 0, 0.5, 0.5);
 	this.childchild.addChild(childchildchild);
 };

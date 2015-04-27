@@ -74,7 +74,7 @@ pbBlankDemo.prototype.addSprites = function()
 	var img = new imageClass();
 	img.create(this.surface, 0);
 
-	this.spr = new pbSprite();
+	this.spr = new pbTransformObject();
 	this.spr.create(img, 200, 200, 1.0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.spr);
 };

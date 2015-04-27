@@ -23,7 +23,7 @@ var multiLightBgSources = {
 		" " +
 		" #define MAX_LIGHTS 16\n" +
 		" #define STEPS 64.0\n" +
-		" #define AMBIENT_LIGHT vec4(0.0, 0.0, 0.0, 1.0)\n" +
+		" #define AMBIENT_LIGHT vec4(-0.15, -0.2, -0.2, 1.0)\n" +
 		" " +
 		" varying mediump vec2 v_texcoord;\n" +
 		" uniform sampler2D uImageSampler;\n" +

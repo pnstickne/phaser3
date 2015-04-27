@@ -83,7 +83,7 @@ pbTiltDemo.prototype.addSprites = function()
 	rootLayer.addChild(layer3D);
 
 	// create a sprite and add it to the layer
-	this.spr = new pbSprite();
+	this.spr = new pbTransformObject();
 	//_image, _x, _y, _z, _rx, _ry, _rz, _scaleX, _scaleY, _scaleZ
 	this.spr.create3D(img, pbRenderer.width * 0.5, pbRenderer.height * 0.5, 1.0, 0, 0, 0, 1.0, 1.0, 1.0);
 	layer3D.addChild(this.spr);

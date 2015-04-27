@@ -2,7 +2,7 @@
  *
  * Bunny Mark - takes direct control of the rendering process for maximum speed
  *
- * TODO: optimise the pbSprite, pbImage and pbWebGlLayer code to close the distance between this and pbBunnyDemoNPOT
+ * TODO: optimise the pbTransformObject, pbImage and pbWebGlLayer code to close the distance between this and pbBunnyDemoNPOT
  * 
  */
 

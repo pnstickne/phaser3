@@ -1,13 +1,13 @@
 /**
  *
- * pbWebGlLayer - Contains one layer of multiple pbSprite objects, uses a pbDictionary to present them to webGl in batches based on source surface.
+ * pbWebGlLayer - Contains one layer of multiple pbTransformObject objects, uses a pbDictionary to present them to webGl in batches based on source surface.
  *
- * All sprites held in a webgl layer are z-sorted using the pbSprite.z coordinate which uses a shader hack for depth buffering.
+ * All sprites held in a webgl layer are z-sorted using the pbTransformObject.z coordinate which uses a shader hack for depth buffering.
  * Sprites held in a layer are therefore eligible for high-speed batch drawing when they share a source surface.
  * 
- * TODO: Layers will inherit from pbSprite to acquire the nested hierarchy and transform inheritance already implemented there.
- * Layers will not have a surface though, so they use pbSprite purely as a logical construct and not as a display object.
- * TODO: Check if 'layers' are even necessary as a unique object, pbSprite might already contain the full requisite functionality!
+ * TODO: Layers will inherit from pbTransformObject to acquire the nested hierarchy and transform inheritance already implemented there.
+ * Layers will not have a surface though, so they use pbTransformObject purely as a logical construct and not as a display object.
+ * TODO: Check if 'layers' are even necessary as a unique object, pbTransformObject might already contain the full requisite functionality!
  *
  * TODO: given rootLayer -> layer1 -> layer2 -> layer3, rotating all layers except layer3 works as expected... what's wrong with layer3?!
  * 

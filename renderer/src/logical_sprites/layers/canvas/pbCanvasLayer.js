@@ -1,6 +1,6 @@
 /**
  *
- * pbCanvasLayer - Base class for Layers, contains one layer of multiple pbSprite objects.
+ * pbCanvasLayer - Base class for Layers, contains one layer of multiple pbTransformObject objects.
  *
  */
 
