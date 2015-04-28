@@ -199,7 +199,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	for(i = 0; i < 100; i++)
 	{
 		var img = new imageClass();
-		img.create(this.bombSurface, 0);
+		img.create(this.bombSurface, 0, 0.5, 0.5);
 		var bomb = new pbTransformObject();
 		bomb.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		// don't add it to the layer until it's fired
@@ -217,7 +217,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	for(i = 0; i < 100; i++)
 	{
 		var img = new imageClass();
-		img.create(this.explosionSurface, 0);
+		img.create(this.explosionSurface, 0, 0.5, 0.5);
 		var explosion = new pbTransformObject();
 		explosion.create(img, 0, 0, 0, 0, 0.5, 0.5);
 		this.explosionPool.push(explosion);
@@ -232,7 +232,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	for(i = 0; i < 200; i++)
 	{
 		var img = new imageClass();
-		img.create(this.smokeSurface, 0);
+		img.create(this.smokeSurface, 0, 0.5, 0.5);
 		var smoke = new pbTransformObject();
 		smoke.create(img, 0, 0, 0, 0, 1.0, 1.0);
 		this.smokePool.push(smoke);
@@ -290,7 +290,7 @@ pbInvaderDemoCore.prototype.addInvaders = function()
 		for(var x = 0; x < 12; x++)
 		{
 			var img = new imageClass();
-			img.create(this.invaderSurface, Math.floor(Math.random() * 3));
+			img.create(this.invaderSurface, Math.floor(Math.random() * 3), 0.5, 0.5);
 			var invader = new pbTransformObject();
 			invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
 			this.shadowLayer.addChild(invader);

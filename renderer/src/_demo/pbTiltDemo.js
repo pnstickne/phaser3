@@ -73,7 +73,7 @@ pbTiltDemo.prototype.addSprites = function()
 
 	// create an image holder for the surface
 	var img = new imageClass();
-	img.create(this.surface, 0);
+	img.create(this.surface, 0, 0.5, 0.5);
 	img.is3D = true;
 
 	// create a layer and add it to the root

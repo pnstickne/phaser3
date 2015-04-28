@@ -72,7 +72,7 @@ pbBlankDemo.prototype.addSprites = function()
 	this.surface.create(0, 0, 1, 1, imageData);
 
 	var img = new imageClass();
-	img.create(this.surface, 0);
+	img.create(this.surface, 0, 0.5, 0.5);
 
 	this.spr = new pbTransformObject();
 	this.spr.create(img, 200, 200, 1.0, 0, 1.0, 1.0);
