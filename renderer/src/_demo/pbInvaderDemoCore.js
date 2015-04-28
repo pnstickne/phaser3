@@ -118,28 +118,35 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	if (this.parent.starsImg !== undefined)
 	{
 		imageData = this.parent.loader.getFile( this.parent.starsImg );
-		this.bgSurface = new pbSurface();
-		// _wide, _high, _numWide, _numHigh, _image
-		this.bgSurface.create(0, 0, 1, 1, imageData);
-		this.bgImage = new imageClass();
-		// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
-		this.bgImage.create(this.bgSurface, 0, 0, 0, true, true);
-		this.bg = new pbTransformObject();
-		// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-		this.bg.create(this.bgImage, 0, 0, 1.0, 0, 1.0, 1.0);
-		this.layer.addChild(this.bg);
+		this.bg = new pbSprite(0, 0, imageData, this.layer);
+		this.bg.fullScreen = true;
+		this.bg.tiling = true;
+		// this.bgSurface = new pbSurface();
+		// // _wide, _high, _numWide, _numHigh, _image
+		// this.bgSurface.create(0, 0, 1, 1, imageData);
+		// this.bgImage = new imageClass();
+		// // _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
+		// this.bgImage.create(this.bgSurface, 0, 0, 0, true, true);
+		// this.bg = new pbTransformObject();
+		// // _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
+		// this.bg.create(this.bgImage, 0, 0, 1.0, 0, 1.0, 1.0);
+		// this.layer.addChild(this.bg);
 	}
 
 	// player
 	imageData = this.parent.loader.getFile( this.parent.playerImg );
-	this.playerSurface = new pbSurface();
-	this.playerSurface.create(0, 0, 1, 1, imageData);
-	this.playerImage = new imageClass();
-	this.playerImage.create(this.playerSurface, 0);
-	this.player = new pbTransformObject();
-	this.player.create(this.playerImage, pbRenderer.width * 0.5, pbRenderer.height * 0.9, 0.0, 0, 1.0, 1.0);
+	this.player = new pbSprite(pbRenderer.width * 0.5, pbRenderer.height * 0.9, imageData, this.layer);
+	this.player.z = 0.0;
+	this.player.anchorX = 0.5;
+	this.player.anchorY = 0.5;
+	// this.playerSurface = new pbSurface();
+	// this.playerSurface.create(0, 0, 1, 1, imageData);
+	// this.playerImage = new imageClass();
+	// this.playerImage.create(this.playerSurface, 0);
+	// this.player = new pbTransformObject();
+	// this.player.create(this.playerImage, pbRenderer.width * 0.5, pbRenderer.height * 0.9, 0.0, 0, 1.0, 1.0);
 //	this.player.visible = _separateShadowLayer;
-	this.layer.addChild(this.player);
+	// this.layer.addChild(this.player);
 	this.player.die = false;
 	this.playerDirX = -2;
 
@@ -322,8 +329,8 @@ pbInvaderDemoCore.prototype.update = function()
 		else this.playerDirX = -Math.abs(this.playerDirX);
 	}
 	// bounce off edges
-	if (this.player.x < this.player.image.surface.cellWide * 0.5
-		|| this.player.x > pbRenderer.width - this.player.image.surface.cellWide * 0.5)
+	if (this.player.x < this.player.surface.cellWide * 0.5
+		|| this.player.x > pbRenderer.width - this.player.surface.cellWide * 0.5)
 		this.playerDirX = -this.playerDirX;
 	// move
 	this.player.x += this.playerDirX;
@@ -574,10 +581,10 @@ pbInvaderDemoCore.prototype.invaderBombMove = function()
 		b.vy += 0.02;
 
 		var hit = false;
-		var w2 = this.player.image.surface.cellWide * 0.5;
+		var w2 = this.player.surface.cellWide * 0.5;
 		if (b.x > this.player.x - w2 && b.x < this.player.x + w2)
 		{
-			var h2 = this.player.image.surface.cellHigh * 0.5;
+			var h2 = this.player.surface.cellHigh * 0.5;
 			if (b.y > this.player.y - h2 && b.y < this.player.y + h2)
 			{
 				this.addExplosion(this.player.x, this.player.y);
