@@ -50,9 +50,14 @@ pbLoader.prototype.loadFile = function(filename)
 };
 
 
-pbLoader.prototype.loadImage = function(key, filename)
+pbLoader.prototype.loadImage = function(key, filename, cellWide, cellHigh, cellsWide, cellsHigh)
 {
-	console.log("pbLoader.loadImage ", filename);
+	if (cellWide === undefined) cellWide = 0;
+	if (cellHigh === undefined) cellHigh = 0;
+	if (cellsWide === undefined) cellsWide = 1;
+	if (cellsHigh === undefined) cellsHigh = 1;
+
+	console.log("pbLoader.loadImage ", key, filename, cellWide + "," + cellHigh, cellsWide + "x" + cellsHigh);
 
 	if (textures.exists(key))
 	{
@@ -62,13 +67,15 @@ pbLoader.prototype.loadImage = function(key, filename)
 
 	var index = this.files.length;
 	
-	this.files[index] = new Image();
-	this.files[index].onload = this.makeLoadHandler(this, index);
-	this.files[index].src = filename;
-	this.queue.push(this.files[index]);
+	var image = this.files[index] = new Image();
+	image.onload = this.makeLoadHandler(this, index);
+	image.src = filename;
+	this.queue.push(image);
 
-	// add the new Image to the textures dictionary referenced by 'key'
-	textures.add(key, this.files[index]);
+	var surface = new pbSurface();
+	surface.create(cellWide, cellHigh, cellsWide, cellsHigh, image);
+	// add the Image and the surface to the textures dictionary referenced by 'key'
+	textures.add(key, { imageData: image, surface: surface });
 
 	return index;
 };

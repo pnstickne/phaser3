@@ -13,6 +13,7 @@
 
 function pbWebGlImage()
 {
+	// TODO: super call pbBaseImage instead of repeating code
 	this.surface = null;
 	this.cellFrame = 0;
 	this.gpuTexture = null;

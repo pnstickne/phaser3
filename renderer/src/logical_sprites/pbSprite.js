@@ -9,10 +9,11 @@
 
 function pbSprite(_x, _y, _key, _layer)
 {
-	// create a surface and put the raw image data into it
-	this.surface = new pbSurface();
-	this.surface.create(0, 0, 1, 1, textures.getFirst(_key));
-	// create an image holder and attach the new surface
+    // get the texture object from the textures dictionary using 'key'
+    this.textureObject = textures.getFirst(_key);
+    // set up easy access to the surface
+	this.surface = this.textureObject.surface;
+	// create an image holder and attach the surface
 	this.image = new imageClass();
 	this.image.create(this.surface);
 	// create a transform object for the image

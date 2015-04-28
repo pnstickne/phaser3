@@ -183,9 +183,9 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	}
 
 	// aliens
-	imageData = this.parent.loader.getFile( this.parent.invaderImg );
-	this.invaderSurface = new pbSurface();
-	this.invaderSurface.create(32, 32, 4, 1, imageData);
+	// imageData = this.parent.loader.getFile( this.parent.invaderImg );
+	// this.invaderSurface = new pbSurface();
+	// this.invaderSurface.create(32, 32, 4, 1, imageData);
 	this.addInvaders();
 
 	// alien bombs
@@ -285,17 +285,24 @@ pbInvaderDemoCore.prototype.addInvaders = function()
 {
 	this.invaders = [];
 	for(var y = 0; y < 5; y++)
+	{
 		for(var x = 0; x < 12; x++)
 		{
-			var img = new imageClass();
-			img.create(this.invaderSurface, Math.floor(Math.random() * 3), 0.5, 0.5);
-			var invader = new pbTransformObject();
-			invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
-			this.shadowLayer.addChild(invader);
+			var invader = new pbSprite(20 + x * 48, 80 + y * 48, "invader", this.shadowLayer);
+			invader.z = 0.0;
+			invader.anchorX = 0.5;
+			invader.anchorY = 0.5;
+			invader.image.cellFrame = Math.floor(Math.random() * 3);
+			// var img = new imageClass();
+			// img.create(this.invaderSurface, Math.floor(Math.random() * 3), 0.5, 0.5);
+			// var invader = new pbTransformObject();
+			// invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
+			// this.shadowLayer.addChild(invader);
 			invader.row = y;
 			invader.die = false;
 			this.invaders.push(invader);
 		}
+	}
 	this.tick = 100;
 	this.moveY = 4;
 	this.invaderDirX = 8;
@@ -363,8 +370,8 @@ pbInvaderDemoCore.prototype.update = function()
 		{
 			// horizontal movement
 			invader.x += this.invaderDirX;
-			if (invader.x < invader.image.surface.cellWide * 0.5
-				|| invader.x > pbRenderer.width - invader.image.surface.cellWide * 0.5)
+			if (invader.x < invader.surface.cellWide * 0.5
+				|| invader.x > pbRenderer.width - invader.surface.cellWide * 0.5)
 				this.flipDir = true;
 
 			// invader dropping bomb
@@ -375,7 +382,7 @@ pbInvaderDemoCore.prototype.update = function()
 
 		// vertical movement
 		invader.y += this.invaderMoveY;
-		if (invader.y > pbRenderer.height + invader.image.surface.cellHigh)
+		if (invader.y > pbRenderer.height + invader.surface.cellHigh)
 			invader.die = true;
 
 		// animation
@@ -384,7 +391,7 @@ pbInvaderDemoCore.prototype.update = function()
 
 		if (invader.die)
 		{
-			this.shadowLayer.removeChild(invader);
+			this.shadowLayer.removeChild(invader.transform);
 			this.invaders.splice(i, 1);
 		}
 	}

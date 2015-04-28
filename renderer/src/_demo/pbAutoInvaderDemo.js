@@ -28,7 +28,7 @@ function pbAutoInvaderDemo( docId )
 	this.loader = new pbLoader( this.allLoaded, this );
 
 	this.playerImg = this.loader.loadImage( "player", "../img/invader/player.png" );
-	this.invaderImg = this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png" );
+	this.invaderImg = this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
 	this.saucerImg = this.loader.loadImage( "saucer", "../img/invader/invader.png" );
 	this.starsImg = this.loader.loadImage( "stars", "../img/invader/starfield.png" );
 	this.bulletImg = this.loader.loadImage( "bullet", "../img/invader/bullet.png" );
