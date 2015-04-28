@@ -17,8 +17,8 @@ function pbBaseImage()
 	this.cellFrame = 0;
 	this.gpuTexture = null;
 	this.corners = null;
-	this.anchorX = 0.5;
-	this.anchorY = 0.5;
+	this.anchorX = 0.0;
+	this.anchorY = 0.0;
 	this.fullScreen = false;
 	this.tiling = false;
 	this.isParticle = false;
@@ -28,8 +28,8 @@ function pbBaseImage()
 pbBaseImage.prototype.create = function(_surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen)
 {
 	if (_cellFrame === undefined || _cellFrame === null) _cellFrame = 0;
-	if (_anchorX === undefined || _anchorX === null) _anchorX = 0.5;
-	if (_anchorY === undefined || _anchorY === null) _anchorY = 0.5;
+	if (_anchorX === undefined || _anchorX === null) _anchorX = 0.0;
+	if (_anchorY === undefined || _anchorY === null) _anchorY = 0.0;
 	if (_tiling === undefined || _tiling === null) _tiling = false;
 	if (_fullScreen === undefined || _fullScreen === null) _fullScreen = false;
 
