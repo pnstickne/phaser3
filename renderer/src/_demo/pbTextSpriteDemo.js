@@ -96,7 +96,7 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	{
 		r = Math.floor(Math.random() * chars.length);
 		img = new imageClass();
-		img.create(this.surface, r);
+		img.create(this.surface, r, 0.5, 0.5);
 
 		spr = new pbTransformObject();
 		x = 8 + (i * 16) % pbRenderer.width;
@@ -113,7 +113,7 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	{
 		r = Math.floor(Math.random() * chars.length);
 		img = new imageClass();
-		img.create(this.surface, r + 95);
+		img.create(this.surface, r + 95, 0.5, 0.5);
 
 		spr = new pbTransformObject();
 		x = 8 + (i * 16) % pbRenderer.width;
@@ -130,7 +130,7 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	{
 		r = Math.floor(Math.random() * chars.length);
 		img = new imageClass();
-		img.create(this.surface, r + 95 * 2);
+		img.create(this.surface, r + 95 * 2, 0.5, 0.5);
 
 		spr = new pbTransformObject();
 		x = 8 + (i * 16) % pbRenderer.width;
