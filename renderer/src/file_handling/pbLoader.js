@@ -57,7 +57,7 @@ pbLoader.prototype.loadImage = function(key, filename, cellWide, cellHigh, cells
 	if (cellsWide === undefined) cellsWide = 1;
 	if (cellsHigh === undefined) cellsHigh = 1;
 
-	console.log("pbLoader.loadImage ", key, filename, cellWide + "," + cellHigh, cellsWide + "x" + cellsHigh);
+	console.log("pbLoader.loadImage ", key, filename, cellWide + "x" + cellHigh, cellsWide + "x" + cellsHigh);
 
 	if (textures.exists(key))
 	{

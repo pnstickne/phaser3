@@ -26,16 +26,16 @@ function pbPointLightDemo( docId )
 	this.loader = new pbLoader( this.allLoaded, this );
 
 
-	this.playerImg = this.loader.loadImage( "player", "../img/invader/player.png" );
-	this.invaderImg = this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
-	this.saucerImg = this.loader.loadImage( "saucer", "../img/invader/invader.png" );
-	//this.starsImg = this.loader.loadImage( "stars", "../img/invader/starfield.png" );
-	this.bulletImg = this.loader.loadImage( "bullet", "../img/invader/bullet.png" );
-	this.bombImg = this.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
-	this.rocketImg = this.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png" );
-	this.smokeImg = this.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png" );
-	this.explosionImg = this.loader.loadImage( "explosion", "../img/invader/explode.png" );
-	this.fontImg = this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png" );
+	this.loader.loadImage( "player", "../img/invader/player.png" );
+	this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
+	//this.loader.loadImage( "stars", "../img/invader/starfield.png" );
+	this.loader.loadImage( "bullet", "../img/invader/bullet.png" );
+	this.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
+	this.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png", 32, 32, 8, 1 );
+	this.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
+	this.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
+	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
+
 
 	this.logoImg = this.loader.loadImage( "../img/phaser_128x32.png" );
 

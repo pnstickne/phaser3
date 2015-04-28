@@ -11,7 +11,7 @@ function pbTransformObject()
 	this.visible = false;
 	this.x = 0;
 	this.y = 0;
-	this.z = 0;
+	this.z = 1;
 	this.rx = 0;
 	this.ry = 0;
 	this.rz = this.angleInRadians = 0;

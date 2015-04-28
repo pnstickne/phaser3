@@ -18,7 +18,6 @@ function pbInvaderDemoCore()
 
 	this.layer = null;
 	this.uiLayer = null;
-	this.textSurface = null;
 	this.text = null;
 	this.score = 0;
 	this.level = 0;
@@ -51,13 +50,8 @@ pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer, _useFrame, _s
 	this.uiLayer.create(this.layer, this.parent.renderer, 0, 0, 0, 0, 1, 1);
 	this.layer.addChild(this.uiLayer);
 
-	var imageData = this.parent.loader.getFile( this.parent.fontImg );
-	imageData = imageToPowerOfTwo(imageData);
-	this.textSurface = new pbSurface();
-	this.textSurface.create(16, 16, 95, 7, imageData);		// there are 7 rows of 95 characters which are 16x16 pixels each, first character is Space
-
 	this.text = new pbText();
-	this.text.create(this.textSurface, this.uiLayer, " ".charCodeAt(0));
+	this.text.create("font", this.uiLayer, " ".charCodeAt(0));
 	this.scoreLine = this.text.addLine("SCORE 000000", 20, 20, 16);
 	this.levelLine = this.text.addLine("LEVEL 001", pbRenderer.width - 20 - 9 * 16, 20, 16);
 
@@ -89,10 +83,8 @@ pbInvaderDemoCore.prototype.destroy = function()
 		this.uiLayer.destroy();
 	this.uiLayer = null;
 
-	if (this.textSurface)
-		this.textSurface.destroy();
-	this.textSurface = null;
-
+	if (this.layer)
+		this.layer.destroy();
 	this.layer = null;
 };
 
@@ -110,26 +102,14 @@ pbInvaderDemoCore.prototype.addSprites = function()
 {
 	console.log("pbInvaderDemoCore.addSprites");
 
-	// TODO: use different pbLayers for each part of this demo
-
 	var imageData;
 
 	// background
-	if (this.parent.starsImg !== undefined)
+	if (textures.exists("stars"))
 	{
 		this.bg = new pbSprite(0, 0, "stars", this.layer);
 		this.bg.fullScreen = true;
 		this.bg.tiling = true;
-		// this.bgSurface = new pbSurface();
-		// // _wide, _high, _numWide, _numHigh, _image
-		// this.bgSurface.create(0, 0, 1, 1, imageData);
-		// this.bgImage = new imageClass();
-		// // _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
-		// this.bgImage.create(this.bgSurface, 0, 0, 0, true, true);
-		// this.bg = new pbTransformObject();
-		// // _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-		// this.bg.create(this.bgImage, 0, 0, 1.0, 0, 1.0, 1.0);
-		// this.layer.addChild(this.bg);
 	}
 
 	// player
@@ -137,146 +117,96 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.player.z = 0.0;
 	this.player.anchorX = 0.5;
 	this.player.anchorY = 0.5;
-	// this.playerSurface = new pbSurface();
-	// this.playerSurface.create(0, 0, 1, 1, imageData);
-	// this.playerImage = new imageClass();
-	// this.playerImage.create(this.playerSurface, 0);
-	// this.player = new pbTransformObject();
-	// this.player.create(this.playerImage, pbRenderer.width * 0.5, pbRenderer.height * 0.9, 0.0, 0, 1.0, 1.0);
-//	this.player.visible = _separateShadowLayer;
-	// this.layer.addChild(this.player);
 	this.player.die = false;
 	this.playerDirX = -2;
 
 	// player bullets
-	imageData = this.parent.loader.getFile( this.parent.bulletImg );
-	this.bulletSurface = new pbSurface();
-	this.bulletSurface.create(0, 0, 1, 1, imageData);
 	this.bulletPool = [];		// pool for bullets which aren't firing
 	this.bullets = [];			// list of bullets which are firing
 	var i;
 	for(i = 0; i < 100; i++)
 	{
-		var img = new imageClass();
+		var bullet = new pbSprite(0, 0, "bullet");
+		bullet.z = 0.0;
 		// anchor point at front of bullet for easy collisions...
-		img.create(this.bulletSurface, 0, 0.5, 0.0);
-		var bullet = new pbTransformObject();
-		bullet.create(img, 0, 0, 0, 0, 1.0, 1.0);
+		bullet.anchorX = 0.5;
+		bullet.anchorY = 0.0;
 		// don't add it to the layer until it's fired
 		this.bulletPool.push(bullet);
 	}
 
 	// player rockets
-	imageData = this.parent.loader.getFile( this.parent.rocketImg );
-	this.rocketSurface = new pbSurface();
-	this.rocketSurface.create(32, 32, 8, 1, imageData);
 	this.rocketPool = [];		// pool for rockets which aren't firing
 	this.rockets = [];			// list of rockets which are firing
 	for(i = 0; i < 100; i++)
 	{
-		var img = new imageClass();
-		img.create(this.rocketSurface, 0, 0.5, 0.5);
-		var rocket = new pbTransformObject();
-		rocket.create(img, 0, 0, 0, 0, 1.0, 1.0);
-		// don't add it to the layer until it's fired
+		var rocket = new pbSprite(0, 0, "rocket");
+		rocket.z = 0.0;
+		rocket.anchorX = 0.5;
+		rocket.anchorY = 0.5;
 		this.rocketPool.push(rocket);
 	}
 
 	// aliens
-	// imageData = this.parent.loader.getFile( this.parent.invaderImg );
-	// this.invaderSurface = new pbSurface();
-	// this.invaderSurface.create(32, 32, 4, 1, imageData);
 	this.addInvaders();
 
 	// alien bombs
-	imageData = this.parent.loader.getFile( this.parent.bombImg );
-	this.bombSurface = new pbSurface();
-	this.bombSurface.create(0, 0, 1, 1, imageData);
 	this.bombPool = [];			// pool for bombs which aren't firing
 	this.bombs = [];			// list of bombs which are firing
 	for(i = 0; i < 100; i++)
 	{
-		var img = new imageClass();
-		img.create(this.bombSurface, 0, 0.5, 0.5);
-		var bomb = new pbTransformObject();
-		bomb.create(img, 0, 0, 0, 0, 1.0, 1.0);
-		// don't add it to the layer until it's fired
+		var bomb = new pbSprite(0, 0, "bomb");
+		bomb.z = 0.0;
+		bomb.anchorX = 0.5;
+		bomb.anchorY = 0.5;
 		this.bombPool.push(bomb);
 	}
 	// record the nearest bomb to the player's position (so he can try to dodge)
 	this.nearest = null;
 
 	// explosions
-	imageData = this.parent.loader.getFile( this.parent.explosionImg );
-	this.explosionSurface = new pbSurface();
 	this.explosionPool = [];
 	this.explosions = [];
-	this.explosionSurface.create(128, 128, 16, 1, imageData);
 	for(i = 0; i < 100; i++)
 	{
-		var img = new imageClass();
-		img.create(this.explosionSurface, 0, 0.5, 0.5);
-		var explosion = new pbTransformObject();
-		explosion.create(img, 0, 0, 0, 0, 0.5, 0.5);
+		var explosion = new pbSprite(0, 0, "explosion");
+		explosion.z = 0.0;
+		explosion.anchorX = 0.5;
+		explosion.anchorY = 0.5;
+		explosion.transform.scaleX = 0.5;
+		explosion.transform.scaleY = 0.5;
 		this.explosionPool.push(explosion);
 	}
 
 	// smoke puffs
-	imageData = this.parent.loader.getFile( this.parent.smokeImg );
-	this.smokeSurface = new pbSurface();
 	this.smokePool = [];
 	this.smokes = [];
-	this.smokeSurface.create(64, 64, 8, 1, imageData);
 	for(i = 0; i < 200; i++)
 	{
-		var img = new imageClass();
-		img.create(this.smokeSurface, 0, 0.5, 0.5);
-		var smoke = new pbTransformObject();
-		smoke.create(img, 0, 0, 0, 0, 1.0, 1.0);
+		var smoke = new pbSprite(0, 0, "smoke");
+		smoke.z = 0.0;
+		smoke.anchorX = 0.5;
+		smoke.anchorY = 0.5;
 		this.smokePool.push(smoke);
 	}
 
 	if (this.useFrame)
 	{
-		imageData = this.parent.loader.getFile( this.parent.frame_l );
-		var surface = new pbSurface();
-		surface.create(0, 0, 1, 1, imageData);
-		surface.isNPOT = true;
-		var img = new imageClass();
-		img.create(surface, 0, 0, 0, false, false);
-		var sprite = new pbTransformObject();
-		sprite.create(img, 0, 0, 0, 0, 1.0, 1.0);
-		this.uiLayer.addChild(sprite);
+		var sprite = new pbSprite(0, 0, "frame_l", this.uiLayer);
+		sprite.z = 0.0;
+		
+		sprite = new pbSprite(0, 0, "frame_t", this.uiLayer);
+		sprite.z = 0.0;
 
-		imageData = this.parent.loader.getFile( this.parent.frame_t );
-		surface = new pbSurface();
-		surface.create(0, 0, 1, 1, imageData);
-		surface.isNPOT = true;
-		img = new imageClass();
-		img.create(surface, 0, 0, 0, false, false);
-		sprite = new pbTransformObject();
-		sprite.create(img, 0, 0, 0, 0, 1.0, 1.0);
-		this.uiLayer.addChild(sprite);
+		sprite = new pbSprite(pbRenderer.width, 0, "frame_r", this.uiLayer);
+		sprite.z = 0.0;
+		sprite.anchorX = 1.0;
+		sprite.anchorY = 0.0;
 
-		imageData = this.parent.loader.getFile( this.parent.frame_r );
-		surface = new pbSurface();
-		surface.create(0, 0, 1, 1, imageData);
-		surface.isNPOT = true;
-		img = new imageClass();
-		img.create(surface, 0, 1, 0, false, false);
-		sprite = new pbTransformObject();
-		sprite.create(img, pbRenderer.width, 0, 0, 0, 1.0, 1.0);
-		this.uiLayer.addChild(sprite);
-
-		imageData = this.parent.loader.getFile( this.parent.frame_b );
-		surface = new pbSurface();
-		surface.create(0, 0, 1, 1, imageData);
-		surface.isNPOT = true;
-		img = new imageClass();
-		img.create(surface, 0, 0, 1, false, false);
-		sprite = new pbTransformObject();
-		sprite.create(img, 0, pbRenderer.height, 0, 0, 1.0, 1.0);
-		this.uiLayer.addChild(sprite);
+		sprite = new pbSprite(0, pbRenderer.height, "frame_b", this.uiLayer);
+		sprite.z = 0.0;
+		sprite.anchorX = 0.0;
+		sprite.anchorY = 1.0;
 	}
 };
 
@@ -293,11 +223,6 @@ pbInvaderDemoCore.prototype.addInvaders = function()
 			invader.anchorX = 0.5;
 			invader.anchorY = 0.5;
 			invader.image.cellFrame = Math.floor(Math.random() * 3);
-			// var img = new imageClass();
-			// img.create(this.invaderSurface, Math.floor(Math.random() * 3), 0.5, 0.5);
-			// var invader = new pbTransformObject();
-			// invader.create(img, 20 + x * 48, 80 + y * 48, 0, 0, 1.0, 1.0);
-			// this.shadowLayer.addChild(invader);
 			invader.row = y;
 			invader.die = false;
 			this.invaders.push(invader);
@@ -435,8 +360,8 @@ pbInvaderDemoCore.prototype.playerShoot = function()
 {
 	var b = this.bulletPool.pop();
 	b.x = this.player.x;
-	b.y = this.player.y - b.image.surface.cellHigh;
-	this.layer.addChild(b);
+	b.y = this.player.y - b.surface.cellHigh;
+	this.layer.addChild(b.transform);
 
 	this.bullets.push(b);
 };
@@ -451,10 +376,10 @@ pbInvaderDemoCore.prototype.playerBulletMove = function()
 		b.y -= 8;
 
 		// hit alien or off the top of the screen?
-		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.image.surface.cellHigh)
+		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.surface.cellHigh)
 		{
 			// kill the bullet and add it back to the pool
-			this.layer.removeChild(b);
+			this.layer.removeChild(b.transform);
 			this.bulletPool.push(b);
 			this.bullets.splice(i, 1);
 		}
@@ -490,7 +415,7 @@ pbInvaderDemoCore.prototype.playerShootRocket = function()
 		b.image.cellFrame = 0;
 		b.y = this.player.y;
 		b.velocity = 5;
-		this.layer.addChild(b);
+		this.layer.addChild(b.transform);
 
 		this.rockets.push(b);
 	}
@@ -525,10 +450,10 @@ pbInvaderDemoCore.prototype.playerRocketMove = function()
 		}
 
 		// hit alien or off the edges of the screen?
-		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.image.surface.cellHigh || b.x < 0 || b.x > pbRenderer.width)
+		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.surface.cellHigh || b.x < 0 || b.x > pbRenderer.width)
 		{
 			// kill the rocket and add it back to the pool
-			this.layer.removeChild(b);
+			this.layer.removeChild(b.transform);
 			this.rocketPool.push(b);
 			this.rockets.splice(i, 1);
 		}
@@ -541,10 +466,10 @@ pbInvaderDemoCore.prototype.invaderCollide = function(_x, _y, _explode)
 	for(var i = 0, l = this.invaders.length; i < l; i++)
 	{
 		var invader = this.invaders[i];
-		var w2 = invader.image.surface.cellWide * 0.5;
+		var w2 = invader.surface.cellWide * 0.5;
 		if (_x > invader.x - w2 && _x < invader.x + w2)
 		{
-			var h2 = invader.image.surface.cellHigh * 0.5;
+			var h2 = invader.surface.cellHigh * 0.5;
 			if (_y > invader.y - h2 && _y < invader.y + h2)
 			{
 				if (_explode)
@@ -567,7 +492,7 @@ pbInvaderDemoCore.prototype.invaderBomb = function(_invader)
 	b.x = _invader.x;
 	b.y = _invader.y;
 	b.vy = 2;
-	this.layer.addChild(b);
+	this.layer.addChild(b.transform);
 
 	this.bombs.push(b);
 };
@@ -610,10 +535,10 @@ pbInvaderDemoCore.prototype.invaderBombMove = function()
 		}
 
 		// hit player or off the bottom of the screen?
-		if (hit || b.y > pbRenderer.height + b.image.surface.cellHigh * 0.5)
+		if (hit || b.y > pbRenderer.height + b.surface.cellHigh * 0.5)
 		{
 			// kill the bullet and add it back to the pool
-			this.layer.removeChild(b);
+			this.layer.removeChild(b.transform);
 			this.bombPool.push(b);
 			this.bombs.splice(i, 1);
 		}
@@ -629,7 +554,7 @@ pbInvaderDemoCore.prototype.addExplosion = function(_x, _y)
 		explosion.x = _x;
 		explosion.y = _y;
 		explosion.image.cellFrame = 0;
-		this.layer.addChild(explosion);
+		this.layer.addChild(explosion.transform);
 		this.explosions.push(explosion);
 	}
 };
@@ -644,7 +569,7 @@ pbInvaderDemoCore.prototype.updateExplosions = function()
 		explosion.image.cellFrame += 0.2;
 		if (explosion.image.cellFrame >= 16)
 		{
-			this.layer.removeChild(explosion);
+			this.layer.removeChild(explosion.transform);
 			this.explosions.splice(i, 1);
 			this.explosionPool.push(explosion);
 		}
@@ -660,7 +585,7 @@ pbInvaderDemoCore.prototype.addSmoke = function(_x, _y)
 		smoke.x = _x;
 		smoke.y = _y;
 		smoke.image.cellFrame = 0;
-		this.layer.addChild(smoke);
+		this.layer.addChild(smoke.transform);
 		this.smokes.push(smoke);
 	}
 };
@@ -675,7 +600,7 @@ pbInvaderDemoCore.prototype.updateSmokes = function()
 		smoke.image.cellFrame += 0.2;
 		if (smoke.image.cellFrame >= 8)
 		{
-			this.layer.removeChild(smoke);
+			this.layer.removeChild(smoke.transform);
 			this.smokes.splice(i, 1);
 			this.smokePool.push(smoke);
 		}

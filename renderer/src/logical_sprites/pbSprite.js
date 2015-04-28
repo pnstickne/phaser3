@@ -9,6 +9,8 @@
 
 function pbSprite(_x, _y, _key, _layer)
 {
+    this.layer = _layer || null;
+
     // get the texture object from the textures dictionary using 'key'
     this.textureObject = textures.getFirst(_key);
     // set up easy access to the surface
@@ -21,9 +23,22 @@ function pbSprite(_x, _y, _key, _layer)
 	this.transform.create(this.image, _x, _y);
 
 	// if a layer is specified, add the new object as a child of it
-	if (_layer !== undefined && _layer !== null)
-		_layer.addChild(this.transform);
+	if (this.layer !== null)
+		this.layer.addChild(this.transform);
 }
+
+
+pbSprite.prototype.destroy = function()
+{
+    this.textureObject = null;
+    this.surface = null;
+    if (this.image) this.image.destroy();
+    this.image = null;
+    if (this.transform) this.transform.destroy();
+    this.transform = null;
+    if (this.layer) this.layer.removeChild(this.transform);
+    this.layer = null;
+};
 
 
 Object.defineProperties(pbSprite.prototype, {
@@ -52,6 +67,15 @@ Object.defineProperties(pbSprite.prototype, {
         },
         set: function (value) {
             this.transform.z = value;
+        }
+    },
+
+    angleInRadians: {
+        get: function () {
+            return this.transform.angleInRadians;
+        },
+        set: function (value) {
+            this.transform.angleInRadians = value;
         }
     },
 

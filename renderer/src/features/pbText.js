@@ -10,6 +10,7 @@
 
 function pbText()
 {
+	this.textureObject = null;
 	this.surface = null;
 	this.layer = null;
 	this.firstAscii = 0;
@@ -17,9 +18,10 @@ function pbText()
 }
 
 
-pbText.prototype.create = function(_surface, _layer, _firstAscii)
+pbText.prototype.create = function(_key, _layer, _firstAscii)
 {
-	this.surface = _surface;
+    this.textureObject = textures.getFirst(_key);
+	this.surface = this.textureObject.surface;
 	this.layer = _layer;
 	this.firstAscii = _firstAscii;
 	this.lines = [];
@@ -28,6 +30,7 @@ pbText.prototype.create = function(_surface, _layer, _firstAscii)
 
 pbText.prototype.destroy = function()
 {
+	this.textureObject = null;
 	this.surface = null;
 	this.layer = null;
 	for(var i = 0, l = this.lines.length; i < l; i++)

@@ -31,7 +31,9 @@ pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageDa
 	this.cellsWide = _numWide;
 	this.cellsHigh = _numHigh;
 	this.imageData = _imageData;
-	this.isNPOT = false;
+	this.isNPOT = !(is_power_of_2(_imageData.width) && is_power_of_2(_imageData.height));
+
+	console.log("pbSurface.create " + this.cellWide +  "x" + this.cellHigh + " " + this.cellsWide + "x" + this.cellsHigh + " isNPOT = " + (this.isNPOT ? "true" : "false"));
 
 	// dimensions of one cell in texture coordinates (0 = left/top, 1 = right/bottom)
 	if (_imageData)
@@ -55,6 +57,7 @@ pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageDa
 		for(var y = 0; y < this.cellsHigh; y++)
 			this.cellTextureBounds[x][y] = new pbRectangle(x * texWide, y * texHigh, texWide, texHigh);
 	}
+
 };
 
 
@@ -64,3 +67,8 @@ pbSurface.prototype.destroy = function()
 	this.cellTextureBounds = null;
 };
 
+
+function is_power_of_2(x)
+{
+    return ((x > 0) && !(x & (x - 1)));
+}
