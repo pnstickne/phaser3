@@ -18,8 +18,8 @@ function pbCanvasImage()
 	this.cellFrame = 0;
 	this.gpuTexture = null;
 	this.corners = null;
-	this.anchorX = 0.5;
-	this.anchorY = 0.5;
+	this.anchorX = 0.0;
+	this.anchorY = 0.0;
 	this.fullScreen = false;
 	this.tiling = false;
 	this.isParticle = false;
