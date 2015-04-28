@@ -38,7 +38,7 @@ function pbMultiFilterDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "../img/screen1.jpg" );
+	this.spriteImg = this.loader.loadImage( "image", "../img/screen1.jpg" );
 
 	console.log( "pbMultiFilterDemo c'tor exit" );
 }

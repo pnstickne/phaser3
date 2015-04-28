@@ -27,20 +27,21 @@ function pbMultiCameraDemo( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 
-	this.playerImg = this.loader.loadImage( "../img/invader/player.png" );
-	this.invaderImg = this.loader.loadImage( "../img/invader/invader32x32x4.png" );
-	this.saucerImg = this.loader.loadImage( "../img/invader/invader.png" );
-	this.starsImg = this.loader.loadImage( "../img/invader/starfield.png" );
-	this.bulletImg = this.loader.loadImage( "../img/invader/bullet.png" );
-	this.bombImg = this.loader.loadImage( "../img/invader/enemy-bullet.png" );
-	this.rocketImg = this.loader.loadImage( "../img/invader/rockets32x32x8.png" );
-	this.smokeImg = this.loader.loadImage( "../img/invader/smoke64x64x8.png" );
-	this.explosionImg = this.loader.loadImage( "../img/invader/explode.png" );
-	this.fontImg = this.loader.loadImage( "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png" );
-	this.frame_l = this.loader.loadImage( "../img/frame_l.png" );
-	this.frame_r = this.loader.loadImage( "../img/frame_r.png" );
-	this.frame_t = this.loader.loadImage( "../img/frame_t.png" );
-	this.frame_b = this.loader.loadImage( "../img/frame_b.png" );
+	this.playerImg = this.loader.loadImage( "player", "../img/invader/player.png" );
+	this.invaderImg = this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
+	this.saucerImg = this.loader.loadImage( "saucer", "../img/invader/invader.png" );
+	this.starsImg = this.loader.loadImage( "stars", "../img/invader/starfield.png" );
+	this.bulletImg = this.loader.loadImage( "bullet", "../img/invader/bullet.png" );
+	this.bombImg = this.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
+	this.rocketImg = this.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png" );
+	this.smokeImg = this.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png" );
+	this.explosionImg = this.loader.loadImage( "explosion", "../img/invader/explode.png" );
+	this.fontImg = this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png" );
+
+	this.frame_l = this.loader.loadImage( "frame_l", "../img/frame_l.png" );
+	this.frame_r = this.loader.loadImage( "frame_r", "../img/frame_r.png" );
+	this.frame_t = this.loader.loadImage( "frame_t", "../img/frame_t.png" );
+	this.frame_b = this.loader.loadImage( "frame_b", "../img/frame_b.png" );
 
 	console.log( "pbMultiCameraDemo c'tor exit" );
 }

@@ -33,8 +33,8 @@ function pbSoldierDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.sprite_run = this.loader.loadImage( "../img/soldier_a_run.png" );
-	this.sprite_smash = this.loader.loadImage( "../img/soldier_a_smash.png" );
+	this.sprite_run = this.loader.loadImage( "soldier_run", "../img/soldier_a_run.png" );
+	this.sprite_smash = this.loader.loadImage( "soldier_smash", "../img/soldier_a_smash.png" );
 
 	console.log( "pbSoldierDemo c'tor exit" );
 }

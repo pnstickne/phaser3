@@ -17,7 +17,7 @@ function pbTransformDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "../img/sphere3.png" );
+	this.spriteImg = this.loader.loadImage( "ball", "../img/sphere3.png" );
 
 	console.log( "pbTransformDemo c'tor exit" );
 }

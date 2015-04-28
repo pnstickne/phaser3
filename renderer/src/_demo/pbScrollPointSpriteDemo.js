@@ -36,10 +36,10 @@ function pbScrollPointSpriteDemo( docId )
 	this.loader = new pbLoader( this.allLoaded, this );
 
 	this.levelData = this.loader.loadFile( "../img/tiles/level1.json" );
-	this.bgImg = this.loader.loadImage( "../img/tiles/background_128x512.png" );
-	this.dudeImg = this.loader.loadImage( "../img/tiles/dude.png" );
-	this.tileImg = this.loader.loadImage( "../img/tiles/tiles-1.png" );
-
+	this.bgImg = this.loader.loadImage( "background", "../img/tiles/background_128x512.png" );
+	this.dudeImg = this.loader.loadImage( "dude", "../img/tiles/dude.png" );
+	this.tileImg = this.loader.loadImage( "tiles", "../img/tiles/tiles-1.png" );
+	
 	console.log( "pbScrollPointSpriteDemo c'tor exit" );
 }
 

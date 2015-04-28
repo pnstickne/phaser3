@@ -24,7 +24,7 @@ function pbBunnyPointAnimDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "../img/bunny_8x32x32.png" );
+	this.spriteImg = this.loader.loadImage( "bunny", "../img/bunny_8x32x32.png", 32, 32, 8, 1 );
 
 	console.log( "pbBunnyPointAnimDemo c'tor exit" );
 }

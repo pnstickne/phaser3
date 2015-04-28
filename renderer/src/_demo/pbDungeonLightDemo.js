@@ -22,9 +22,9 @@ function pbDungeonLightDemo( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 	this.levelData = this.loader.loadFile( "../img/tiles/dungeon.json" );
-	this.tileImg = this.loader.loadImage( "../img/tiles/gridtiles.png" );
-	this.wizImg = this.loader.loadImage( "../img/wiz.png" );
-	this.floorImg = this.loader.loadImage( "../img/dungeon__floor_2.jpg" );
+	this.tileImg = this.loader.loadImage( "tiles", "../img/tiles/gridtiles.png" );
+	this.wizImg = this.loader.loadImage( "wizard", "../img/wiz.png" );
+	this.floorImg = this.loader.loadImage( "floor", "../img/dungeon__floor_2.jpg" );
 
 	console.log( "pbDungeonLightDemo c'tor exit" );
 }

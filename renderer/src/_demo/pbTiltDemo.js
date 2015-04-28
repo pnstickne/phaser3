@@ -17,7 +17,7 @@ function pbTiltDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "../img/car.png" );
+	this.spriteImg = this.loader.loadImage( "car", "../img/car.png" );
 
 	console.log( "pbTiltDemo c'tor exit" );
 }

@@ -19,7 +19,7 @@ function pbRoadDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "../img/roadSand.png" );
+	this.spriteImg = this.loader.loadImage( "road", "../img/roadSand.png" );
 
 	console.log( "pbRoadDemo c'tor exit" );
 }

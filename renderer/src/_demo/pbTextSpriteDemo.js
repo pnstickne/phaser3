@@ -17,7 +17,7 @@ function pbTextSpriteDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png" );
+	this.spriteImg = this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png" );
 
 	console.log( "pbTextSpriteDemo c'tor exit" );
 }
