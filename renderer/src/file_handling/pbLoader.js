@@ -7,6 +7,11 @@
  */
 
 
+// global
+// TODO: improve this, globals are nasty especially when they're embedded in a source file like this
+var textures = null;
+
+
 function pbLoader(callback, context)
 {
 	console.log("pbLoader c'tor entry");
@@ -16,6 +21,9 @@ function pbLoader(callback, context)
 
 	this.callback = callback;
 	this.context = context;
+
+	textures = new pbDictionary();
+	textures.create();
 
 	console.log("pbLoader c'tor exit");
 }
@@ -42,52 +50,27 @@ pbLoader.prototype.loadFile = function(filename)
 };
 
 
-pbLoader.prototype.loadImage = function(filename)
+pbLoader.prototype.loadImage = function(key, filename)
 {
 	console.log("pbLoader.loadImage ", filename);
 
+	if (textures.exists(key))
+	{
+		console.log("pbLoader.loadImage attempting to reuse an existing key! " + key + " for " + filename);
+		return -1;
+	}
+
 	var index = this.files.length;
-	var _this = this;
 	
 	this.files[index] = new Image();
-	this.files[index].onload = this.makeLoadHandler(_this, index);	//function(evt) { _this.loaded.call(_this, evt, index); };
+	this.files[index].onload = this.makeLoadHandler(this, index);
 	this.files[index].src = filename;
 	this.queue.push(this.files[index]);
 
+	// add the new Image to the textures dictionary referenced by 'key'
+	textures.add(key, this.files[index]);
+
 	return index;
-};
-
-
-/**
- * [loadImages description]
- *
- * @param  {[type]} filenames - list of filename strings
- *
- * @return {[type]} list of file indices as used for pbLoader.getFile() calls
- */
-pbLoader.prototype.loadImages = function(filenames)
-{
-	console.log("pbLoader.loadImages ", filenames);
-
-	var indices = [];
-
-	for(var filename in filenames)
-	{
-		if (filenames.hasOwnProperty(filename))
-		{
-			var index = this.files.length;
-			var _this = this;
-			
-			this.files[index] = new Image();
-			this.files[index].onload = this.makeLoadHandler(_this, index);	//function(evt) { _this.loaded.call(_this, evt, index); };
-			this.files[index].src = filename;
-			this.queue.push(this.files[index]);
-
-			indices.push(index);
-		}
-	}
-
-	return indices;
 };
 
 

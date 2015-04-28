@@ -22,6 +22,14 @@ pbDictionary.prototype.create = function()
 };
 
 
+/**
+ * [add description]
+ *
+ * @param {[type]} _key   [description]
+ * @param {[type]} _value [description]
+ *
+ * @return {Boolean} true if key already existed and we added another value to it
+ */
 pbDictionary.prototype.add = function(_key, _value)
 {
 	var i = this.keys.indexOf(_key);
@@ -29,13 +37,34 @@ pbDictionary.prototype.add = function(_key, _value)
 	{
 		// key exists, add value to the end of the list of matching values
 		this.values[i].push(_value);
+		return true;
 	}
-	else
+
+	// key does not exist, create new key and list of matching values
+	i = this.keys.push(_key) - 1;
+	this.values[i] = [ _value ];
+	return false;
+};
+
+
+pbDictionary.prototype.exists = function(_key)
+{
+	var i = this.keys.indexOf(_key);
+	return (i !== -1);
+};
+
+
+pbDictionary.prototype.getFirst = function(_key)
+{
+	var i = this.keys.indexOf(_key);
+	if (i != -1)
 	{
-		// key does not exist, create new key and list of matching values
-		var i = this.keys.push(_key) - 1;
-		this.values[i] = [ _value ];
+		// key exists, return first from the list of matching values
+		return this.values[i][0];
 	}
+
+	// key does not exist
+	return null;
 };
 
 

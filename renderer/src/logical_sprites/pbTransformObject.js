@@ -157,7 +157,7 @@ pbTransformObject.prototype.update2D = function(_drawDictionary)
 
 pbTransformObject.prototype.update3D = function(_drawDictionary)
 {
-	// console.log("pbSprite3D.update");
+	// console.log("pbTransformObject.update3D");
 
 	if (!this.alive)
 		return true;

@@ -7,11 +7,11 @@
 
 
 
-function pbSprite(_x, _y, _imageData, _layer)
+function pbSprite(_x, _y, _key, _layer)
 {
 	// create a surface and put the raw image data into it
 	this.surface = new pbSurface();
-	this.surface.create(0, 0, 1, 1, _imageData);
+	this.surface.create(0, 0, 1, 1, textures.getFirst(_key));
 	// create an image holder and attach the new surface
 	this.image = new imageClass();
 	this.image.create(this.surface);

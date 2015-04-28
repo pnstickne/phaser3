@@ -128,7 +128,7 @@ pbSoldierDemo.prototype.addSprites = function(num)
 		spr.create(img, x, y, 1.0, 0, 96 / 600, 96 / 600);
 		rootLayer.addChild(spr);
 
-		// TODO: add pbWebGlLayer system to manage layers of pbSprites
+		// TODO: add pbWebGlLayer system to manage layers of pbTransformObject
 		// TODO: *maybe* add callback for pbTransformObject.update to implement AI functionality directly without needing unique objects for everything(?)
 		// OR: create a demoSoldier object
 		this.spriteList.push(

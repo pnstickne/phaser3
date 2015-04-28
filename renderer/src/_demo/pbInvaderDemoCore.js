@@ -117,8 +117,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	// background
 	if (this.parent.starsImg !== undefined)
 	{
-		imageData = this.parent.loader.getFile( this.parent.starsImg );
-		this.bg = new pbSprite(0, 0, imageData, this.layer);
+		this.bg = new pbSprite(0, 0, "stars", this.layer);
 		this.bg.fullScreen = true;
 		this.bg.tiling = true;
 		// this.bgSurface = new pbSurface();
@@ -134,8 +133,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	}
 
 	// player
-	imageData = this.parent.loader.getFile( this.parent.playerImg );
-	this.player = new pbSprite(pbRenderer.width * 0.5, pbRenderer.height * 0.9, imageData, this.layer);
+	this.player = new pbSprite(pbRenderer.width * 0.5, pbRenderer.height * 0.9, "player", this.layer);
 	this.player.z = 0.0;
 	this.player.anchorX = 0.5;
 	this.player.anchorY = 0.5;
