@@ -50,11 +50,52 @@ pbLoader.prototype.loadImage = function(filename)
 	var _this = this;
 	
 	this.files[index] = new Image();
-	this.files[index].onload = function(evt) { _this.loaded.call(_this, evt, index); };
+	this.files[index].onload = this.makeLoadHandler(_this, index);	//function(evt) { _this.loaded.call(_this, evt, index); };
 	this.files[index].src = filename;
 	this.queue.push(this.files[index]);
 
 	return index;
+};
+
+
+/**
+ * [loadImages description]
+ *
+ * @param  {[type]} filenames - list of filename strings
+ *
+ * @return {[type]} list of file indices as used for pbLoader.getFile() calls
+ */
+pbLoader.prototype.loadImages = function(filenames)
+{
+	console.log("pbLoader.loadImages ", filenames);
+
+	var indices = [];
+
+	for(var filename in filenames)
+	{
+		if (filenames.hasOwnProperty(filename))
+		{
+			var index = this.files.length;
+			var _this = this;
+			
+			this.files[index] = new Image();
+			this.files[index].onload = this.makeLoadHandler(_this, index);	//function(evt) { _this.loaded.call(_this, evt, index); };
+			this.files[index].src = filename;
+			this.queue.push(this.files[index]);
+
+			indices.push(index);
+		}
+	}
+
+	return indices;
+};
+
+
+pbLoader.prototype.makeLoadHandler = function(context, index)
+{
+	return function(evt) {
+		context.loaded.call(context, evt, index);
+	};
 };
 
 
