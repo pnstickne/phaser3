@@ -1,6 +1,6 @@
 /**
  *
- * Logical container for a pbImage with transforms.
+ * A view-space transform for a sprite or layer, with an optional pbImage attached.
  * 
  */
 
@@ -43,6 +43,10 @@ pbTransformObject.prototype.create = function(_image, _x, _y, _z, _angleInRadian
 	// console.log("pbTransformObject.create");
 
 	if (_image === undefined) _image = null;
+	if (_z === undefined) _z = 1.0;
+	if (_angleInRadians === undefined) _angleInRadians = 0;
+	if (_scaleX === undefined) _scaleX = 1.0;
+	if (_scaleY === undefined) _scaleY = 1.0;
 
 	this.image = _image;
 
