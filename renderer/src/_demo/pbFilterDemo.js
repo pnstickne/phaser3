@@ -46,6 +46,7 @@ function pbFilterDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
+	this.tintShaderJSON = this.loader.loadFile( "../JSON/tintShaderSources.json" );
 	this.spriteImg = this.loader.loadImage( "image", "../img/screen1.jpg" );
 
 	console.log( "pbFilterDemo c'tor exit" );
@@ -63,6 +64,11 @@ pbFilterDemo.prototype.allLoaded = function()
 pbFilterDemo.prototype.create = function()
 {
 	console.log("pbFilterDemo.create");
+
+	// add the shader
+	var jsonString = this.loader.getFile( this.tintShaderJSON ).responseText;
+	console.log(jsonString + "\n");
+	this.tintShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
 
 	var imageData = this.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
@@ -150,7 +156,7 @@ pbFilterDemo.prototype.update = function()
 
 	// copy rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyFilterToTexture(0, this.rttTexture, this.setTint, this);
+	this.renderer.graphics.applyShaderToTexture(0, this.rttTexture, this.setTint, this);
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -158,14 +164,14 @@ pbFilterDemo.prototype.update = function()
 };
 
 
-// callback required to set the correct filter program and it's associated attributes and/or uniforms
-pbFilterDemo.prototype.setTint = function(_filters)
+// callback required to set the correct shader program and it's associated attributes and/or uniforms
+pbFilterDemo.prototype.setTint = function(_shaders)
 {
    	// set the filter program
-	_filters.setProgram(_filters.tintFilterProgram, 0);
+	_shaders.setProgram(this.tintShaderProgram, 0);
 	// set the tint values in the filter shader program
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uRedScale, this.redScale );
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uGreenScale, this.greenScale );
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uBlueScale, this.blueScale );
+	gl.uniform1f( _shaders.getUniform( "uRedScale" ), this.redScale );
+	gl.uniform1f( _shaders.getUniform( "uGreenScale" ), this.greenScale );
+	gl.uniform1f( _shaders.getUniform( "uBlueScale" ), this.blueScale );
 };
 
