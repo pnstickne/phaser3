@@ -21,6 +21,7 @@ function pbDungeonLightDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
+	this.multiLightBgShaderJSON = this.loader.loadFile( "../JSON/multiLightBgSources.json" );
 	this.levelData = this.loader.loadFile( "../img/tiles/dungeon.json" );
 	this.tileImg = this.loader.loadImage( "tiles", "../img/tiles/gridtiles.png" );
 	this.loader.loadImage( "wizard", "../img/wiz.png", 32, 32, 30, 4 );
@@ -41,6 +42,11 @@ pbDungeonLightDemo.prototype.allLoaded = function()
 pbDungeonLightDemo.prototype.create = function()
 {
 	console.log("pbDungeonLightDemo.create");
+
+	// add the shader
+	var jsonString = this.loader.getFile( this.multiLightBgShaderJSON ).responseText;
+	console.log(jsonString + "\n");
+	this.multiLightBgShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
 
 	var tileMapJSON = this.loader.getFile(this.levelData).responseText;
 
@@ -437,10 +443,10 @@ pbDungeonLightDemo.prototype.postUpdate = function()
 {
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
-	// copy the rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
+	// copy the rttTexture to the filterFramebuffer attached texture, applying a shader as it draws
 	gl.activeTexture(gl.TEXTURE1);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyFilterToTexture(1, this.rttTexture, this.setFilter, this);
+	this.renderer.graphics.applyShaderToTexture(1, this.rttTexture, this.setShader, this);
 
 	// update transforms and draw sprites that are not shadow casters
 	this.topLayer.update();
@@ -507,18 +513,18 @@ pbDungeonLightDemo.prototype.setLightData = function()
 };
 
 
-// callback required to set the correct filter program and it's associated attributes and/or uniforms
-pbDungeonLightDemo.prototype.setFilter = function(_filters, _textureNumber)
+// callback required to set the correct shader program and it's associated attributes and/or uniforms
+pbDungeonLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 {
    	// set the filter program
-	_filters.setProgram(_filters.multiLightBgShaderProgram, _textureNumber);
+	var program = _shaders.setProgram(this.multiLightBgShaderProgram, _textureNumber);
 
 	// set the secondary source texture for the filter - this draws the floors using the ImageData in register 3
-	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniforms.uFloorSampler, 3 );
+	gl.uniform1i( program.samplerUniforms.uFloorSampler, 3 );
 
 	// set the parameters for the filter shader program
 	this.setLightData();
 
 	// send them to the shader
-	gl.uniform4fv( pbWebGlShaders.currentProgram.uniforms.uLights, lightData );
+	gl.uniform4fv( program.uniforms.uLights, lightData );
 };

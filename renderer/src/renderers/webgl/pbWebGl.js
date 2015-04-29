@@ -451,6 +451,33 @@ pbWebGl.prototype.applyFilterToTexture = function(_textureNumber, _srcTexture, _
 };
 
 
+pbWebGl.prototype.applyShaderToTexture = function(_textureNumber, _srcTexture, _callback, _context)
+{
+	// callback to set the shader program and parameters
+	_callback.call(_context, this.shaders, _textureNumber);
+
+	// create a buffer for the vertices used to draw the _srcTexture to the _dstTexture
+	var buffer = this.drawingArray.subarray(0, 16);
+
+	var verts = [
+		1,  1,
+		-1,  1,
+		-1, -1,
+		1,  1,
+		-1, -1,
+		1, -1
+	];
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW );
+
+	gl.bindTexture(gl.TEXTURE_2D, _srcTexture);
+
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(0);
+	gl.drawArrays(gl.TRIANGLES, 0, 3 * 2);	// three vertices per tri, two tris
+};
+
+
 /**
  * drawImageToTextureWithTransform - draw images to a render texture
  * - after each call the framebuffer is released, so no further action is required when rendering to texture is completed

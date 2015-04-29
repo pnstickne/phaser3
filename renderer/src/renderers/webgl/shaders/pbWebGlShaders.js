@@ -395,25 +395,26 @@ var simpleShaderSources = {
 
 
 // static variables
-pbWebGlShaders.currentProgram = null;
+pbWebGlShaders.currentProgram = -1;
 
 
 
 function pbWebGlShaders()
 {
-	// TODO: change this into a list
-	this.graphicsShaderProgram = null;
-	this.imageShaderProgram = null;
-	this.imageShaderProgram3D = null;
-	this.modezShaderProgram = null;
-	this.simpleShaderProgram = null;
-	this.blitShaderProgram = null;
-	this.blitShaderPointProgram = null;
-	this.blitShaderPointAnimProgram = null;
-	this.batchImageShaderProgram = null;
-	this.rawBatchImageShaderProgram = null;
+	this.programList = null;
+	pbWebGlShaders.currentProgram = -1;
 
-	pbWebGlShaders.currentProgram = null;
+	// hardwired shaders used by the renderer
+	this.graphicsShaderProgram = -1;
+	this.imageShaderProgram = -1;
+	this.imageShaderProgram3D = -1;
+	this.modezShaderProgram = -1;
+	this.simpleShaderProgram = -1;
+	this.blitShaderProgram = -1;
+	this.blitShaderPointProgram = -1;
+	this.blitShaderPointAnimProgram = -1;
+	this.batchImageShaderProgram = -1;
+	this.rawBatchImageShaderProgram = -1;
 }
 
 
@@ -421,23 +422,23 @@ function pbWebGlShaders()
 pbWebGlShaders.prototype.create = function()
 {
 	// create the shader programs for each drawing mode
-	
+	this.programList = [];
+
 	// drawing
-	this.graphicsShaderProgram = this.createProgram( graphicsShaderSources );
+	this.graphicsShaderProgram = this.add( graphicsShaderSources );
 
 	// individual sprite processing
-	this.imageShaderProgram = this.createProgram( imageShaderSources );
-	this.imageShaderProgram3D = this.createProgram( imageShaderSource3D );
-	this.modezShaderProgram = this.createProgram( modezShaderSources );
-	this.simpleShaderProgram = this.createProgram( simpleShaderSources );
+	this.imageShaderProgram = this.add( imageShaderSources );
+	this.imageShaderProgram3D = this.add( imageShaderSource3D );
+	this.modezShaderProgram = this.add( modezShaderSources );
+	this.simpleShaderProgram = this.add( simpleShaderSources );
 
 	// batch processing
-	this.blitShaderProgram = this.createProgram( blitShaderSources );
-	this.blitShaderPointProgram = this.createProgram( blitShaderPointSources );
-	this.blitShaderPointAnimProgram = this.createProgram( blitShaderPointAnimSources );
-	this.batchImageShaderProgram = this.createProgram( batchImageShaderSources );
-	this.rawBatchImageShaderProgram = this.createProgram( rawBatchImageShaderSources );
-
+	this.blitShaderProgram = this.add( blitShaderSources );
+	this.blitShaderPointProgram = this.add( blitShaderPointSources );
+	this.blitShaderPointAnimProgram = this.add( blitShaderPointAnimSources );
+	this.batchImageShaderProgram = this.add( batchImageShaderSources );
+	this.rawBatchImageShaderProgram = this.add( rawBatchImageShaderSources );
 };
 
 
@@ -445,18 +446,38 @@ pbWebGlShaders.prototype.create = function()
 pbWebGlShaders.prototype.destroy = function()
 {
 	this.clearProgram();
-	this.graphicsShaderProgram = null;
-	this.imageShaderProgram = null;
-	this.imageShaderProgram3D = null;
-	this.modezShaderProgram = null;
-	this.simpleShaderProgram = null;
-	this.blitShaderProgram = null;
-	this.blitShaderPointProgram = null;
-	this.blitShaderPointAnimProgram = null;
-	this.batchImageShaderProgram = null;
-	this.rawBatchImageShaderProgram = null;
 
-	pbWebGlShaders.currentProgram = null;
+	this.programList = null;
+
+	this.graphicsShaderProgram = -1;
+	this.imageShaderProgram = -1;
+	this.imageShaderProgram3D = -1;
+	this.modezShaderProgram = -1;
+	this.simpleShaderProgram = -1;
+	this.blitShaderProgram = -1;
+	this.blitShaderPointProgram = -1;
+	this.blitShaderPointAnimProgram = -1;
+	this.batchImageShaderProgram = -1;
+	this.rawBatchImageShaderProgram = -1;
+
+	pbWebGlShaders.currentProgram = -1;
+};
+
+
+pbWebGlShaders.prototype.addJSON = function( jsonString )
+{
+    var programJSON = JSON.parse(jsonString);
+    programJSON.fragment = programJSON.fragment.join('\n');
+    programJSON.vertex = programJSON.vertex.join('\n');
+    return this.add( programJSON );
+};
+
+
+pbWebGlShaders.prototype.add = function( _shaderSource )
+{
+	var programIndex = this.programList.length;
+	this.programList.push(this.createProgram( _shaderSource ));
+	return programIndex;
 };
 
 
@@ -525,85 +546,86 @@ pbWebGlShaders.prototype.createProgram = function( _source )
 		return null;
 	}
 
-	// add the parameter lists from the shader source object
-	program.attributes = _source.attributes;
-	program.uniforms = _source.uniforms;
-	program.samplers = _source.samplers;
+	// establish links to attributes, uniforms, and the texture sampler
+	if (_source.attributes)
+	{
+		program.attributes = {};
+		for(var a in _source.attributes)
+		{
+			if (_source.attributes.hasOwnProperty(a))
+			{
+				var attribute = _source.attributes[a];
+				program.attributes[attribute] = gl.getAttribLocation( program, attribute );
+				if (program.attributes[attribute] === null)
+					console.log("WARNING (pbWebGlFilters.setProgram): filter attribute returned NULL for", attribute, "it's probably unused in the filter");
+			}
+		}
+	}
+
+	// establish links to uniforms
+	if (_source.uniforms)
+	{
+		program.uniforms = {};
+		for(var u in _source.uniforms)
+		{
+			if (_source.uniforms.hasOwnProperty(u))
+			{
+				var uniform = _source.uniforms[u];
+				program.uniforms[uniform] = gl.getUniformLocation( program, uniform );
+				if (program.uniforms[uniform] === null)
+					console.log("WARNING (pbWebGlFilters.setProgram): filter uniform returned NULL for", uniform, "it's probably unused in the filter");
+			}
+		}
+	}
+
+	// establish link to the texture sampler (source)
+	if (_source.samplers)
+	{
+		program.samplerUniforms = {};
+		for(var s in _source.samplers)
+		{
+			if (_source.samplers.hasOwnProperty(s))
+			{
+				var sampler = _source.samplers[s];
+				program.samplerUniforms[sampler] = gl.getUniformLocation( program, sampler );
+				if (program.samplerUniforms[sampler] === null)
+					console.log("WARNING (pbWebGlFilters.setProgram): filter sampler returned NULL for", sampler, "it's probably unused in the filter");
+			}
+		}
+	}
+
+//	program.samplerUniform = gl.getUniformLocation( program, _source.sampler );
 
 	return program;
 };
 
 
-pbWebGlShaders.prototype.setProgram = function(_program, _textureNumber)
+pbWebGlShaders.prototype.setProgram = function(_programIndex, _textureNumber)
 {
-	if (pbWebGlShaders.currentProgram != _program)
+	if (pbWebGlShaders.currentProgram != _programIndex)
 	{
 		// remove the old program
 		this.clearProgram();
 		
-		//console.log("pbWebGlShaders.setProgram", _program);
-		
 		// set the new program
-		pbWebGlShaders.currentProgram = _program;
-		gl.useProgram( pbWebGlShaders.currentProgram );
+		pbWebGlShaders.currentProgram = _programIndex;
+		var program = this.programList[ pbWebGlShaders.currentProgram ];
+		gl.useProgram( program );
 
-		// establish links to attributes and enable them
-		if (pbWebGlShaders.currentProgram.attributes)
-		{
-			for(var a in pbWebGlShaders.currentProgram.attributes)
-			{
-				if (pbWebGlShaders.currentProgram.attributes.hasOwnProperty(a))
-				{
-					var attribute = pbWebGlShaders.currentProgram.attributes[a];
-					pbWebGlShaders.currentProgram[attribute] = gl.getAttribLocation( pbWebGlShaders.currentProgram, attribute );
-					if (pbWebGlShaders.currentProgram[attribute] === null)
-						console.log("WARNING (pbWebGlShaders.setProgram): shader attribute returned NULL for", attribute, "it's probably unused in the shader");
-					else
-						gl.enableVertexAttribArray( pbWebGlShaders.currentProgram[attribute] );
-				}
-			}
-		}
+		// enable all attributes
+		if (program.attributes)
+			for(var a in program.attributes)
+				if (program.attributes.hasOwnProperty(a))
+					gl.enableVertexAttribArray( program.attributes[a] );
 
-		// establish links to uniforms
-		if (pbWebGlShaders.currentProgram.uniforms)
-		{
-			for(var u in pbWebGlShaders.currentProgram.uniforms)
-			{
-				if (pbWebGlShaders.currentProgram.uniforms.hasOwnProperty(u))
-				{
-					var uniform = pbWebGlShaders.currentProgram.uniforms[u];
-					pbWebGlShaders.currentProgram[uniform] = gl.getUniformLocation( pbWebGlShaders.currentProgram, uniform );
-					if (pbWebGlShaders.currentProgram[uniform] === null)
-						console.log("WARNING (pbWebGlShaders.setProgram): shader uniform returned NULL for", uniform, "it's probably unused in the shader");
-				}
-			}
-		}
+		// set the fragment shader sampler to use the correct texture
+		if (program.samplerUniforms && program.samplerUniforms.uImageSampler)
+	   		gl.uniform1i( program.samplerUniforms.uImageSampler, _textureNumber );
 
-		// establish links to the texture samplers
-		if (pbWebGlShaders.currentProgram.samplers)
-		{
-			pbWebGlShaders.currentProgram.samplerUniforms = {};
-			for(var s in pbWebGlShaders.currentProgram.samplers)
-			{
-				if (pbWebGlShaders.currentProgram.samplers.hasOwnProperty(s))
-				{
-					var sampler = pbWebGlShaders.currentProgram.samplers[s];
-					pbWebGlShaders.currentProgram.samplerUniforms[sampler] = gl.getUniformLocation( pbWebGlShaders.currentProgram, sampler );
-					if (pbWebGlShaders.currentProgram.samplerUniforms[sampler] === null)
-						console.log("WARNING (pbWebGlShaders.setProgram): shader sampler returned NULL for", sampler, "it's probably unused in the shader");
-				}
-			}
-		}
-
-		// if (pbWebGlShaders.currentProgram.samplers)
-		// {
-		// 	pbWebGlShaders.currentProgram.samplerUniform = gl.getUniformLocation( pbWebGlShaders.currentProgram, pbWebGlShaders.currentProgram.sampler );
-		// }
+	   	return program;
 	}
 
-	if (pbWebGlShaders.currentProgram.samplerUniforms && pbWebGlShaders.currentProgram.samplerUniforms.uImageSampler)
-		// set the fragment shader sampler to use _textureNumber
-	   	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniforms.uImageSampler, _textureNumber );
+	return this.programList[ pbWebGlShaders.currentProgram ];
 };
 
 
@@ -614,22 +636,24 @@ pbWebGlShaders.prototype.setProgram = function(_program, _textureNumber)
  */
 pbWebGlShaders.prototype.clearProgram = function()
 {
-	if (pbWebGlShaders.currentProgram)
+	if (pbWebGlShaders.currentProgram != -1)
 	{
+		var program = this.programList[ pbWebGlShaders.currentProgram ];
+
 		// break links to all attributes and disable them
-		if (pbWebGlShaders.currentProgram.attributes)
+		if (program.attributes)
 		{
-			for(var a in pbWebGlShaders.currentProgram.attributes)
+			for(var a in program.attributes)
 			{
-				if (pbWebGlShaders.currentProgram.attributes.hasOwnProperty(a))
+				if (program.attributes.hasOwnProperty(a))
 				{
-					var value = pbWebGlShaders.currentProgram.attributes[a];
+					var value = program.attributes[a];
 					gl.disableVertexAttribArray( value );
 				}
 			}
 		}
 
-		pbWebGlShaders.currentProgram = null;
+		pbWebGlShaders.currentProgram = -1;
 	}
 };
 
