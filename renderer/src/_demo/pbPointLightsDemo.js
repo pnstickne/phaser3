@@ -35,9 +35,6 @@ function pbPointLightsDemo( docId )
 	this.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
 	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
 
-
-	this.logoImg = this.loader.loadImage( "../img/phaser_128x32.png" );
-
 	console.log( "pbPointLightsDemo c'tor exit" );
 }
 
