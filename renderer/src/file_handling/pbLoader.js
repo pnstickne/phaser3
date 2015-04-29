@@ -40,7 +40,7 @@ pbLoader.prototype.loadFile = function(filename)
 	this.files[index].open("GET", filename, true);
 	this.files[index].responseType = 'text';
 	this.files[index].onload = function(evt) {
-		_this.loaded.call(_this, evt, index);
+		_this.loaded.call(_this, evt, "text", index);
 	};
 
 	this.queue.push(this.files[index]);
@@ -68,14 +68,17 @@ pbLoader.prototype.loadImage = function(key, filename, cellWide, cellHigh, cells
 	var index = this.files.length;
 	
 	var image = this.files[index] = new Image();
+	// attach all the sprite sheet details to the new image to make them available in the callback after the image has loaded
+	image.key = key;
+	image.cellWide = cellWide;
+	image.cellHigh = cellHigh;
+	image.cellsWide = cellsWide;
+	image.cellsHigh = cellsHigh;
+	// set up the callback for load completion
 	image.onload = this.makeLoadHandler(this, index);
 	image.src = filename;
+	// add this image to a queue so the load complete callback can tell when all images have been loaded
 	this.queue.push(image);
-
-	var surface = new pbSurface();
-	surface.create(cellWide, cellHigh, cellsWide, cellsHigh, image);
-	// add the Image and the surface to the textures dictionary referenced by 'key'
-	textures.add(key, { imageData: image, surface: surface });
 
 	return index;
 };
@@ -84,12 +87,12 @@ pbLoader.prototype.loadImage = function(key, filename, cellWide, cellHigh, cells
 pbLoader.prototype.makeLoadHandler = function(context, index)
 {
 	return function(evt) {
-		context.loaded.call(context, evt, index);
+		context.loaded.call(context, evt, "image", index);
 	};
 };
 
 
-pbLoader.prototype.loaded = function(evt)
+pbLoader.prototype.loaded = function(evt, type, index)
 {
 	console.log("pbLoader.loaded");
 
@@ -97,6 +100,15 @@ pbLoader.prototype.loaded = function(evt)
 	if (i != -1)
 	{
 		this.queue.splice(i, 1);
+	}
+
+	if (type == "image")
+	{
+		var image = evt.target;
+		var surface = new pbSurface();
+		surface.create(image.cellWide, image.cellHigh, image.cellsWide, image.cellsHigh, image);
+		// add the Image and the surface to the textures dictionary referenced by 'key'
+		textures.add(image.key, { imageData: image, surface: surface });
 	}
 
 	// loaded all files so the queue is now empty?
