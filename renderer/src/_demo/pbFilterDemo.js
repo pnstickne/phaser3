@@ -67,7 +67,6 @@ pbFilterDemo.prototype.create = function()
 
 	// add the shader
 	var jsonString = this.loader.getFile( this.tintShaderJSON ).responseText;
-	console.log(jsonString + "\n");
 	this.tintShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
 
 	var imageData = this.loader.getFile( this.spriteImg );
@@ -167,9 +166,9 @@ pbFilterDemo.prototype.update = function()
 // callback required to set the correct shader program and it's associated attributes and/or uniforms
 pbFilterDemo.prototype.setTint = function(_shaders)
 {
-   	// set the filter program
+   	// set the shader program
 	_shaders.setProgram(this.tintShaderProgram, 0);
-	// set the tint values in the filter shader program
+	// set the tint values in the shader program
 	gl.uniform1f( _shaders.getUniform( "uRedScale" ), this.redScale );
 	gl.uniform1f( _shaders.getUniform( "uGreenScale" ), this.greenScale );
 	gl.uniform1f( _shaders.getUniform( "uBlueScale" ), this.blueScale );

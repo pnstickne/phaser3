@@ -299,7 +299,6 @@ var imageShaderSource3D = {
 	vertex:
 		"  precision mediump float;" +
 		"  attribute vec4 aPosition;" +
-		"  uniform float uZ;" +
 		"  uniform mat4 uProjectionMatrix4;" +
 		"  uniform mat4 uModelMatrix4;" +
 		"  varying vec2 vTexCoord;" +
@@ -313,7 +312,7 @@ var imageShaderSource3D = {
 		[ "aPosition" ],
 
 	uniforms:
-		[ "uZ", "uProjectionMatrix4", "uModelMatrix4" ],
+		[ "uProjectionMatrix4", "uModelMatrix4" ],
 
 	samplers:
 		[ "uImageSampler" ]

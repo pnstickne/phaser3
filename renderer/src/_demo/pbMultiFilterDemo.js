@@ -38,6 +38,8 @@ function pbMultiFilterDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
+	this.tintShaderJSON = this.loader.loadFile( "../JSON/tintShaderSources.json" );
+	this.waveShaderJSON = this.loader.loadFile( "../JSON/waveShaderSources.json" );
 	this.spriteImg = this.loader.loadImage( "image", "../img/screen1.jpg" );
 
 	console.log( "pbMultiFilterDemo c'tor exit" );
@@ -55,6 +57,12 @@ pbMultiFilterDemo.prototype.allLoaded = function()
 pbMultiFilterDemo.prototype.create = function()
 {
 	console.log("pbMultiFilterDemo.create");
+
+	// add the shaders
+	var jsonString = this.loader.getFile( this.tintShaderJSON ).responseText;
+	this.tintShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
+	jsonString = this.loader.getFile( this.waveShaderJSON ).responseText;
+	this.waveShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
 
 	var imageData = this.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
@@ -134,13 +142,13 @@ pbMultiFilterDemo.prototype.update = function()
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
 	this.renderer.graphics.drawImageWithTransform(this.srcImage, this.srcTransform, 1.0);
 
-	// draw rttTexture to the filterTexture, applying a tint filter (from TEXTURE0, filterTexture is on TEXTURE1)
+	// draw rttTexture to the filterTexture, applying a tint shader (from TEXTURE0, filterTexture is on TEXTURE1)
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyFilterToTexture(0, this.rttTexture, this.setTint, this);
+	this.renderer.graphics.applyShaderToTexture(0, this.rttTexture, this.setTint, this);
 
-	// draw filterTexture to the rttTexture, applying a wave filter (from TEXTURE1, rttTexture is still on TEXTURE0)
+	// draw filterTexture to the rttTexture, applying a wave shader (from TEXTURE1, rttTexture is still on TEXTURE0)
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter2Framebuffer);
-	this.renderer.graphics.applyFilterToTexture(1, this.filterTexture, this.setWave, this);
+	this.renderer.graphics.applyShaderToTexture(1, this.filterTexture, this.setWave, this);
 
 	// draw the final texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -148,25 +156,25 @@ pbMultiFilterDemo.prototype.update = function()
 };
 
 
-// callback required to set the correct filter program and it's associated attributes and/or uniforms
-pbMultiFilterDemo.prototype.setTint = function(_filters, _textureNumber)
+// callback required to set the correct shader program and it's associated attributes and/or uniforms
+pbMultiFilterDemo.prototype.setTint = function(_shaders, _textureNumber)
 {
-   	// set the filter program
-	_filters.setProgram(_filters.tintFilterProgram, _textureNumber);
-	// set the tint values in the filter shader program
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uRedScale, this.redScale );
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uGreenScale, this.greenScale );
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uBlueScale, this.blueScale );
+   	// set the shader program
+	_shaders.setProgram(this.tintShaderProgram, _textureNumber);
+	// set the tint values in the shader program
+	gl.uniform1f( _shaders.getUniform( "uRedScale" ), this.redScale );
+	gl.uniform1f( _shaders.getUniform( "uGreenScale" ), this.greenScale );
+	gl.uniform1f( _shaders.getUniform( "uBlueScale" ), this.blueScale );
 };
 
 
-// callback required to set the correct filter program and it's associated attributes and/or uniforms
-pbMultiFilterDemo.prototype.setWave = function(_filters, _textureNumber)
+// callback required to set the correct shader program and it's associated attributes and/or uniforms
+pbMultiFilterDemo.prototype.setWave = function(_shaders, _textureNumber)
 {
-   	// set the filter program
-	_filters.setProgram(_filters.waveFilterProgram, _textureNumber);
-	// set the wave offset values in the filter shader program
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uOffsetX, (pbRenderer.frameCount % 1000) / 1000.0 );
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uOffsetY, (pbRenderer.frameCount % 1000) / 1000.0 );
+   	// set the shader program
+	_shaders.setProgram(this.waveShaderProgram, _textureNumber);
+	// set the wave offset values in the shader program
+	gl.uniform1f( _shaders.getUniform( "uOffsetX" ), (pbRenderer.frameCount % 1000) / 1000.0 );
+	gl.uniform1f( _shaders.getUniform( "uOffsetY" ), (pbRenderer.frameCount % 1000) / 1000.0 );
 };
 

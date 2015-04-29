@@ -45,7 +45,6 @@ pbDungeonLightDemo.prototype.create = function()
 
 	// add the shader
 	var jsonString = this.loader.getFile( this.multiLightBgShaderJSON ).responseText;
-	console.log(jsonString + "\n");
 	this.multiLightBgShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
 
 	var tileMapJSON = this.loader.getFile(this.levelData).responseText;
