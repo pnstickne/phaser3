@@ -657,3 +657,42 @@ pbWebGlShaders.prototype.clearProgram = function()
 	}
 };
 
+
+
+pbWebGlShaders.prototype.prepare = function()
+{
+	var program = this.programList[ pbWebGlShaders.currentProgram ];
+
+	// set the shader to use TEXTURE0 and the first sampler uniform
+	if (program.samplerUniforms && program.samplerUniforms.uImageSampler)
+   		gl.uniform1i( program.samplerUniforms.uImageSampler, 0 );
+
+	// set up a projection matrix in the vertex shader
+	if (program.uniforms.uProjectionMatrix)
+		gl.uniformMatrix3fv( program.uniforms.uProjectionMatrix, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+
+	// set up a 3D projection matrix in the vertex shader
+	if (program.uniforms.uProjectionMatrix4)
+		gl.uniformMatrix4fv( program.uniforms.uProjectionMatrix4, false, pbMatrix4.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+};
+
+
+pbWebGlShaders.prototype.getAttribute = function( nameString )
+{
+	var program = this.programList[ pbWebGlShaders.currentProgram ];
+	return program.attributes[ nameString ];
+};
+
+
+pbWebGlShaders.prototype.getUniform = function( nameString )
+{
+	var program = this.programList[ pbWebGlShaders.currentProgram ];
+	return program.uniforms[ nameString ];
+};
+
+
+pbWebGlShaders.prototype.getSampler = function()
+{
+	var program = this.programList[ pbWebGlShaders.currentProgram ];
+	return program.samplerUniforms.uImageSampler;
+}

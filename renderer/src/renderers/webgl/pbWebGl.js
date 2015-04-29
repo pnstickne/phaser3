@@ -151,22 +151,6 @@ pbWebGl.prototype.prepareBuffer = function()
 };
 
 
-pbWebGl.prototype.prepareShader = function()
-{
-	// set the shader to use TEXTURE0 and the first sampler uniform
-	if (pbWebGlShaders.currentProgram.samplerUniforms && pbWebGlShaders.currentProgram.samplerUniforms.uImageSampler)
-   		gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniforms.uImageSampler, 0 );
-
-	// set up a projection matrix in the vertex shader
-	if (pbWebGlShaders.currentProgram.uProjectionMatrix)
-		gl.uniformMatrix3fv( pbWebGlShaders.currentProgram.uProjectionMatrix, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
-
-	// set up a 3D projection matrix in the vertex shader
-	if (pbWebGlShaders.currentProgram.uProjectionMatrix4)
-		gl.uniformMatrix4fv( pbWebGlShaders.currentProgram.uProjectionMatrix4, false, pbMatrix4.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
-};
-
-
 pbWebGl.prototype.fillStyle = function(_fillColor, _lineColor)
 {
 	this.fillColorRGBA = _fillColor;
@@ -216,10 +200,10 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( colors ), gl.STATIC_DRAW );
 
 	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgVertexBuffer );
-	gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 2, gl.FLOAT, gl.FALSE, 0, 0 );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 2, gl.FLOAT, gl.FALSE, 0, 0 );
 
 	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgColorBuffer );
-	gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aColor, 4, gl.FLOAT, gl.FALSE, 0, 0 );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aColor" ), 4, gl.FLOAT, gl.FALSE, 0, 0 );
 
 	gl.drawArrays( gl.TRIANGLE_STRIP, 0, this.bgVertexBuffer.numPoints );
 };
@@ -238,7 +222,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.prepareShader();
+		this.shaders.prepare();
 	}
 
 	// split off a small part of the big buffer, for a single display object
@@ -312,12 +296,12 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
     gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
 
 	// send the transform matrix to the vector shader
-	gl.uniformMatrix3fv( pbWebGlShaders.currentProgram.uModelMatrix, false, _transform );
+	gl.uniformMatrix3fv( this.shaders.getUniform( "uModelMatrix" ), false, _transform );
 	// set the depth value
-   	gl.uniform1f( pbWebGlShaders.currentProgram.uZ, _z );
+   	gl.uniform1f( this.shaders.getUniform( "uZ" ), _z );
 	// point the position attribute at the last bound buffer
-    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
-	gl.enableVertexAttribArray(pbWebGlShaders.currentProgram.aPosition);
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
+	gl.enableVertexAttribArray(this.shaders.getAttribute( "aPosition" ));
     // draw the buffer: four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 };
@@ -379,13 +363,13 @@ pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
 
 	// send the transform matrix to the vector shader
-	gl.uniformMatrix3fv( pbWebGlShaders.currentProgram.uModelMatrix, false, _transform );
+	gl.uniformMatrix3fv( this.shaders.getUniform( "uModelMatrix" ), false, _transform );
 
 	// set the depth value
-   	gl.uniform1f( pbWebGlShaders.currentProgram.uZ, _z );
+   	gl.uniform1f( this.shaders.getUniform( "uZ" ), _z );
 
 	// point the position attribute at the last bound buffer
-    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 
     // four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -498,7 +482,7 @@ pbWebGl.prototype.drawImageToTextureWithTransform = function( _width, _height, _
 	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.prepareShader();
+		this.shaders.prepare();
 	}
 
 	// set up the source imageData as the render source
@@ -576,13 +560,13 @@ pbWebGl.prototype.drawImageToTextureWithTransform = function( _width, _height, _
 	    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 
 		// send the transform matrix to the vector shader
-		gl.uniformMatrix3fv( pbWebGlShaders.currentProgram.uModelMatrix, false, _transform );
+		gl.uniformMatrix3fv( this.shaders.getUniform( "uModelMatrix" ), false, _transform );
 
 		// set the depth value
-	   	gl.uniform1f( pbWebGlShaders.currentProgram.uZ, _z );
+	   	gl.uniform1f( this.shaders.getUniform( "uZ" ), _z );
 
 		// point the position attribute at the last bound buffer
-	    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+	    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 
 	    // four vertices per quad, one quad
 	    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -602,7 +586,7 @@ pbWebGl.prototype.drawModeZ = function( _image, _transform, _z )
 	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.prepareShader();
+		this.shaders.prepare();
 	}
 
 	// split off a small part of the big buffer, for a single display object
@@ -670,16 +654,16 @@ pbWebGl.prototype.drawModeZ = function( _image, _transform, _z )
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 
 	// send the transform matrix to the vector shader
-	gl.uniformMatrix3fv( pbWebGlShaders.currentProgram.uModelMatrix, false, _transform );
+	gl.uniformMatrix3fv( this.shaders.getUniform( "uModelMatrix" ), false, _transform );
 
 	// set the depth value
-   	gl.uniform1f( pbWebGlShaders.currentProgram.uZ, _z );
+   	gl.uniform1f( this.shaders.getUniform( "uZ" ), _z );
 
 	// point the position attribute at the last bound buffer
-    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 
-	if (pbWebGlShaders.currentProgram.uTime)
-		gl.uniform1f( pbWebGlShaders.currentProgram.uTime, (pbRenderer.frameCount % 100) / 100.0 );
+    var ut = this.shaders.getUniform( "uTime" );
+	if (ut) gl.uniform1f( ut, (pbRenderer.frameCount % 100) / 100.0 );
 
     // four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -696,7 +680,7 @@ pbWebGl.prototype.drawImageWithTransform3D = function( _image, _transform, _z )
 	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.prepareShader();
+		this.shaders.prepare();
 	}
 
 	// split off a small part of the big buffer, for a single display object
@@ -735,13 +719,13 @@ pbWebGl.prototype.drawImageWithTransform3D = function( _image, _transform, _z )
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 
 	// send the transform matrix to the vector shader
-	gl.uniformMatrix4fv( pbWebGlShaders.currentProgram.uModelMatrix4, false, _transform );
+	gl.uniformMatrix4fv( this.shaders.getUniform( "uModelMatrix4" ), false, _transform );
 
 	// set the depth value
-   	gl.uniform1f( pbWebGlShaders.currentProgram.uZ, _z );
+   	gl.uniform1f( this.shaders.getUniform( "uZ" ), _z );
 
 	// point the position attribute at the last bound buffer
-    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 
     // four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -756,7 +740,7 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.prepareShader();
+		this.shaders.prepare();
 	}
 
 	// split off a small part of the big buffer, for a single display object
@@ -809,13 +793,13 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 	// matrix = pbMatrix3.fastMultiply(matrix, translationMatrix);
 
 	// send the matrix to the vector shader
-	gl.uniformMatrix3fv( pbWebGlShaders.currentProgram.uModelMatrix, false, matrix );
+	gl.uniformMatrix3fv( this.shaders.getUniform( "uModelMatrix" ), false, matrix );
 
 	// set the depth value
-   	gl.uniform1f( pbWebGlShaders.currentProgram.uZ, _z );
+   	gl.uniform1f( this.shaders.getUniform( "uZ" ), _z );
 
 	// point the position attribute at the last bound buffer
-    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 
     // four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -833,7 +817,7 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface 
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.prepareShader();
+		this.shaders.prepare();
 	}
 
 	var screenWide2 = gl.drawingBufferWidth * 0.5;
@@ -899,7 +883,7 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface 
 
 
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, len / 2 * 6 - 2);		// four vertices per sprite plus two degenerate points
 };
@@ -914,7 +898,7 @@ pbWebGl.prototype.blitListDirect = function( _list, _listLength, _surface )
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.prepareShader();
+		this.shaders.prepare();
 	}
 
 	var screenWide2 = gl.drawingBufferWidth * 0.5;
@@ -980,7 +964,7 @@ pbWebGl.prototype.blitListDirect = function( _list, _listLength, _surface )
 
 
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points
 };
@@ -995,7 +979,7 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.prepareShader();
+		this.shaders.prepare();
 	}
 
 	var screenWide2 = gl.drawingBufferWidth * 0.5;
@@ -1062,7 +1046,7 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 
 
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points
 };
@@ -1078,18 +1062,18 @@ pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.prepareShader();
+		this.shaders.prepare();
 
 		var max = Math.max(_surface.cellWide, _surface.cellHigh);
 		// set the size of the 'point' (it's square)
-		if (pbWebGlShaders.currentProgram.uSize)
+		if (this.shaders.getUniform( "uSize" ))
 		{
-			gl.uniform1f( pbWebGlShaders.currentProgram.uSize, max );
+			gl.uniform1f( this.shaders.getUniform( "uSize" ), max );
 		}
 		// set the dimensions of the actual texture (can be rectangular)
-		if (pbWebGlShaders.currentProgram.uTextureSize)
+		if (this.shaders.getUniform( "uTextureSize" ))
 		{
-			gl.uniform2f( pbWebGlShaders.currentProgram.uTextureSize, max / _surface.cellWide, max / _surface.cellHigh );
+			gl.uniform2f( this.shaders.getUniform( "uTextureSize" ), max / _surface.cellWide, max / _surface.cellHigh );
 		}
 	}
 
@@ -1099,7 +1083,7 @@ pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 	// make a buffer view of the _list which is only as long as we need
     var buffer = _list.subarray(0, len);
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 2, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 2, gl.FLOAT, false, 0, 0 );
     gl.drawArrays(gl.POINTS, 0, len / 2);
 };
 
@@ -1114,18 +1098,18 @@ pbWebGl.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surfa
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.prepareShader();
+		this.shaders.prepare();
 
 		var max = Math.max(_surface.cellWide, _surface.cellHigh);
 		// set the size of the 'point' (it's square)
-		if (pbWebGlShaders.currentProgram.uSize)
+		if (this.shaders.getUniform( "uSize" ))
 		{
-			gl.uniform1f( pbWebGlShaders.currentProgram.uSize, max );
+			gl.uniform1f( this.shaders.getUniform( "uSize" ), max );
 		}
 		// set the dimensions of the actual texture (can be rectangular)
-		if (pbWebGlShaders.currentProgram.uTextureSize)
+		if (this.shaders.getUniform( "uTextureSize" ))
 		{
-			gl.uniform2f( pbWebGlShaders.currentProgram.uTextureSize, 1 / _surface.cellsWide, 1 / _surface.cellsHigh );
+			gl.uniform2f( this.shaders.getUniform( "uTextureSize" ), 1 / _surface.cellsWide, 1 / _surface.cellsHigh );
 		}
 	}
 
@@ -1135,8 +1119,8 @@ pbWebGl.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surfa
 	// make a buffer view of the _list which is only as long as we need
     var buffer = _list.subarray(0, len);
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 2, gl.FLOAT, false, 4 * 4, 0 * 4 );
-    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aTextureCoord, 2, gl.FLOAT, false, 4 * 4, 2 * 4 );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 2, gl.FLOAT, false, 4 * 4, 0 * 4 );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aTextureCoord" ), 2, gl.FLOAT, false, 4 * 4, 2 * 4 );
     gl.drawArrays(gl.POINTS, 0, len / 4);
 };
 
@@ -1159,7 +1143,7 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.prepareShader();
+		this.shaders.prepare();
 	}
 
 	// half width, half height (of source frame)
@@ -1279,9 +1263,9 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 
 	// point the attributes at the buffer (stride and offset are in bytes, there are 4 bytes per gl.FLOAT)
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
-	gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition , 4, gl.FLOAT, false, 11 * 4, 0 * 4 );
-	gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aTransform, 4, gl.FLOAT, false, 11 * 4, 4 * 4 );
-	gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aTranslate, 3, gl.FLOAT, false, 11 * 4, 8 * 4 );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ) , 4, gl.FLOAT, false, 11 * 4, 0 * 4 );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aTransform" ), 4, gl.FLOAT, false, 11 * 4, 4 * 4 );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aTranslate" ), 3, gl.FLOAT, false, 11 * 4, 8 * 4 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points
 };
@@ -1299,7 +1283,7 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 	if (this.textures.prepare( surface.imageData, _list[0].image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.prepareShader();
+		this.shaders.prepare();
 	}
 
 	// half width, half height (of source frame)
@@ -1425,10 +1409,10 @@ pbWebGl.prototype.rawBatchDrawImages = function( _list )
 
 	// point the attributes at the buffer (stride and offset are in bytes, there are 4 bytes per gl.FLOAT)
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
-	gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition,     4, gl.FLOAT, false, 11 * 4,  0 * 4 );
-	gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aModelMatrix0, 2, gl.FLOAT, false, 11 * 4,  4 * 4 );
-	gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aModelMatrix1, 2, gl.FLOAT, false, 11 * 4,  6 * 4 );
-	gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aModelMatrix2, 3, gl.FLOAT, false, 11 * 4,  8 * 4 );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ),     4, gl.FLOAT, false, 11 * 4,  0 * 4 );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aModelMatrix0" ), 2, gl.FLOAT, false, 11 * 4,  4 * 4 );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aModelMatrix1" ), 2, gl.FLOAT, false, 11 * 4,  6 * 4 );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aModelMatrix2" ), 3, gl.FLOAT, false, 11 * 4,  8 * 4 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points, except for the last one
 };
@@ -1475,9 +1459,9 @@ pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transfor
 		// create a webGl texture from the canvas
 		this.textures.createTextureFromCanvas(_canvas);
 	    // set the fragment shader sampler to use TEXTURE0
-	   	gl.uniform1i( pbWebGlShaders.currentProgram.samplerUniforms.uImageSampler, 0 );
+	   	gl.uniform1i( this.shaders.getSampler(), 0 );
 		// prepare the projection matrix in the vertex shader
-		gl.uniformMatrix3fv( pbWebGlShaders.currentProgram.uProjectionMatrix, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+		gl.uniformMatrix3fv( this.shaders.getUniform( "uProjectionMatrix" ), false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
 	}
 
 	// split off a small part of the big buffer, for a single display object
@@ -1521,13 +1505,13 @@ pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transfor
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 
 	// send the transform matrix to the vector shader
-	gl.uniformMatrix3fv( pbWebGlShaders.currentProgram.uModelMatrix, false, _transform );
+	gl.uniformMatrix3fv( this.shaders.getUniform( "uModelMatrix" ), false, _transform );
 
 	// set the depth value
-   	gl.uniform1f( pbWebGlShaders.currentProgram.uZ, _z );
+   	gl.uniform1f( this.shaders.getUniform( "uZ" ), _z );
 
 	// point the position attribute at the last bound buffer
-    gl.vertexAttribPointer( pbWebGlShaders.currentProgram.aPosition, 4, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 
     // four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
