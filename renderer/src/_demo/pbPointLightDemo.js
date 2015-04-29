@@ -25,6 +25,7 @@ function pbPointLightDemo( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 
+	this.pointLightShaderJSON = this.loader.loadFile( "../JSON/pointLightSources.json" );
 
 	this.loader.loadImage( "player", "../img/invader/player.png" );
 	this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
@@ -55,6 +56,10 @@ pbPointLightDemo.prototype.allLoaded = function()
 pbPointLightDemo.prototype.create = function()
 {
 	console.log("pbPointLightDemo.create");
+
+	// add the shader
+	var jsonString = this.loader.getFile( this.pointLightShaderJSON ).responseText;
+	this.pointLightShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
 
 	//
 	// draw a big logo shadow-caster
@@ -144,7 +149,7 @@ pbPointLightDemo.prototype.postUpdate = function()
 
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyFilterToTexture(0, this.rttTexture, this.setFilter, this);
+	this.renderer.graphics.applyShaderToTexture(0, this.rttTexture, this.setShader, this);
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -152,20 +157,20 @@ pbPointLightDemo.prototype.postUpdate = function()
 };
 
 
-// callback required to set the correct filter program and it's associated attributes and/or uniforms
-pbPointLightDemo.prototype.setFilter = function(_filters, _textureNumber)
+// callback required to set the correct shader program and it's associated attributes and/or uniforms
+pbPointLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 {
-   	// set the filter program
-	_filters.setProgram(_filters.pointLightShaderProgram, _textureNumber);
+   	// set the shader program
+	_shaders.setProgram(this.pointLightShaderProgram, _textureNumber);
 
 	// set the parameters for the filter shader program
 	var x = ((pbRenderer.frameCount % 2000) / 1000.0);
 	if (x > 1.0) x = 2.0 - x;
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uLightPosX, x );
+	gl.uniform1f( _shaders.getUniform( "uLightPosX" ), x );
 
 	var y = ((pbRenderer.frameCount % 3400) / 1700.0);
 	if (y > 1.0) y = 2.0 - y;
-	gl.uniform1f( pbWebGlShaders.currentProgram.uniforms.uLightPosY, y );
+	gl.uniform1f( _shaders.getUniform( "uLightPosY" ), y );
 };
 
    	

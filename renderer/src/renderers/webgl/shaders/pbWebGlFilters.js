@@ -6,112 +6,6 @@
  * 
  */
 
-var multiLightBgSources = {
-// for all pixels on screen
-//   if pixel is not blocked by wall in the walls texture
-//     for all light sources
-//       scan from the pixel to each light source
-//       if any scan location is blocked by wall abort scan immediately
-//       else accumulate colour based on the light source and distance
-//     end for
-//     set pixel to the floor texture pixel multiplied by the accumulated light colour
-//   else
-//     we're in a wall, so set the pixel from the walls texture
-// end for
-	fragment:
-		" precision highp float;\n" +
-		" " +
-		" #define MAX_LIGHTS 16\n" +
-		" #define STEPS 64.0\n" +
-		" #define AMBIENT_LIGHT vec4(-0.15, -0.2, -0.2, 1.0)\n" +
-		" " +
-		" varying mediump vec2 v_texcoord;\n" +
-		" uniform sampler2D uImageSampler;\n" +
-		" uniform sampler2D uFloorSampler;\n" +
-		" uniform vec4 uLights[MAX_LIGHTS];\n" +
-		" " +
-		" vec3 unpack(float val)\n" +
-		" {\n" +
-		"   vec3 col;\n" +
-		"   col.b = floor(val / 256. / 256.);\n" +
-		"   col.g = floor((val - col.b * 256. * 256.) / 256.);\n" +
-		"   col.r = floor(val - col.b * 256. * 256. - col.g * 256.);\n" +
-		"   return col / 16.;\n" +
-		" }\n" +
-		" " +
-		" bool blocked(vec2 p)\n" +
-		" {	\n" +
-		"   return ( texture2D(uImageSampler, p).rgb != vec3(0.0, 0.0, 0.0) );\n" +
-		" }\n" +
-		" " +
-		" vec4 getColor(vec2 p)\n" +
-		" {	\n" +
-		"   vec4 col = texture2D(uImageSampler, p);\n" +
-		"   if ( col.rgb != vec3(0.0, 0.0, 0.0) )\n" +
-		"     return col;\n" +
-		"   return texture2D(uFloorSampler, p);\n" +
-		"// return AMBIENT_LIGHT;\n" +
-		" }\n" +
-		" " +
-		" vec4 getLight(vec2 p, vec2 lp, float power, float range)\n" +
-		" {\n" +
-		"   float d = distance(lp, p) / range;\n" +
-		"   if (d >= 1.0)\n" +
-		"     return vec4(0.);\n" +
-		"   vec2 sp = p;\n" +
-		"   vec2 step = (lp - p) / STEPS;\n" +
-		"   // 800 == screen width: convert 0->1.0 coordinates into pixels\n" +
-		"   for(float i = 0.0; i < 1.0; i += 1.0 / STEPS)\n" +
-		"   {\n" +
-		"     if ( blocked(sp) )\n" +
-		"       return vec4(0.);\n" +
-		"     sp += step;\n" +
-		"   }\n" +
-		"   //float id = 1. - d;\n" +
-		"   vec4 pow = vec4(unpack(power), 0.0);\n" +
-		"   float od = d * 3. + .3;\n" +
-		"   return pow * (.09 / (od * od));\n" +
-		" }\n" +
-		" " +
-		" vec4 getLighting(vec2 p)\n" +
-		" {\n" +
-		"   vec4 light = vec4(0.);\n" +
-		"   for(int i = 0; i < MAX_LIGHTS; i++)\n" +
-		"   {\n" +
-		"     vec4 data = uLights[i];\n" +
-		"     if (data.z > 0.)\n" +
-		"       light += getLight(p, data.xy, data.z, data.w);\n" +
-		"   }\n" +
-		"   return light + AMBIENT_LIGHT;\n" +
-		" }\n" +
-		" " +
-		" " +
-		" void main() {\n" +
-		"   if ( blocked(v_texcoord.xy) )\n" +
-		"     gl_FragColor = texture2D(uImageSampler, v_texcoord.xy);\n" +
-		"   else\n" +
-		"     gl_FragColor = getColor(v_texcoord.xy) + getLighting(v_texcoord.xy);\n" +
-		" }" ,
-
-	vertex:
-    	" attribute vec4 aPosition;\n" +
-    	" varying vec2 v_texcoord;\n" +
-		" void main() {\n" +
-		"   gl_Position = aPosition;\n" +
-		"   v_texcoord = aPosition.xy * 0.5 + 0.5;\n" +
-		" }",
-
-	attributes:
-		[ "aPosition" ],
-
-	uniforms:
-		[ "uLights" ],
-
-	samplers:
-		[ "uImageSampler", "uFloorSampler" ]
-};
-
-
 var multiLightSources = {
 	fragment:
 		" precision highp float;\n" +
@@ -290,80 +184,11 @@ var pointLightSources = {
 };
 
 
-var tintFilterSources = {
-	// tint the image using a separate multiplication factor for each of r,g and b
-	fragment:
-		" precision mediump float;" +
-		" varying vec2 v_texcoord;" +
-		" uniform sampler2D uImageSampler;" +
-		" uniform float uRedScale;" +
-		" uniform float uGreenScale;" +
-		" uniform float uBlueScale;" +
-		" void main() {" +
-		"   vec4 col = texture2D(uImageSampler, v_texcoord);" +
-    	"   gl_FragColor = vec4(col.r * uRedScale, col.g * uGreenScale, col.b * uBlueScale, 1);" +
-		" }",
-
-	vertex:
-    	" attribute vec4 aPosition;" +
-    	" varying vec2 v_texcoord;" +
-		" void main() {" +
-		"   gl_Position = aPosition;" +
-		"   v_texcoord = aPosition.xy * 0.5 + 0.5;" +
-		" }",
-
-	attributes:
-		[ "aPosition" ],
-
-	uniforms:
-		[ "uRedScale", "uGreenScale", "uBlueScale" ],
-
-	samplers:
-		[ "uImageSampler" ]
-};
-
-
-var waveFilterSources = {
-	// bend the image using trig effects
-	// NOTE: change clamp(xxx, 0.0, 1.0) to mod(xxx, 1.0) if wrap around at edges is preferred
-	fragment:
-		" precision mediump float;" +
-		" varying vec2 v_texcoord;" +
-		" uniform sampler2D uImageSampler;" +
-		" uniform float uOffsetX;" +
-		" uniform float uOffsetY;" +
-		" void main() {" +
-		"   float ox = sin((v_texcoord.x + uOffsetX) * 3.1416 * 2.0) * 0.1;" +
-		"   float oy = sin((v_texcoord.y + uOffsetY) * 3.1416 * 2.0) * 0.1;" +
-		"   vec2 srcCoord = vec2(clamp(v_texcoord.x + ox, 0.0, 1.0), clamp(v_texcoord.y + oy, 0.0, 1.0));" +
-		"   gl_FragColor = texture2D(uImageSampler, srcCoord);" +
-		" }",
-
-	vertex:
-    	" attribute vec4 aPosition;" +
-    	" varying vec2 v_texcoord;" +
-		" void main() {" +
-		"   gl_Position = aPosition;" +
-		"   v_texcoord = aPosition.xy * 0.5 + 0.5;" +
-		" }",
-
-	attributes:
-		[ "aPosition" ],
-
-	uniforms:
-		[ "uOffsetX", "uOffsetY" ],
-
-	samplers:
-		[ "uImageSampler" ]
-};
-
 
 
 function pbWebGlFilters()
 {
 	// TODO: change this into a list
-	this.tintFilterProgram = null;
-	this.waveFilterProgram = null;
 	this.pointLightShaderProgram = null;
 	this.multiLightShaderProgram = null;
 }
@@ -374,11 +199,8 @@ pbWebGlFilters.prototype.create = function()
 {
 	// create the filter programs
 	
-	this.tintFilterProgram = this.createProgram( tintFilterSources );
-	this.waveFilterProgram = this.createProgram( waveFilterSources );
 	this.pointLightShaderProgram = this.createProgram( pointLightSources );
 	this.multiLightShaderProgram = this.createProgram( multiLightSources );
-	this.multiLightBgShaderProgram = this.createProgram( multiLightBgSources );
 };
 
 
@@ -386,11 +208,8 @@ pbWebGlFilters.prototype.create = function()
 pbWebGlFilters.prototype.destroy = function()
 {
 	this.clearProgram();
-	this.tintFilterProgram = null;
-	this.waveFilterProgram = null;
 	this.pointLightShaderProgram = null;
 	this.multiLightShaderProgram = null;
-	this.multiLightBgShaderProgram = null;
 };
 
 

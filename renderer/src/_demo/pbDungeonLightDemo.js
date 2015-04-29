@@ -118,7 +118,7 @@ pbDungeonLightDemo.prototype.create = function()
 
     // get the ImageData for the floor
 	var imageData = this.loader.getFile( this.floorImg );
-	// upload the floor image directly to the correct texture register on the GPU (it's hardwired in pbWebGlFilters to texture number 3)
+	// upload the floor image directly to the correct texture register on the GPU (it's hardwired in the shader to texture number 3)
 	this.renderer.graphics.textures.prepare(imageData, false, true, gl.TEXTURE3 );
 };
 
@@ -516,15 +516,15 @@ pbDungeonLightDemo.prototype.setLightData = function()
 // callback required to set the correct shader program and it's associated attributes and/or uniforms
 pbDungeonLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 {
-   	// set the filter program
-	var program = _shaders.setProgram(this.multiLightBgShaderProgram, _textureNumber);
+   	// set the shader program
+	_shaders.setProgram(this.multiLightBgShaderProgram, _textureNumber);
 
-	// set the secondary source texture for the filter - this draws the floors using the ImageData in register 3
-	gl.uniform1i( program.samplerUniforms.uFloorSampler, 3 );
+	// set the secondary source texture for the shader - this draws the floors using the ImageData in register 3
+	gl.uniform1i( _shaders.getUniform( "uFloorSampler" ), 3 );
 
-	// set the parameters for the filter shader program
+	// set the parameters for the shader program
 	this.setLightData();
 
 	// send them to the shader
-	gl.uniform4fv( program.uniforms.uLights, lightData );
+	gl.uniform4fv( _shaders.getUniform( "uLights" ), lightData );
 };
