@@ -37,7 +37,7 @@ function pbPointLightDemo( docId )
 	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
 
 
-	this.logoImg = this.loader.loadImage( "../img/phaser_128x32.png" );
+	this.loader.loadImage( "logo", "../img/phaser_128x32.png" );
 
 	console.log( "pbPointLightDemo c'tor exit" );
 }
@@ -60,16 +60,12 @@ pbPointLightDemo.prototype.create = function()
 	// draw a big logo shadow-caster
 	//
 
-	var imageData = this.loader.getFile( this.logoImg );
-	this.surface = new pbSurface();
-	// _wide, _high, _numWide, _numHigh, _image
-	this.surface.create(0, 0, 1, 1, imageData);
-	this.logoImage = new imageClass();
-	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
-	this.logoImage.create(this.surface, 0, 0.5, 0.5);
-	// create a transform matrix to draw this image with
-	this.logoTransform = pbMatrix3.makeTransform(pbRenderer.width * 0.5, pbRenderer.height * 0.75, 0, 3, 3);
-
+	this.logo = new pbSprite(pbRenderer.width * 0.5, pbRenderer.height * 0.75, "logo");
+	// TODO: this is pretty horrible... because the logo isn't attached to a surface (it is drawn separately in the update function),
+	// changes to its transform variables never get recalculated into the transform matrix.  Here I'm calling the transform.create
+	// function a second time (first time is in pbSprite) to force it to change scale and to set the z depth to zero.
+	this.logo.transform.create(this.logo.image, this.logo.x, this.logo.y, 0.0, 0.0, 3.0, 3.0);
+	this.logo.anchorX = this.logo.anchorY = 0.5;
 
 	//
 	// also draw an instance of invaders as a shadow-caster
@@ -116,7 +112,7 @@ pbPointLightDemo.prototype.destroy = function()
 	this.game.destroy();
 	this.game = null;
 
-	this.logoTransform = null;
+	this.logo = null;
 
 	this.rttTexture = null;
 	this.rttRenderbuffer = null;
@@ -132,9 +128,9 @@ pbPointLightDemo.prototype.update = function()
 	// update and draw the invaders demo core to the render-to-texture
 	this.game.update();
 
-	// draw logoImage using the render-to-texture framebuffer
+	// draw logo using the render-to-texture framebuffer
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
-	this.renderer.graphics.drawImageWithTransform(this.logoImage, this.logoTransform, 1.0);
+	this.renderer.graphics.drawImageWithTransform(this.logo.image, this.logo.transform.transform, 1.0);
 };
 
 
