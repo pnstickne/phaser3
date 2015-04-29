@@ -17,7 +17,7 @@ function pbBlankDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "ball", "../img/sphere3.png" );
+	this.loader.loadImage( "ball", "../img/sphere3.png" );
 
 	console.log( "pbBlankDemo c'tor exit" );
 }
@@ -43,10 +43,6 @@ pbBlankDemo.prototype.destroy = function()
 {
 	console.log("pbBlankDemo.destroy");
 
-	if (this.surface)
-		this.surface.destroy();
-	this.surface = null;
-
 	if (this.renderer)
 		this.renderer.destroy();
 	this.renderer = null;
@@ -66,17 +62,8 @@ pbBlankDemo.prototype.addSprites = function()
 {
 	console.log("pbBlankDemo.addSprites");
 
-	// create animation data and set destination for movement
-	var imageData = this.loader.getFile( this.spriteImg );
-	this.surface = new pbSurface();
-	this.surface.create(0, 0, 1, 1, imageData);
-
-	var img = new imageClass();
-	img.create(this.surface, 0, 0.5, 0.5);
-
-	this.spr = new pbTransformObject();
-	this.spr.create(img, 200, 200, 1.0, 0, 1.0, 1.0);
-	rootLayer.addChild(this.spr);
+	// add a single 'ball' sprite to the rootLayer
+	this.spr = new pbSprite(200, 200, "ball", rootLayer);
 };
 
 

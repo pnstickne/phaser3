@@ -67,10 +67,6 @@ pbInvaderDemoCore.prototype.destroy = function()
 {
 	console.log("pbInvaderDemoCore.destroy");
 
-	if (this.bgSurface)
-		this.bgSurface.destroy();
-	this.bgSurface = null;
-
 	if (this.text)
 		this.text.destroy();
 	this.text = null;
@@ -190,6 +186,7 @@ pbInvaderDemoCore.prototype.addSprites = function()
 		this.smokePool.push(smoke);
 	}
 
+	// display a 'frame' around the game instance
 	if (this.useFrame)
 	{
 		var sprite = new pbSprite(0, 0, "frame_l", this.uiLayer);
@@ -240,7 +237,6 @@ pbInvaderDemoCore.prototype.update = function()
 {
 	// scroll the background by adjusting the start point of the texture read y coordinate
 	//this.bgSurface.cellTextureBounds[0][0].y -= 1 / pbRenderer.height;
-
 
 	//
 	// update player

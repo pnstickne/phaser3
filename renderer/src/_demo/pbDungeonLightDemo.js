@@ -23,7 +23,7 @@ function pbDungeonLightDemo( docId )
 	this.loader = new pbLoader( this.allLoaded, this );
 	this.levelData = this.loader.loadFile( "../img/tiles/dungeon.json" );
 	this.tileImg = this.loader.loadImage( "tiles", "../img/tiles/gridtiles.png" );
-	this.wizImg = this.loader.loadImage( "wizard", "../img/wiz.png" );
+	this.loader.loadImage( "wizard", "../img/wiz.png", 32, 32, 30, 4 );
 	this.floorImg = this.loader.loadImage( "floor", "../img/dungeon__floor_2.jpg" );
 
 	console.log( "pbDungeonLightDemo c'tor exit" );
@@ -95,23 +95,13 @@ pbDungeonLightDemo.prototype.create = function()
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     this.renderer.postUpdate = this.postUpdate;
 
-    this.wizSurface = new pbSurface();
-    // _wide, _high, _numWide, _numHigh, _imageData
-    this.wizSurface.create(32, 32, 30, 4, this.loader.getFile( this.wizImg ));
-    this.wizSurface.isNPOT = true;
-    this.wizImage = new imageClass();
-    // _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
-    this.wizImage.create(this.wizSurface, 0, 0.0, 0.0, false, false);
-    this.wiz = new pbTransformObject();
-    // _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-    this.wiz.create(this.wizImage, 32, 32, 1.0, 0, 1.0, 1.0);
-    this.wiz.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 50 };
-    this.wiz.light = { x : 0, y : 0, r : 0.0, g : 0.0, b : 10.0, range : 0.40 };
-
     // create a top layer that doesn't cast shadows
 	this.topLayer = new layerClass();
 	this.topLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
-	this.topLayer.addChild(this.wiz);
+
+    this.wiz = new pbSprite(32, 32, "wizard", this.topLayer);
+    this.wiz.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 50 };
+    this.wiz.light = { x : 0, y : 0, r : 0.0, g : 0.0, b : 10.0, range : 0.40 };
 
     this.enemy = [];
     for(var e = 0; e < 14; e++)
@@ -144,10 +134,6 @@ pbDungeonLightDemo.prototype.moveToRandomEmptyLocation = function(_who)
 pbDungeonLightDemo.prototype.destroy = function()
 {
 	console.log("pbDungeonLightDemo.destroy");
-
-	if (this.surface)
-		this.surface.destroy();
-	this.surface = null;
 
 	if (this.renderer)
 		this.renderer.destroy();
