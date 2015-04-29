@@ -85,9 +85,9 @@ pbRoadDemo.prototype.addSprites = function()
 	rootLayer.addChild(this.layer);
 
 	// create an image to contain the surface
-	var img = new pbWebGlImage();
+	var img = new imageClass();
 	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen)
-	img.create(this.surface, 0);
+	img.create(this.surface, 0, 0.5, 0.5);
 	img.isModeZ = true;
 
 	// create a sprite to draw using mode z
