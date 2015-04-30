@@ -25,6 +25,8 @@ function pbPointLightsDemo( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 
+	this.multiLightShaderJSON = this.loader.loadFile( "../JSON/multiLightSources.json" );
+
 	this.loader.loadImage( "player", "../img/invader/player.png" );
 	this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
 	//this.loader.loadImage( "stars", "../img/invader/starfield.png" );
@@ -51,6 +53,10 @@ pbPointLightsDemo.prototype.allLoaded = function()
 pbPointLightsDemo.prototype.create = function()
 {
 	console.log("pbPointLightsDemo.create");
+
+	// add the shader
+	var jsonString = this.loader.getFile( this.multiLightShaderJSON ).responseText;
+	this.multiLightShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
 
 	//
 	// draw an instance of invaders
@@ -121,7 +127,7 @@ pbPointLightsDemo.prototype.postUpdate = function()
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyFilterToTexture(0, this.rttTexture, this.setFilter, this);
+	this.renderer.graphics.applyShaderToTexture(0, this.rttTexture, this.setShader, this);
 
 	// update transforms and draw sprites that are not shadow casters
 	this.game.layer.update();
@@ -209,17 +215,17 @@ pbPointLightsDemo.prototype.setLightData = function()
 };
 
 
-// callback required to set the correct filter program and it's associated attributes and/or uniforms
-pbPointLightsDemo.prototype.setFilter = function(_filters, _textureNumber)
+// callback required to set the correct shader program and it's associated attributes and/or uniforms
+pbPointLightsDemo.prototype.setShader = function(_shaders, _textureNumber)
 {
    	// set the filter program
-	_filters.setProgram(_filters.multiLightShaderProgram, _textureNumber);
+	_shaders.setProgram(this.multiLightShaderProgram, _textureNumber);
 
 	// set the parameters for the filter shader program
 	this.setLightData();
 
 	// send them to the shader
-	gl.uniform4fv( pbWebGlShaders.currentProgram.uniforms.uLights, lightData );
+	gl.uniform4fv( _shaders.getUniform( "uLights" ), lightData );
 };
 
    	

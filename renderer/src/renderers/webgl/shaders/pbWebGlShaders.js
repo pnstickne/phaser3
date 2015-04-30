@@ -556,7 +556,7 @@ pbWebGlShaders.prototype.createProgram = function( _source )
 				var attribute = _source.attributes[a];
 				program.attributes[attribute] = gl.getAttribLocation( program, attribute );
 				if (program.attributes[attribute] === null)
-					console.log("WARNING (pbWebGlShaders.setProgram): filter attribute returned NULL for", attribute, "it's probably unused in the filter", _source);
+					console.log("WARNING (pbWebGlShaders.createProgram): filter attribute returned NULL for", attribute, "it's probably unused in the filter", _source);
 			}
 		}
 	}
@@ -572,7 +572,7 @@ pbWebGlShaders.prototype.createProgram = function( _source )
 				var uniform = _source.uniforms[u];
 				program.uniforms[uniform] = gl.getUniformLocation( program, uniform );
 				if (program.uniforms[uniform] === null)
-					console.log("WARNING (pbWebGlShaders.setProgram): filter uniform returned NULL for", uniform, "it's probably unused in the filter", _source);
+					console.log("WARNING (pbWebGlShaders.createProgram): filter uniform returned NULL for", uniform, "it's probably unused in the filter", _source);
 			}
 		}
 	}
@@ -588,7 +588,7 @@ pbWebGlShaders.prototype.createProgram = function( _source )
 				var sampler = _source.samplers[s];
 				program.samplerUniforms[sampler] = gl.getUniformLocation( program, sampler );
 				if (program.samplerUniforms[sampler] === null)
-					console.log("WARNING (pbWebGlShaders.setProgram): filter sampler returned NULL for", sampler, "it's probably unused in the filter", _source);
+					console.log("WARNING (pbWebGlShaders.createProgram): filter sampler returned NULL for", sampler, "it's probably unused in the filter", _source);
 			}
 		}
 	}
@@ -690,10 +690,11 @@ pbWebGlShaders.prototype.getUniform = function( nameString )
 };
 
 
-pbWebGlShaders.prototype.getSampler = function()
+pbWebGlShaders.prototype.getSampler = function( nameString )
 {
+	if (nameString === undefined) nameString = "uImageSampler";
 	var program = this.programList[ pbWebGlShaders.currentProgram ];
-	return program.samplerUniforms.uImageSampler;
+	return program.samplerUniforms[ nameString ];
 };
 
 
