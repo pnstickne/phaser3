@@ -25,8 +25,8 @@ function pbLightDepthDemo( docId )
 	this.levelData = this.loader.loadFile( "../img/tiles/dungeon.json" );
 	this.tileImg = this.loader.loadImage( "tiles", "../img/tiles/gridtiles.png" );
 	this.loader.loadImage( "wizard", "../img/wiz.png", 32, 32, 30, 4 );
-	this.floorImg = this.loader.loadImage( "floor", "../img/dungeon__floor_2.jpg" );
-	this.depthImg = this.loader.loadImage( "depthmap", "../img/tiles/bump_y_test.png" );
+	this.floorImg = this.loader.loadImage( "floor", "../img/bumpy_floor.png" );
+	this.depthImg = this.loader.loadImage( "depthmap", "../img/tiles/bumpy_floor_tile.png" );
 
 	console.log( "pbLightDepthDemo c'tor exit" );
 }
