@@ -520,7 +520,7 @@ pbDungeonLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 	_shaders.setProgram(this.multiLightBgShaderProgram, _textureNumber);
 
 	// set the secondary source texture for the shader - this draws the floors using the ImageData in register 3
-	gl.uniform1i( _shaders.getUniform( "uFloorSampler" ), 3 );
+	gl.uniform1i( _shaders.getSampler( "uFloorSampler" ), 3 );
 
 	// set the parameters for the shader program
 	this.setLightData();
