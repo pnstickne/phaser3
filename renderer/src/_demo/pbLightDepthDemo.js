@@ -24,7 +24,9 @@ function pbLightDepthDemo( docId )
 	this.multiLightBgShaderJSON = this.loader.loadFile( "../JSON/multiLightDepthBgSources.json" );
 	this.levelData = this.loader.loadFile( "../img/tiles/dungeon.json" );
 	this.tileImg = this.loader.loadImage( "tiles", "../img/tiles/gridtiles.png" );
-	this.loader.loadImage( "wizard", "../img/wiz.png", 32, 32, 30, 4 );
+	this.loader.loadImage( "wizard", "../img/spritesheets/wizard.png", 32, 32, 30, 4 );
+	this.loader.loadImage( "minotaur", "../img/spritesheets/minotaur.png", 32, 32, 30, 4 );
+	this.loader.loadImage( "bullet", "../img/bullet_glow.png" );
 	this.floorImg = this.loader.loadImage( "floor", "../img/bumpy_floor.png" );
 	this.depthImg = this.loader.loadImage( "depthmap", "../img/tiles/bumpy_floor_tile.png" );
 
@@ -105,17 +107,27 @@ pbLightDepthDemo.prototype.create = function()
 	this.topLayer = new layerClass();
 	this.topLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
 
+	// create the wizard
+	// NOTE: 'move' uses fixed point integers with three decimal places of precision (* 1000)
     this.wiz = new pbSprite(32, 32, "wizard", this.topLayer);
     this.wiz.z = 0;
     this.wiz.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 50 };
     this.wiz.light = { x : 0, y : 0, r : 0.0, g : 0.0, b : 10.0, range : 0.40 };
 
+    // create the enemies
     this.enemy = [];
-    for(var e = 0; e < 14; e++)
+    for(var e = 0; e < 10; e++)
     {
-    	this.enemy[e] = { x : 1000, y : 1000, dx : 0, dy : 0, speed: 10 + Math.floor(Math.random() * 40), r : 0.25 + Math.random() * 0.5, g : 0.25 + Math.random() * 0.5, b : 0.0 };
+    	var enemy = new pbSprite(32, 32, "minotaur", this.topLayer);
+	    enemy.z = 0;
+    	enemy.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 10 + Math.floor(Math.random() * 40) };
+    	enemy.light = { x : 0, y : 0, r : 0.50 + Math.random() * 0.5, g : 0.50 + Math.random() * 0.5, b : 0.0, range : 0.15 + e / 50.0 };
+    	this.enemy.push(enemy);
     	this.moveToRandomEmptyLocation(this.enemy[e]);
     }
+
+    // create the bullets
+    this.bullets = [];
 
     // get the ImageData for the floor
 	var imageData = this.loader.getFile( this.floorImg );
@@ -129,6 +141,11 @@ pbLightDepthDemo.prototype.create = function()
 };
 
 
+/**
+ * moveToRandomEmptyLocation - pick a random location in the map and move _who there
+ *
+ * @param  {[type]} _who [description]
+ */
 pbLightDepthDemo.prototype.moveToRandomEmptyLocation = function(_who)
 {
 	var w = this.tileMap.layers[0].width;
@@ -138,14 +155,20 @@ pbLightDepthDemo.prototype.moveToRandomEmptyLocation = function(_who)
 		rx = Math.floor(Math.random() * w);
 		ry = Math.floor(Math.random() * h);
 	}while(this.collide(rx, ry));
-	_who.x = rx * 1000;
-	_who.y = ry * 1000;
+	_who.move.x = rx * 1000;
+	_who.move.y = ry * 1000;
 };
 
 
 pbLightDepthDemo.prototype.destroy = function()
 {
 	console.log("pbLightDepthDemo.destroy");
+
+	if (this.wiz)
+		this.wiz.destroy();
+	this.wiz = null;
+	
+
 
 	if (this.renderer)
 		this.renderer.destroy();
@@ -315,129 +338,155 @@ pbLightDepthDemo.prototype.dirChoose = function(_who, _dir)
 };
 
 
+/**
+ * fract - given fixed point integers with 3 decimal places of precision, return the fractional component
+ *
+ * @param  {[type]} _value [description]
+ *
+ * @return {[type]}        [description]
+ */
 function fract(_value)
 {
 	return _value % 1000;
 }
 
 
-pbLightDepthDemo.prototype.wizWalk = function()
+pbLightDepthDemo.prototype.randomWalk = function(who)
 {
-	var wx = Math.floor(this.wiz.move.x / 1000);
-	var wy = Math.floor(this.wiz.move.y / 1000);
+	var wx = Math.floor(who.move.x / 1000);
+	var wy = Math.floor(who.move.y / 1000);
 
 	// sometimes we just turn
 	if (Math.random() < 0.25)
-		this.dirChoose(this.wiz.move, [ 0, 1, 2, 3 ][this.wiz.move.dx > 0 ? 0 : this.wiz.move.dx < 0 ? 1 : this.wiz.move.dy > 0 ? 2 : 3]);
+		this.dirChoose(who.move, [ 0, 1, 2, 3 ][who.move.dx > 0 ? 0 : who.move.dx < 0 ? 1 : who.move.dy > 0 ? 2 : 3]);
 
-	if (this.wiz.move.dx > 0)
+	// pick a new direction when we bump into a wall
+	if (who.move.dx > 0)
 	{
-		if (this.wiz.move.dx >= 1000 - fract(this.wiz.move.x) && this.collide(wx + 2, wy))
+		if (who.move.dx >= 1000 - fract(who.move.x) && this.collide(wx + 2, wy))
 		{
-			this.wiz.move.x = (wx + 1) * 1000;
-			this.dirChoose(this.wiz.move, 0);
+			who.move.x = (wx + 1) * 1000;
+			this.dirChoose(who.move, 0);
 		}
 	}
-	if (this.wiz.move.dx < 0)
+	if (who.move.dx < 0)
 	{
-		if (this.wiz.move.dx < -fract(this.wiz.move.x) && this.collide(wx - 1, wy))
+		if (who.move.dx < -fract(who.move.x) && this.collide(wx - 1, wy))
 		{
-			this.wiz.move.x -= this.wiz.move.x % 1000;
-			this.dirChoose(this.wiz.move, 1);
+			who.move.x -= who.move.x % 1000;
+			this.dirChoose(who.move, 1);
 		}
 	}
-	if (this.wiz.move.dy > 0)
+	if (who.move.dy > 0)
 	{
-		if (this.wiz.move.dy >= 1000 - fract(this.wiz.move.y) && this.collide(wx, wy + 2))
+		if (who.move.dy >= 1000 - fract(who.move.y) && this.collide(wx, wy + 2))
 		{
-			this.wiz.move.y = (wy + 1) * 1000;
-			this.dirChoose(this.wiz.move, 2);
+			who.move.y = (wy + 1) * 1000;
+			this.dirChoose(who.move, 2);
 		}
 	}
-	if (this.wiz.move.dy < 0)
+	if (who.move.dy < 0)
 	{
-		if (this.wiz.move.dy < -fract(this.wiz.move.y) && this.collide(wx, wy - 1))
+		if (who.move.dy < -fract(who.move.y) && this.collide(wx, wy - 1))
 		{
-			this.wiz.move.y -= this.wiz.move.y % 1000;
-			this.dirChoose(this.wiz.move, 3);
+			who.move.y -= who.move.y % 1000;
+			this.dirChoose(who.move, 3);
 		}
 	}
 
-	this.wiz.move.x += this.wiz.move.dx;
-	this.wiz.move.y += this.wiz.move.dy;
+	// move in the current direction
+	who.move.x += who.move.dx;
+	who.move.y += who.move.dy;
 
-	// update wizard sprite
-	this.wiz.x = (this.wiz.move.x / 1000) * this.tileMap.tilesets[0].tilewidth;
-	this.wiz.y = (this.wiz.move.y / 1000) * this.tileMap.tilesets[0].tileheight;
+	// update the sprite position to match our logical position
+	who.x = (who.move.x / 1000) * this.tileMap.tilesets[0].tilewidth;
+	who.y = (who.move.y / 1000) * this.tileMap.tilesets[0].tileheight;
 
-	this.wiz.move.cellFrame += 1;
-	if (this.wiz.move.cellFrame >= 30)
-		this.wiz.move.cellFrame = 0;
-	if (this.wiz.move.dx > 0)
-		this.wiz.image.cellFrame = this.wiz.move.cellFrame + 90;
-	else if (this.wiz.move.dx < 0)
-		this.wiz.image.cellFrame = this.wiz.move.cellFrame + 30;
-	else if (this.wiz.move.dy > 0)
-		this.wiz.image.cellFrame = this.wiz.move.cellFrame + 0;
-	else if (this.wiz.move.dy < 0)
-		this.wiz.image.cellFrame = this.wiz.move.cellFrame + 60;
+	// animate the sprite, showing the correct direction frames
+	who.move.cellFrame += 1;
+	if (who.move.cellFrame >= 30)
+		who.move.cellFrame = 0;
+	if (who.move.dx > 0)
+		who.image.cellFrame = who.move.cellFrame + 90;
+	else if (who.move.dx < 0)
+		who.image.cellFrame = who.move.cellFrame + 30;
+	else if (who.move.dy > 0)
+		who.image.cellFrame = who.move.cellFrame + 0;
+	else if (who.move.dy < 0)
+		who.image.cellFrame = who.move.cellFrame + 60;
 };
 
 
-pbLightDepthDemo.prototype.enemyWalk = function()
+pbLightDepthDemo.prototype.shoot = function(who)
 {
-	for(var e = 0, l = this.enemy.length; e < l; e++)
+	if (this.bullets.length < 5)
 	{
-		var wx = Math.floor(this.enemy[e].x / 1000);
-		var wy = Math.floor(this.enemy[e].y / 1000);
-
-		// sometimes we just turn
-		if (Math.random() < 0.1)
-			this.dirChoose(this.enemy[e]);
-
-		if (this.enemy[e].dx > 0)
-		{
-			if (this.enemy[e].dx >= 1000 - fract(this.enemy[e].x) && this.collide(wx + 2, wy))
-			{
-				this.enemy[e].x = (wx + 1) * 1000;
-				this.dirChoose(this.enemy[e], 0);
-			}
-		}
-		if (this.enemy[e].dx < 0)
-		{
-			if (this.enemy[e].dx < -fract(this.enemy[e].x) && this.collide(wx - 1, wy))
-			{
-				this.enemy[e].x -= this.enemy[e].x % 1000;
-				this.dirChoose(this.enemy[e], 1);
-			}
-		}
-		if (this.enemy[e].dy > 0)
-		{
-			if (this.enemy[e].dy >= 1000 - fract(this.enemy[e].y) && this.collide(wx, wy + 2))
-			{
-				this.enemy[e].y = (wy + 1) * 1000;
-				this.dirChoose(this.enemy[e], 2);
-			}
-		}
-		if (this.enemy[e].dy < 0)
-		{
-			if (this.enemy[e].dy < -fract(this.enemy[e].y) && this.collide(wx, wy - 1))
-			{
-				this.enemy[e].y -= this.enemy[e].y % 1000;
-				this.dirChoose(this.enemy[e], 3);
-			}
-		}
-
-		this.enemy[e].x += this.enemy[e].dx;
-		this.enemy[e].y += this.enemy[e].dy;
+		var bullet = new pbSprite(32, 32, "bullet", this.topLayer);
+	    bullet.z = 0;
+	    bullet.life = 60 * 5;
+		bullet.move = { x : who.move.x + 250, y : who.move.y + 100, cellFrame : 0, dx : who.move.dx * 3, dy : who.move.dy * 3, speed : 100 };
+		bullet.light = { x : 0.0, y : 0.0, r : 4.0, g : 0.0, b : 0.0, range : 0.30 };
+		this.bullets.push(bullet);
 	}
 };
 
 
+/**
+ * update - called every frame before drawing, run the AI for game entities
+ *
+ */
 pbLightDepthDemo.prototype.update = function()
 {
-	this.wizWalk();
-	this.enemyWalk();
+	// wizard walk and shoot
+	this.randomWalk(this.wiz);
+	if ((pbRenderer.frameCount & 0x0f) === 0 && Math.random() < 0.30)
+	{
+		this.shoot(this.wiz);
+	}
+
+	var j, l;
+
+	// enemies walk
+	for(j = 0, l = this.enemy.length; j < l; j++)
+	{
+		this.randomWalk(this.enemy[j]);
+	}
+
+	// bullets move and collide
+	for(j = this.bullets.length - 1; j >= 0; j--)
+	{
+		var bullet = this.bullets[j];
+
+		// move in the current direction
+		bullet.move.x += bullet.move.dx;
+		bullet.move.y += bullet.move.dy;
+
+		// update the sprite position to match our logical position
+		bullet.x = (bullet.move.x / 1000) * this.tileMap.tilesets[0].tilewidth;
+		bullet.y = (bullet.move.y / 1000) * this.tileMap.tilesets[0].tileheight;
+
+		if (bullet.move.dx !== 0 || bullet.move.dy !== 0)
+		{
+			// hit a wall
+			var bx = Math.floor(bullet.move.x / 1000);
+			var by = Math.floor(bullet.move.y / 1000);
+			if (this.collide(bx + Math.sign(bullet.move.dx), by + Math.sign(bullet.move.dy)))
+			{
+				// stop moving
+				bullet.move.dx = bullet.move.dy = 0;
+				// die in a short while
+				bullet.life = 0;
+			}
+		}
+
+		// life timer has expired
+		if (bullet.life-- <= 0)
+		{
+			// remove the bullet
+			bullet.destroy();
+			this.bullets.splice(j, 1);
+		}
+	}
 };
 
 
@@ -492,34 +541,49 @@ function pack(_r, _g, _b)
 }
 
 
-pbLightDepthDemo.prototype.setLightData = function()
+pbLightDepthDemo.prototype.setLight = function(index, who)
 {
-	// first light is attached to the player ship
 	var w = this.tileMap.tilesets[0].tilewidth;
 	var h = this.tileMap.tilesets[0].tileheight;
-	lightData[0 * 4 + 0] = (this.wiz.move.x / 1000 * w + w * 0.5 + this.wiz.light.x) / pbRenderer.width;
-	lightData[0 * 4 + 1] = 1.0 - (this.wiz.move.y / 1000 * h + h * 0.5 + this.wiz.light.y) / pbRenderer.height;
-	lightData[0 * 4 + 2] = pack(this.wiz.light.r, this.wiz.light.g, this.wiz.light.b);
-	lightData[0 * 4 + 3] = this.wiz.light.range;
+	lightData[index * 4 + 0] = (who.move.x / 1000 * w + w * 0.5 + who.light.x) / pbRenderer.width;
+	lightData[index * 4 + 1] = 1.0 - (who.move.y / 1000 * h + h * 0.5 + who.light.y) / pbRenderer.height;
+	lightData[index * 4 + 2] = pack(who.light.r, who.light.g, who.light.b);
+	lightData[index * 4 + 3] = who.light.range;
+};
 
-	var i = 1;
-	for(var e = 0, l = this.enemy.length; e < l; e++)
+/**
+ * setLightData - build the lightData array ready for the shader to use
+ */
+pbLightDepthDemo.prototype.setLightData = function()
+{
+	// attach light to the wizard
+	this.setLight(0, this.wiz);
+
+	// attach lights to the enemies
+	var i = 1, j = 0, l;
+	for(j = 0, l = this.enemy.length; j < l; j++)
 	{
-		lightData[i * 4 + 0] = (this.enemy[e].x / 1000 * w + w * 0.5) / pbRenderer.width;
-		lightData[i * 4 + 1] = 1.0 - (this.enemy[e].y / 1000 * h + h * 0.5) / pbRenderer.height;
-		lightData[i * 4 + 2] = pack(this.enemy[e].r, this.enemy[e].g, this.enemy[e].b);
-		lightData[i * 4 + 3] = 0.25;
+		this.setLight(i, this.enemy[j]);
 		if (++i >= 16) break;
 	}
-	for(; i < 16; i++)
+
+	// attach lights to the bullets
+	for(j = 0, l = this.bullets.length; j < l; j++)
+	{
+		this.setLight(i, this.bullets[j]);
+		if (++i >= 16) break;
+	}
+
+	while(i < 16)
 	{
 	 	// a light with power/colour of zero is switched off
-	 	lightData[i] = 0.0;
+	 	lightData[i * 4 + 2] = 0.0;
+	 	i++;
 	}
 };
 
 
-// callback required to set the correct shader program and it's associated attributes and/or uniforms
+// callback to set the correct shader program and it's associated attributes and/or uniforms
 pbLightDepthDemo.prototype.setShader = function(_shaders, _textureNumber)
 {
    	// set the shader program

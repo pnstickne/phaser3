@@ -30,14 +30,18 @@ function pbSprite(_x, _y, _key, _layer)
 
 pbSprite.prototype.destroy = function()
 {
-    this.textureObject = null;
-    this.surface = null;
-    if (this.image) this.image.destroy();
-    this.image = null;
-    if (this.transform) this.transform.destroy();
-    this.transform = null;
     if (this.layer) this.layer.removeChild(this.transform);
     this.layer = null;
+
+    this.textureObject = null;
+
+    this.surface = null;
+
+    if (this.image) this.image.destroy();
+    this.image = null;
+    
+    if (this.transform) this.transform.destroy();
+    this.transform = null;
 };
 
 
