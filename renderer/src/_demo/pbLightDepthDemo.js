@@ -112,7 +112,7 @@ pbLightDepthDemo.prototype.create = function()
     this.wiz = new pbSprite(32, 32, "wizard", this.topLayer);
     this.wiz.z = 0;
     this.wiz.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 50 };
-    this.wiz.light = { x : 0, y : 0, r : 0.0, g : 0.0, b : 10.0, range : 0.40 };
+    this.wiz.light = { x : this.wiz.surface.cellWide * 0.5, y : this.wiz.surface.cellHigh * 0.5, r : 0.0, g : 0.0, b : 8.0, range : 0.40 };
 
     // create the enemies
     this.enemy = [];
@@ -121,7 +121,7 @@ pbLightDepthDemo.prototype.create = function()
     	var enemy = new pbSprite(32, 32, "minotaur", this.topLayer);
 	    enemy.z = 0;
     	enemy.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 10 + Math.floor(Math.random() * 40) };
-    	enemy.light = { x : 0, y : 0, r : 0.50 + Math.random() * 0.5, g : 0.50 + Math.random() * 0.5, b : 0.0, range : 0.15 + e / 50.0 };
+    	enemy.light = { x : enemy.surface.cellWide * 0.5, y : enemy.surface.cellHigh * 0.5, r : 0.50 + Math.random() * 0.5, g : 0.50 + Math.random() * 0.5, b : 0.0, range : 0.15 + e / 50.0 };
     	this.enemy.push(enemy);
     	this.moveToRandomEmptyLocation(this.enemy[e]);
     }
@@ -422,9 +422,10 @@ pbLightDepthDemo.prototype.shoot = function(who)
 	if (this.bullets.length < 5)
 	{
 		var bullet = new pbSprite(32, 32, "bullet", this.topLayer);
+		bullet.anchorX = bullet.anchorY = 0.5;
 	    bullet.z = 0;
 	    bullet.life = 60 * 5;
-		bullet.move = { x : who.move.x + 250, y : who.move.y + 100, cellFrame : 0, dx : who.move.dx * 3, dy : who.move.dy * 3, speed : 100 };
+		bullet.move = { x : who.move.x + 500, y : who.move.y + 250, cellFrame : 0, dx : who.move.dx * 3, dy : who.move.dy * 3, speed : 100 };
 		bullet.light = { x : 0.0, y : 0.0, r : 4.0, g : 0.0, b : 0.0, range : 0.30 };
 		this.bullets.push(bullet);
 	}
@@ -545,8 +546,8 @@ pbLightDepthDemo.prototype.setLight = function(index, who)
 {
 	var w = this.tileMap.tilesets[0].tilewidth;
 	var h = this.tileMap.tilesets[0].tileheight;
-	lightData[index * 4 + 0] = (who.move.x / 1000 * w + w * 0.5 + who.light.x) / pbRenderer.width;
-	lightData[index * 4 + 1] = 1.0 - (who.move.y / 1000 * h + h * 0.5 + who.light.y) / pbRenderer.height;
+	lightData[index * 4 + 0] = (who.move.x / 1000 * w + who.light.x) / pbRenderer.width;
+	lightData[index * 4 + 1] = 1.0 - (who.move.y / 1000 * h + who.light.y) / pbRenderer.height;
 	lightData[index * 4 + 2] = pack(who.light.r, who.light.g, who.light.b);
 	lightData[index * 4 + 3] = who.light.range;
 };
