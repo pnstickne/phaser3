@@ -102,6 +102,7 @@ pbCreatureDemo.prototype.update = function()
 	this.new_creature_renderer.UpdateData();
 
 	// draw it with webgl
-	this.new_creature_renderer.DrawCreature(this.renderer.graphics, this.stripShaderProgram);
+    var transform = pbMatrix3.makeTransform(0.0, 0.0, 0.0, 0.08, 0.10);
+	this.new_creature_renderer.DrawCreature(transform, this.renderer.graphics, this.stripShaderProgram);
 };
 

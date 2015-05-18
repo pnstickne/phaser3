@@ -90,41 +90,6 @@ CreatureRenderer.prototype._initWebGlBuffers = function(_renderer)
 };
 
 
-CreatureRenderer.prototype._renderCreature = function(_renderer, _shaderProgram)
-{
-    if (!this._vertexBuffer) this._initWebGlBuffers(_renderer);
-    
-    // set the shader program and the texture source
-    _renderer.shaders.setProgram(_shaderProgram, 0);
-
-    // set uniforms for the render position
-    gl.uniformMatrix3fv( _renderer.shaders.getUniform( "translationMatrix" ), gl.FALSE, pbMatrix3.makeScale(0.1, 0.1) );
-    gl.uniform2f( _renderer.shaders.getUniform( "projectionVector" ), 1.0, 1.0 );
-    gl.uniform2f( _renderer.shaders.getUniform( "offsetVector" ), -1.0, -0.8 );
-    gl.uniform1f( _renderer.shaders.getUniform( "alpha" ), 1.0 );
-
-    // send the source texture to the GPU texture0
-    _renderer.textures.prepare(this.texture, false, false, gl.TEXTURE0 );
-
-    // update with the new vertices
-    gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);
-    gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aVertexPosition" ), 2, gl.FLOAT, gl.FALSE, 0, 0);
-    
-    // update the uvs
-    gl.bindBuffer(gl.ARRAY_BUFFER, this._uvBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, this.uvs, gl.DYNAMIC_DRAW);
-    gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aTextureCoord" ), 2, gl.FLOAT, gl.FALSE, 0, 0);
-    
-    // the indices shouldn't change unless the user is hacking with the data and adding/removing tri's
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer);
-    //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
-    
-    // draw it
-    gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);  
-};
-
-
 CreatureRenderer.prototype.UpdateCreatureBounds = function()
 {
 	// update bounds
@@ -192,11 +157,38 @@ CreatureRenderer.prototype.UpdateData = function()
 /**
  * DrawCreature - draw the creature using webgl
  *
+ * @param {[type]} _transform     - the transform matrix for position, rotation, and scaling
  * @param {[type]} _renderer      - the graphics engine instance
  * @param {[type]} _shaderProgram - the shader program to draw with
  * 
  */
-CreatureRenderer.prototype.DrawCreature = function(_renderer, _shaderProgram)
+CreatureRenderer.prototype.DrawCreature = function(_transform, _renderer, _shaderProgram)
 {
-    this._renderCreature(_renderer, _shaderProgram);
+    if (!this._vertexBuffer) this._initWebGlBuffers(_renderer);
+    
+    // set the shader program and the texture source
+    _renderer.shaders.setProgram(_shaderProgram, 0);
+
+    // set uniforms for the render position
+    gl.uniformMatrix3fv( _renderer.shaders.getUniform( "uTransformMatrix" ), gl.FALSE, _transform );
+
+    // send the source texture to the GPU texture0
+    _renderer.textures.prepare(this.texture, false, false, gl.TEXTURE0 );
+
+    // update with the new vertices
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);
+    gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aVertexPosition" ), 2, gl.FLOAT, gl.FALSE, 0, 0);
+    
+    // update the uvs
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._uvBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, this.uvs, gl.DYNAMIC_DRAW);
+    gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aTextureCoord" ), 2, gl.FLOAT, gl.FALSE, 0, 0);
+    
+    // the indices shouldn't change unless the user is hacking with the data and adding/removing tri's
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer);
+    //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
+    
+    // draw it
+    gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);  
 };
