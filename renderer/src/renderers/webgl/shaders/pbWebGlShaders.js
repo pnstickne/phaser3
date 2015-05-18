@@ -6,7 +6,6 @@
 
 
 // TODO: move actual shader code out into new files?  Look into other ways to represent the shader code.
-// TODO: simplify the addition of new shaders (so users can add new ones more easily)
 
 /**
  * blitShaderPointAnimSources - uses glPoint to set position and expands it to provide space for square textures

@@ -1,0 +1,40 @@
+{
+	"comment": [
+		"// based on the Pixi StripShader"
+		],
+
+	"fragment": [
+        "precision mediump float;",
+        "varying vec2 vTextureCoord;",
+        "uniform float alpha;",
+        "uniform sampler2D uSampler;",
+
+        "void main(void) {",
+        "//   gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.x, vTextureCoord.y)) * alpha;",
+		"   gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);",
+        "}"
+		],
+
+    "vertex": [
+        "attribute vec2 aVertexPosition;",
+        "attribute vec2 aTextureCoord;",
+        "uniform mat3 translationMatrix;",
+        "uniform vec2 projectionVector;",
+        "uniform vec2 offsetVector;",
+        "varying vec2 vTextureCoord;",
+
+        "void main(void) {",
+        "   vec3 v = translationMatrix * vec3(aVertexPosition , 1.0);",
+        "   v -= offsetVector.xyx;",
+        "   gl_Position = vec4( v.x / projectionVector.x -1.0, v.y / -projectionVector.y + 1.0 , 0.0, 1.0);",
+        "   vTextureCoord = aTextureCoord;",
+        "}"
+		],
+
+    "attributes":
+    	[ "aVertexPosition", "aTextureCoord" ],
+    "uniforms":
+    	[ "projectionVector", "offsetVector", "translationMatrix", "alpha" ],
+    "samplers":
+    	[ "uSampler" ]
+}

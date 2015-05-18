@@ -6,7 +6,6 @@
 
 
 var canvas = null;
-var webGl = null;
 var rootLayer = null;
 
 // static global
@@ -33,7 +32,6 @@ function pbRenderer(_renderMode, _docId, _bootCallback, _updateCallback, _gameCo
 	this.postUpdate = null;
 
 	// globals
- 	webGl = null;
  	rootLayer = null;
 
 	// members
@@ -92,8 +90,6 @@ pbRenderer.prototype.destroy = function()
 	this.updateCallback = null;
 	this.gameContext = null;
 	this.bootCallback = null;
-
-	webGl = null;
 
 	canvas.parentNode.removeChild(canvas);
 	canvas = null;
