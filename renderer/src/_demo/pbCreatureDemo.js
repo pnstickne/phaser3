@@ -44,7 +44,7 @@ pbCreatureDemo.prototype.create = function()
 {
 	console.log("pbCreatureDemo.create");
 
-	// add the shader
+	// get the shader program
 	var jsonString = this.loader.getFile( this.stripShaderJSON ).responseText;
 	this.stripShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
 
@@ -52,22 +52,29 @@ pbCreatureDemo.prototype.create = function()
 	jsonString = this.loader.getFile( this.dinoJSON ).responseText;
 	var actual_JSON = JSON.parse(jsonString);
 
+	// create the creature
 	var new_creature = new Creature(actual_JSON);
-	
+
+	// create an animation object for it
 	var new_animation_1 = new CreatureAnimation(actual_JSON, "default", new_creature);
-//	var new_animation_2 = new CreatureAnimation(actual_JSON, "pose2", new_creature);
 	
+	// create a creature manager for it
 	this.new_manager = new CreatureManager(new_creature);
+
+	// add the animation to the manager
 	this.new_manager.AddAnimation(new_animation_1);
 	//this.new_manager.AddAnimation(new_animation_2);
+
+	// prepare the manager settings
 	this.new_manager.SetActiveAnimationName("default", false);
 	this.new_manager.SetShouldLoop(true);
 	this.new_manager.SetIsPlaying(true);
 	this.new_manager.RunAtTime(0);
 
-    // get the texture object from the textures dictionary using 'key'
+    // get the source texture from the textures dictionary using 'key'
     this.textureObject = textures.getFirst("dino");
-	// create the creature renderer
+
+	// create the creature renderer using the manager and the texture
 	this.new_creature_renderer = new CreatureRenderer(this.new_manager, this.textureObject.imageData);
 };
 
@@ -79,21 +86,11 @@ pbCreatureDemo.prototype.destroy = function()
 	this.new_manager = null;
 	this.new_creature_renderer = null;
 	this.textureObject = null;
-	
+
 	if (this.renderer)
 		this.renderer.destroy();
 	this.renderer = null;
 };
-
-
-pbCreatureDemo.prototype.restart = function()
-{
-	console.log("pbCreatureDemo.restart");
-	
-	this.destroy();
-	this.create();
-};
-
 
 
 pbCreatureDemo.prototype.update = function()

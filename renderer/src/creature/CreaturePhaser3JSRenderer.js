@@ -142,7 +142,11 @@ CreatureRenderer.prototype.UpdateCreatureBounds = function()
 
 
 /**
- * UpdateRenderData - transfer all the creature data to the webgl buffers
+ * UpdateRenderData - transfer the creature vertex and uv data to the webgl buffers
+ * NOTE: this.uvs is the same format as inputUVs so it should instead be possible to specify inputUVs as the webgl buffer area
+ * Unfortunately inputVerts appears to have three values per vertex so the same trick won't work with that buffer. It
+ * would be worth looking into the performance when sending the extra value per vertex (and ignoring it in the shader) to 
+ * completely eliminate this loop.
  *
  * @param {[type]} inputVerts [description]
  * @param {[type]} inputUVs   [description]
@@ -180,10 +184,7 @@ CreatureRenderer.prototype.UpdateData = function()
 {
     var target_creature = this.creature_manager.target_creature;
     
-    var read_pts = target_creature.render_pts;
-    var read_uvs = target_creature.global_uvs;
-    
-    this.UpdateRenderData(read_pts, read_uvs);
+    this.UpdateRenderData(target_creature.render_pts, target_creature.global_uvs);
     this.UpdateCreatureBounds();
 };
 
