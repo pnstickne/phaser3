@@ -70,33 +70,23 @@ function CreatureRenderer(manager_in, texture_in)
 //CreatureRenderer.prototype = Object.create(PIXI.DisplayObjectContainer.prototype);
 CreatureRenderer.prototype.constructor = CreatureRenderer;
 
-CreatureRenderer.prototype._renderWebGL = function(_renderer)
+CreatureRenderer.prototype._renderWebGL = function(_renderer, _shaderProgram)
 {
-    // if the sprite is not visible or the alpha is 0 then no need to render this element
-    //if(!this.visible || this.alpha <= 0)return;
     // render triangles..
 
-    //renderSession.spriteBatch.stop();
-
     // init! init!
-    if(!this._vertexBuffer)this._initWebGL(_renderer);
+    if (!this._vertexBuffer) this._initWebGL(_renderer);
     
-    //renderSession.shaderManager.setShader(renderSession.shaderManager.stripShader);
+    // set the shader program
+    _renderer.shaders.setProgram(_shaderProgram, 0);
 
     this._renderCreature(_renderer);
-
-    ///renderSession.shaderManager.activateDefaultShader();
-
-    //renderSession.spriteBatch.start();
 
     //TODO check culling  
 };
 
 CreatureRenderer.prototype._initWebGL = function(_renderer)
 {
-    // build the strip!
-    //var gl = renderSession.gl;
-    
     this._vertexBuffer = gl.createBuffer();
     this._indexBuffer = gl.createBuffer();
     this._uvBuffer = gl.createBuffer();
@@ -117,81 +107,27 @@ CreatureRenderer.prototype._initWebGL = function(_renderer)
 
 CreatureRenderer.prototype._renderCreature = function(_renderer)
 {
-    // var gl = renderSession.gl;
-    // var projection = renderSession.projection,
-    //     offset = renderSession.offset,
-    //     shader = renderSession.shaderManager.stripShader;
-
-
-    // gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mat4Real);
-
-    //renderSession.blendModeManager.setBlendMode(this.blendMode);
-    
-
     // set uniforms
-//    gl.uniformMatrix3fv(shader.translationMatrix, false, this.worldTransform.toArray(true));
-//    gl.uniform2f(shader.projectionVector, projection.x, -projection.y);
-//    gl.uniform2f(shader.offsetVector, -offset.x, -offset.y);
-//    gl.uniform1f(shader.alpha, this.worldAlpha);
+    gl.uniformMatrix3fv( _renderer.shaders.getUniform( "translationMatrix" ), gl.FALSE, pbMatrix3.makeScale(0.1, 0.1) );
+    gl.uniform2f( _renderer.shaders.getUniform( "projectionVector" ), 1.0, 1.0 );
+    gl.uniform2f( _renderer.shaders.getUniform( "offsetVector" ), -1.0, -0.8 );
+    gl.uniform1f( _renderer.shaders.getUniform( "alpha" ), 1.0 );
 
-    // if(!this.dirty)
-    // {
-        
-    //     gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);
-    //     gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.vertices);
-    //     gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aVertexPosition" ), 2, gl.FLOAT, false, 0, 0);
-        
-    //     // update the uvs
-    //     gl.bindBuffer(gl.ARRAY_BUFFER, this._uvBuffer);
-    //     gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aTextureCoord" ), 2, gl.FLOAT, false, 0, 0);
-            
-    //     gl.activeTexture(gl.TEXTURE0);
+    // send the texture to the GPU texture0
+    _renderer.textures.prepare(this.texture, false, false, gl.TEXTURE0 );
 
-    //     // check if a texture is dirty..
-    //     // if(this.texture.baseTexture._dirty[gl.id])
-    //     // {
-    //     //     renderSession.renderer.updateTexture(this.texture.baseTexture);
-    //     // }
-    //     // else
-    //     {
-    //         // bind the current texture
-    //         gl.bindTexture(gl.TEXTURE_2D, this.texture.baseTexture._glTextures[gl.id]);
-    //     }
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);
+    gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aVertexPosition" ), 2, gl.FLOAT, gl.FALSE, 0, 0);
     
-    //     // dont need to upload!
-    //     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer);
+    // update the uvs
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._uvBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, this.uvs, gl.DYNAMIC_DRAW);
+    gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aTextureCoord" ), 2, gl.FLOAT, gl.FALSE, 0, 0);
     
-    
-    // }
-    // else
-    {
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);
-        gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aVertexPosition" ), 2, gl.FLOAT, false, 0, 0);
-        
-        // update the uvs
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._uvBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, this.uvs, gl.DYNAMIC_DRAW);
-        gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aTextureCoord" ), 2, gl.FLOAT, false, 0, 0);
-            
-        gl.activeTexture(gl.TEXTURE0);
-
-        // check if a texture is dirty..
-        // if(this.texture.baseTexture._dirty[gl.id])
-        // {
-        //     renderSession.renderer.updateTexture(this.texture.baseTexture);
-        // }
-        // else
-        {
-            gl.bindTexture(gl.TEXTURE_2D, _renderer.textures.currentSourceTexture);
-        }
-    
-        // dont need to upload!
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
-        
-    }
+    // dont need to upload!
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
     
     gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);  
 };
@@ -212,18 +148,17 @@ CreatureRenderer.prototype.UpdateCreatureBounds = function()
 	// this.worldTransform.apply(this.creatureBoundsMax, this.creatureBoundsMax);				
 };
 
-CreatureRenderer.prototype.UpdateData = function(renderer)
+CreatureRenderer.prototype.UpdateData = function(_renderer, _shaderProgram)
 {
 	var target_creature = this.creature_manager.target_creature;
 	
 	var read_pts = target_creature.render_pts;
-	//var read_pts = target_creature.global_pts;
 	var read_uvs = target_creature.global_uvs;
 	
 	this.UpdateRenderData(read_pts, read_uvs);
 	this.UpdateCreatureBounds();
 
-    this._renderWebGL(renderer);
+    this._renderWebGL(_renderer, _shaderProgram);
 };
 
 CreatureRenderer.prototype.UpdateRenderData = function(inputVerts, inputUVs)

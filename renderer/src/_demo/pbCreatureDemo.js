@@ -48,15 +48,6 @@ pbCreatureDemo.prototype.create = function()
 	var jsonString = this.loader.getFile( this.stripShaderJSON ).responseText;
 	this.stripShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
 
-	// set the shader program
-    this.renderer.graphics.shaders.setProgram(this.stripShaderProgram, 0);
-
-	// init the shader attributes and uniforms
-	gl.uniformMatrix3fv( this.renderer.graphics.shaders.getUniform( "translationMatrix" ), gl.FALSE, pbMatrix3.makeScale(0.1, 0.1) );
-	gl.uniform2f( this.renderer.graphics.shaders.getUniform( "projectionVector" ), 1.0, 1.0 );
-	gl.uniform2f( this.renderer.graphics.shaders.getUniform( "offsetVector" ), -1.0, -0.8 );
-	gl.uniform1f( this.renderer.graphics.shaders.getUniform( "alpha" ), 1.0 );
-
 	// get the animation JSON data
 	jsonString = this.loader.getFile( this.dinoJSON ).responseText;
 	var actual_JSON = JSON.parse(jsonString);
@@ -76,9 +67,6 @@ pbCreatureDemo.prototype.create = function()
 
     // get the texture object from the textures dictionary using 'key'
     this.textureObject = textures.getFirst("dino");
-    // send the texture to the GPU texture0
-	this.renderer.graphics.textures.prepare(this.textureObject.imageData, false, false, gl.TEXTURE0 );
-
 	// create the creature renderer
 	this.new_creature_renderer = new CreatureRenderer(this.new_manager, this.textureObject.imageData);
 };
@@ -111,6 +99,6 @@ pbCreatureDemo.prototype.restart = function()
 pbCreatureDemo.prototype.update = function()
 {
 	this.new_manager.Update(0.05);
-	this.new_creature_renderer.UpdateData(this.renderer.graphics);
+	this.new_creature_renderer.UpdateData(this.renderer.graphics, this.stripShaderProgram);
 };
 
