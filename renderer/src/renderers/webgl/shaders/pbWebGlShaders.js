@@ -661,17 +661,23 @@ pbWebGlShaders.prototype.prepare = function()
 {
 	var program = this.programList[ pbWebGlShaders.currentProgram ];
 
-	// set the shader to use TEXTURE0 and the first sampler uniform
-	if (program.samplerUniforms && program.samplerUniforms.uImageSampler)
-   		gl.uniform1i( program.samplerUniforms.uImageSampler, 0 );
+	if (program.samplerUniforms)
+	{
+		// set the shader to use TEXTURE0 and the first sampler uniform
+		if (program.samplerUniforms.uImageSampler)
+   			gl.uniform1i( program.samplerUniforms.uImageSampler, 0 );
+   	}
 
-	// set up a projection matrix in the vertex shader
-	if (program.uniforms.uProjectionMatrix)
-		gl.uniformMatrix3fv( program.uniforms.uProjectionMatrix, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+	if (program.uniforms)
+	{
+		// set up a projection matrix in the vertex shader
+		if (program.uniforms.uProjectionMatrix)
+			gl.uniformMatrix3fv( program.uniforms.uProjectionMatrix, false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
 
-	// set up a 3D projection matrix in the vertex shader
-	if (program.uniforms.uProjectionMatrix4)
-		gl.uniformMatrix4fv( program.uniforms.uProjectionMatrix4, false, pbMatrix4.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+		// set up a 3D projection matrix in the vertex shader
+		if (program.uniforms.uProjectionMatrix4)
+			gl.uniformMatrix4fv( program.uniforms.uProjectionMatrix4, false, pbMatrix4.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
+	}
 };
 
 

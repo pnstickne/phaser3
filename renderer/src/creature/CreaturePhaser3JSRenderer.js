@@ -42,14 +42,11 @@
 
 function CreatureRenderer(manager_in, texture_in)
 {
-	//PIXI.DisplayObjectContainer.call( this );
-	
 	this.creature_manager = manager_in;
 	this.texture = texture_in;
-//	this.blendMode = PIXI.blendModes.NORMAL;
-//	this.creatureBoundsMin = new PIXI.Point(0,0);
-//	this.creatureBoundsMax = new PIXI.Point(0,0);
 	
+    this._vertexBuffer = null;
+
 	var target_creature = this.creature_manager.target_creature;
 
 	this.vertices = new Float32Array(target_creature.total_num_pts * 2);
@@ -66,26 +63,13 @@ function CreatureRenderer(manager_in, texture_in)
 	this.UpdateRenderData(target_creature.global_pts, target_creature.global_uvs);
 }
 
+
 // constructor
 //CreatureRenderer.prototype = Object.create(PIXI.DisplayObjectContainer.prototype);
-CreatureRenderer.prototype.constructor = CreatureRenderer;
+//CreatureRenderer.prototype.constructor = CreatureRenderer;
 
-CreatureRenderer.prototype._renderWebGL = function(_renderer, _shaderProgram)
-{
-    // render triangles..
 
-    // init! init!
-    if (!this._vertexBuffer) this._initWebGL(_renderer);
-    
-    // set the shader program
-    _renderer.shaders.setProgram(_shaderProgram, 0);
-
-    this._renderCreature(_renderer);
-
-    //TODO check culling  
-};
-
-CreatureRenderer.prototype._initWebGL = function(_renderer)
+CreatureRenderer.prototype._initWebGlBuffers = function(_renderer)
 {
     this._vertexBuffer = gl.createBuffer();
     this._indexBuffer = gl.createBuffer();
@@ -105,17 +89,24 @@ CreatureRenderer.prototype._initWebGL = function(_renderer)
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
 };
 
-CreatureRenderer.prototype._renderCreature = function(_renderer)
+
+CreatureRenderer.prototype._renderCreature = function(_renderer, _shaderProgram)
 {
-    // set uniforms
+    if (!this._vertexBuffer) this._initWebGlBuffers(_renderer);
+    
+    // set the shader program and the texture source
+    _renderer.shaders.setProgram(_shaderProgram, 0);
+
+    // set uniforms for the render position
     gl.uniformMatrix3fv( _renderer.shaders.getUniform( "translationMatrix" ), gl.FALSE, pbMatrix3.makeScale(0.1, 0.1) );
     gl.uniform2f( _renderer.shaders.getUniform( "projectionVector" ), 1.0, 1.0 );
     gl.uniform2f( _renderer.shaders.getUniform( "offsetVector" ), -1.0, -0.8 );
     gl.uniform1f( _renderer.shaders.getUniform( "alpha" ), 1.0 );
 
-    // send the texture to the GPU texture0
+    // send the source texture to the GPU texture0
     _renderer.textures.prepare(this.texture, false, false, gl.TEXTURE0 );
 
+    // update with the new vertices
     gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);
     gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aVertexPosition" ), 2, gl.FLOAT, gl.FALSE, 0, 0);
@@ -125,42 +116,37 @@ CreatureRenderer.prototype._renderCreature = function(_renderer)
     gl.bufferData(gl.ARRAY_BUFFER, this.uvs, gl.DYNAMIC_DRAW);
     gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aTextureCoord" ), 2, gl.FLOAT, gl.FALSE, 0, 0);
     
-    // dont need to upload!
+    // the indices shouldn't change unless the user is hacking with the data and adding/removing tri's
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
+    //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
     
+    // draw it
     gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);  
 };
 
+
 CreatureRenderer.prototype.UpdateCreatureBounds = function()
 {
-	// update bounds based off world transform matrix
-	// var target_creature = this.creature_manager.target_creature;
+	// update bounds
+	var target_creature = this.creature_manager.target_creature;
 		
-	// target_creature.ComputeBoundaryMinMax();
+	target_creature.ComputeBoundaryMinMax();
+
 	// this.creatureBoundsMin.set(target_creature.boundary_min[0],
-	// 							-target_creature.boundary_min[1]);
+	//  							-target_creature.boundary_min[1]);
 	// this.creatureBoundsMax.set(target_creature.boundary_max[0],
-	// 							-target_creature.boundary_max[1]);
-								
-	
+	//  							-target_creature.boundary_max[1]);
 	// this.worldTransform.apply(this.creatureBoundsMin, this.creatureBoundsMin);	
 	// this.worldTransform.apply(this.creatureBoundsMax, this.creatureBoundsMax);				
 };
 
-CreatureRenderer.prototype.UpdateData = function(_renderer, _shaderProgram)
-{
-	var target_creature = this.creature_manager.target_creature;
-	
-	var read_pts = target_creature.render_pts;
-	var read_uvs = target_creature.global_uvs;
-	
-	this.UpdateRenderData(read_pts, read_uvs);
-	this.UpdateCreatureBounds();
 
-    this._renderWebGL(_renderer, _shaderProgram);
-};
-
+/**
+ * UpdateRenderData - transfer all the creature data to the webgl buffers
+ *
+ * @param {[type]} inputVerts [description]
+ * @param {[type]} inputUVs   [description]
+ */
 CreatureRenderer.prototype.UpdateRenderData = function(inputVerts, inputUVs)
 {
 	var target_creature = this.creature_manager.target_creature;
@@ -183,4 +169,33 @@ CreatureRenderer.prototype.UpdateRenderData = function(inputVerts, inputUVs)
 		
 		write_pt_index += 2;
 	}
+};
+
+
+/**
+ * UpdateData - update the creature animation points
+ *
+ */
+CreatureRenderer.prototype.UpdateData = function()
+{
+    var target_creature = this.creature_manager.target_creature;
+    
+    var read_pts = target_creature.render_pts;
+    var read_uvs = target_creature.global_uvs;
+    
+    this.UpdateRenderData(read_pts, read_uvs);
+    this.UpdateCreatureBounds();
+};
+
+
+/**
+ * DrawCreature - draw the creature using webgl
+ *
+ * @param {[type]} _renderer      - the graphics engine instance
+ * @param {[type]} _shaderProgram - the shader program to draw with
+ * 
+ */
+CreatureRenderer.prototype.DrawCreature = function(_renderer, _shaderProgram)
+{
+    this._renderCreature(_renderer, _shaderProgram);
 };

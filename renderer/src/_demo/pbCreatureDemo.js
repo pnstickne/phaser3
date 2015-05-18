@@ -78,8 +78,8 @@ pbCreatureDemo.prototype.destroy = function()
 
 	this.new_manager = null;
 	this.new_creature_renderer = null;
-	this.surface.destroy();
-
+	this.textureObject = null;
+	
 	if (this.renderer)
 		this.renderer.destroy();
 	this.renderer = null;
@@ -98,7 +98,13 @@ pbCreatureDemo.prototype.restart = function()
 
 pbCreatureDemo.prototype.update = function()
 {
-	this.new_manager.Update(0.05);
-	this.new_creature_renderer.UpdateData(this.renderer.graphics, this.stripShaderProgram);
+	// update the creature manager for a given time interval
+	this.new_manager.Update(0.02);
+
+	// recalculate this creature's point data
+	this.new_creature_renderer.UpdateData();
+
+	// draw it with webgl
+	this.new_creature_renderer.DrawCreature(this.renderer.graphics, this.stripShaderProgram);
 };
 
