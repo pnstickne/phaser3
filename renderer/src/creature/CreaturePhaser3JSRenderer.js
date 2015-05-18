@@ -167,13 +167,14 @@ CreatureRenderer.prototype.DrawCreature = function(_transform, _renderer, _shade
     if (!this._vertexBuffer) this._initWebGlBuffers(_renderer);
     
     // set the shader program and the texture source
-    _renderer.shaders.setProgram(_shaderProgram, 0);
+    _renderer.shaders.setProgram(_shaderProgram, 1);
 
     // set uniforms for the render position
     gl.uniformMatrix3fv( _renderer.shaders.getUniform( "uTransformMatrix" ), gl.FALSE, _transform );
 
     // send the source texture to the GPU texture0
     _renderer.textures.prepare(this.texture, false, false, gl.TEXTURE0 );
+    gl.activeTexture( gl.TEXTURE1 );
 
     // update with the new vertices
     gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);

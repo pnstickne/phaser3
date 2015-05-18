@@ -354,13 +354,13 @@ pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
 
 	// send the transform matrix to the vector shader
-	gl.uniformMatrix3fv( this.shaders.getUniform( "uModelMatrix" ), false, _transform );
+	gl.uniformMatrix3fv( this.shaders.getUniform( "uModelMatrix" ), gl.FALSE, _transform );
 
 	// set the depth value
    	gl.uniform1f( this.shaders.getUniform( "uZ" ), _z );
 
 	// point the position attribute at the last bound buffer
-    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, gl.FALSE, 0, 0 );
 
     // four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -376,6 +376,7 @@ pbWebGl.prototype.drawTextureToDisplay = function(_textureNumber, _texture, _sha
 
 	if (!this.positionBuffer)
 		this.prepareBuffer();
+	gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 	
 	// create a buffer for the vertices used to transfer the render-to-texture to the display
 	var buffer = this.drawingArray.subarray(0, 16);

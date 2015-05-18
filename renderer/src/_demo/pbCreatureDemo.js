@@ -76,6 +76,19 @@ pbCreatureDemo.prototype.create = function()
 
 	// create the creature renderer using the manager and the texture
 	this.new_creature_renderer = new CreatureRenderer(this.new_manager, this.textureObject.imageData);
+
+	// create the render-to-texture, depth buffer, and a frame buffer to hold them
+	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
+	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
+	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
+
+	// set the transformation for rendering to the render-to-texture
+	this.srcTransform = pbMatrix3.makeTransform(0, 0, 0, 1, 1);
+
+    // clear the gl bindings
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
 
 
@@ -90,6 +103,10 @@ pbCreatureDemo.prototype.destroy = function()
 	if (this.renderer)
 		this.renderer.destroy();
 	this.renderer = null;
+
+	this.rttTexture = null;
+	this.rttRenderbuffer = null;
+	this.rttFramebuffer = null;
 };
 
 
@@ -101,8 +118,18 @@ pbCreatureDemo.prototype.update = function()
 	// recalculate this creature's point data
 	this.new_creature_renderer.UpdateData();
 
-	// draw it with webgl
+	// bind the framebuffer so drawing will go to the associated texture and depth buffer
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
+	// clear the render-to-texture
+	gl.clearColor(0, 0, 0, 1);
+	gl.clear(gl.COLOR_BUFFER_BIT);
+
+	// draw the creature with webgl
     var transform = pbMatrix3.makeTransform(0.0, 0.0, 0.0, 0.08, 0.10);
 	this.new_creature_renderer.DrawCreature(transform, this.renderer.graphics, this.stripShaderProgram);
+
+	// draw the render-to-texture to the display
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	this.renderer.graphics.drawTextureToDisplay(1, this.rttTexture);
 };
 
