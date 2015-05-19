@@ -42,12 +42,14 @@ pbBlankShaderDemo.prototype.create = function()
 	this.shaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
 
 	// create a render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
+	this.rttTextureNumber = 0;
+	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + rttTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 	// create the filter destination texture
-	this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
+	this.filterTextureNumber = 1;
+	this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + filterTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update (drawing the invaders)
@@ -108,11 +110,11 @@ pbBlankShaderDemo.prototype.postUpdate = function()
 
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a shader as it draws
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyShaderToTexture(0, this.rttTexture, this.setShader, this);
+	this.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(1, this.filterTexture);
+	this.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
 };
 
 
@@ -120,7 +122,7 @@ pbBlankShaderDemo.prototype.postUpdate = function()
 pbBlankShaderDemo.prototype.setShader = function(_shaders, _textureNumber)
 {
    	// set the shader program
-	_shaders.setProgram(this.shaderProgram, 0);
+	_shaders.setProgram(this.shaderProgram, this.rttTextureNumber);
 
 	// set the uniform values for the shader program
 	gl.uniform1f( _shaders.getUniform( "uRedScale" ), 1.0 );

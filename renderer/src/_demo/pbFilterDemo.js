@@ -117,10 +117,6 @@ pbFilterDemo.prototype.restart = function()
 // draw _image using _transform, use the _fb framebuffer texture and depth buffers
 pbFilterDemo.prototype.drawSceneToTexture = function(_fb, _image, _transform)
 {
-	// bind the framebuffer so drawing will go to the associated texture and depth buffer
-	gl.bindFramebuffer(gl.FRAMEBUFFER, _fb);
-	// draw this.srcImage into the render-to-texture
-	this.renderer.graphics.drawImageWithTransform(_image, _transform, 1.0);
 };
 
 
@@ -130,12 +126,14 @@ pbFilterDemo.prototype.update = function()
 	if (this.firstTime)
 	{
 		// create the render-to-texture, depth buffer, and a frame buffer to hold them
-		this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
+		this.rttTextureNumber = 0;
+		this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
 		this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 		this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 		// create the filter texture
-		this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
+		this.filterTextureNumber = 1;
+		this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.filterTextureNumber, pbRenderer.width, pbRenderer.height);
 		this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 		// set the transformation for rendering to the render-to-texture
@@ -151,15 +149,18 @@ pbFilterDemo.prototype.update = function()
 	}
 
 	// draw srcImage using the render-to-texture framebuffer
-	this.drawSceneToTexture(this.rttFramebuffer, this.srcImage, this.srcTransform);
+	// bind the framebuffer so drawing will go to the associated texture and depth buffer
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
+	// draw this.srcImage into the render-to-texture
+	this.renderer.graphics.drawImageWithTransform(this.srcImage, this.srcTransform, 1.0);
 
 	// copy rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyShaderToTexture(0, this.rttTexture, this.setTint, this);
+	this.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setTint, this);
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(0, this.filterTexture);
+	this.renderer.graphics.drawTextureToDisplay(this.rttTextureNumber, this.filterTexture);
 };
 
 
@@ -167,7 +168,7 @@ pbFilterDemo.prototype.update = function()
 pbFilterDemo.prototype.setTint = function(_shaders)
 {
    	// set the shader program
-	_shaders.setProgram(this.tintShaderProgram, 0);
+	_shaders.setProgram(this.tintShaderProgram, this.rttTextureNumber);
 	// set the tint values in the shader program
 	gl.uniform1f( _shaders.getUniform( "uRedScale" ), this.redScale );
 	gl.uniform1f( _shaders.getUniform( "uGreenScale" ), this.greenScale );

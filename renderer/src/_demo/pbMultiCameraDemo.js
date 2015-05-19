@@ -70,7 +70,8 @@ pbMultiCameraDemo.prototype.create = function()
 	this.game.create(this, this.gameLayer, true);
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
+	this.rttTextureNumber = 1;
+	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
@@ -157,7 +158,7 @@ pbMultiCameraDemo.prototype.postUpdate = function()
 		this.transform[i] = pbMatrix3.makeTransform(this.tx[i], this.ty[i], this.tr[i], this.ts[i], this.ts[i]);
 
 		// _image, _transform, _z
-		this.renderer.graphics.drawTextureWithTransform( this.rttTexture, this.transform[i], 1.0 );
+		this.renderer.graphics.drawTextureWithTransform( this.rttTextureNumber, this.rttTexture, this.transform[i], 1.0 );
 	}
 };
 
