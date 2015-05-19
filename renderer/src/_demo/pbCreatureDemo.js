@@ -31,21 +31,7 @@ function pbCreatureDemo( docId )
 	this.dinoJSON = this.loader.loadFile( "../img/creatures/dino.CreaExport/character_data.json" );
 	this.loader.loadImage( "dino", "../img/creatures/dino.CreaExport/character_img.png" );
 
-	this.loader.loadImage( "player", "../img/invader/player.png" );
-	this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
 	this.loader.loadImage( "stars", "../img/invader/starfield.png" );
-	this.loader.loadImage( "bullet", "../img/invader/bullet.png" );
-	this.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
-	this.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png", 32, 32, 8, 1 );
-	this.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
-	this.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
-	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
-
-	this.frame_l = this.loader.loadImage( "frame_l", "../img/frame_l.png" );
-	this.frame_r = this.loader.loadImage( "frame_r", "../img/frame_r.png" );
-	this.frame_t = this.loader.loadImage( "frame_t", "../img/frame_t.png" );
-	this.frame_b = this.loader.loadImage( "frame_b", "../img/frame_b.png" );
-
 
 	console.log( "pbCreatureDemo c'tor exit" );
 }
@@ -65,11 +51,8 @@ pbCreatureDemo.prototype.create = function()
 	this.gameLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.gameLayer);
 
-	// add the game instance to a layer which is attached to the rootLayer
-	// because otherwise the renderer.update won't update the game's sprite
-	// transforms or draw them to the render-to-texture
-	this.game = new pbInvaderDemoCore();
-	this.game.create(this, this.gameLayer, true);
+	this.game = new pbBackground();
+	this.game.create(this, this.gameLayer);
 
 
 	console.log("pbCreatureDemo.create");
@@ -143,8 +126,6 @@ pbCreatureDemo.prototype.destroy = function()
 
 pbCreatureDemo.prototype.update = function()
 {
-	this.game.update();
-
 	// update the creature manager for a given time interval
 	this.new_manager.Update(0.02);
 
