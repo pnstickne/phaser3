@@ -253,12 +253,12 @@ pbWebGlTextures.prototype.stopRenderTexture = function()
 };
 
 
-pbWebGlTextures.prototype.setRenderSourceImage = function( _imageData )
+pbWebGlTextures.prototype.setRenderSourceImage = function( _textureNumber, _imageData )
 {
 	// make sure that _image is the current source texture
 	if (!this.currentSrcTexture || this.currentSrcTexture.imageData !== _imageData)
 	{
-		console.log("pbWebGlTextures.setRenderSourceImage", _imageData.width, "x", _imageData.height);
+		console.log("pbWebGlTextures.setRenderSourceImage", _textureNumber, _imageData.width, "x", _imageData.height);
 
 		var index = this.onGPU.indexOf(_imageData);
 		if (index == -1)
@@ -268,7 +268,7 @@ pbWebGlTextures.prototype.setRenderSourceImage = function( _imageData )
 			console.log("WARNING: imageData has null for gpuTexture.");
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 		this.currentSrcTexture = texture;
-		gl.activeTexture( gl.TEXTURE0 );
+		gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 	}
 };
 
