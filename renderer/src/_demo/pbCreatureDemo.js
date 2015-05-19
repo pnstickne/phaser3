@@ -4,6 +4,13 @@
  *
  * Based in part on PixiJs-Demo.html and CreaturePixiJSRenderer.js from the Creatures GitHub repository.
  *
+ * 
+ * Utah Raptor original image
+ * from: https://commons.wikimedia.org/wiki/Category:Utahraptor#/media/File:Utahraptor_updated.png
+ * by: https://commons.wikimedia.org/wiki/User:Ferahgo_the_Assassin  e.deinonychus@gmail.com
+ * license: http://creativecommons.org/licenses/by-sa/3.0/
+ * The original image has been sliced and is warped by the Creature software for animation display.
+ * 
  */
 
 
@@ -28,8 +35,8 @@ function pbCreatureDemo( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 	this.stripShaderJSON = this.loader.loadFile( "../JSON/stripShaderSources.json" );
-	this.dinoJSON = this.loader.loadFile( "../img/creatures/dino.CreaExport/character_data.json" );
-	this.loader.loadImage( "dino", "../img/creatures/dino.CreaExport/character_img.png" );
+	this.dinoZip = this.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
+	this.loader.loadImage( "dino", "../img/creatures/utah.CreaExport/character_img.png" );
 
 	this.loader.loadImage( "bg", "../img/sphere3.png" );
 
@@ -61,9 +68,10 @@ pbCreatureDemo.prototype.create = function()
 	var jsonString = this.loader.getFile( this.stripShaderJSON ).responseText;
 	this.stripShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
 
-	// get the animation JSON data
-	jsonString = this.loader.getFile( this.dinoJSON ).responseText;
-	var actual_JSON = JSON.parse(jsonString);
+	// unzip the compressed data file and create the animation JSON data structure
+	var zip = new JSZip( this.loader.getFile( this.dinoZip ).response );
+	this.dinoJSON = zip.file("character_data.json").asText();
+	var actual_JSON = JSON.parse(this.dinoJSON);
 
 	// create the creature
 	var new_creature = new Creature(actual_JSON);
@@ -83,6 +91,10 @@ pbCreatureDemo.prototype.create = function()
 	this.new_manager.SetShouldLoop(true);
 	this.new_manager.SetIsPlaying(true);
 	this.new_manager.RunAtTime(0);
+
+	// prepare a cache of points to speed up the playback
+	// WARNING: slow - 4 seconds for one animation of the Utah Raptor
+	//this.new_manager.MakePointCache("default");
 
     // get the source texture from the textures dictionary using 'key'
     this.textureObject = textures.getFirst("dino");
@@ -133,7 +145,7 @@ pbCreatureDemo.prototype.update = function()
 	this.new_creature_renderer.UpdateData();
 
 	// draw the creature with webgl, the draw destination will be this.renderer.useFrameBuffer
-    var transform = pbMatrix3.makeTransform(0.0, 0.0, 0.0, 0.08, 0.10);
+    var transform = pbMatrix3.makeTransform(-0.15, 0.0, 0.0, 0.04, 0.04);
 	this.new_creature_renderer.DrawCreature(transform, this.renderer.graphics, this.stripShaderProgram, this.creatureTextureNumber);
 };
 
