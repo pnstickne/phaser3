@@ -85,7 +85,8 @@ pbDungeonLightDemo.prototype.create = function()
 	this.createSurfaces();
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
+	this.rttTextureNumber = 1;
+	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
@@ -94,7 +95,8 @@ pbDungeonLightDemo.prototype.create = function()
    	this.renderer.useRenderbuffer = this.rttRenderbuffer;
 
 	// create the filter destination texture and framebuffer
-	this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE2, pbRenderer.width, pbRenderer.height);
+	this.filterTextureNumber = 2;
+	this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
@@ -118,8 +120,9 @@ pbDungeonLightDemo.prototype.create = function()
 
     // get the ImageData for the floor
 	var imageData = this.loader.getFile( this.floorImg );
-	// upload the floor image directly to the correct texture register on the GPU (it's hardwired in the shader to texture number 3)
-	this.renderer.graphics.textures.prepare(imageData, false, true, gl.TEXTURE3 );
+	// upload the floor image directly to the correct texture register on the GPU
+	this.floorTextureNumber = 3;
+	this.renderer.graphics.textures.prepare(imageData, false, true, this.floorTextureNumber );
 };
 
 
@@ -444,17 +447,17 @@ pbDungeonLightDemo.prototype.postUpdate = function()
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a shader as it draws
-	gl.activeTexture(gl.TEXTURE1);
+	gl.activeTexture(gl.TEXTURE0 + this.rttTextureNumber);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyShaderToTexture(1, this.rttTexture, this.setShader, this);
+	this.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
 
 	// update transforms and draw sprites that are not shadow casters
 	this.topLayer.update();
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	gl.activeTexture(gl.TEXTURE2);
-	this.renderer.graphics.drawTextureToDisplay(2, this.filterTexture);
+	gl.activeTexture(gl.TEXTURE0 + this.filterTextureNumber);
+	this.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
 };
 
 
@@ -519,8 +522,8 @@ pbDungeonLightDemo.prototype.setShader = function(_shaders, _textureNumber)
    	// set the shader program
 	_shaders.setProgram(this.multiLightBgShaderProgram, _textureNumber);
 
-	// set the secondary source texture for the shader - this draws the floors using the ImageData in register 3
-	gl.uniform1i( _shaders.getSampler( "uFloorSampler" ), 3 );
+	// set the secondary source texture for the shader - draws the floors using the ImageData in register # this.floorTextureNumber
+	gl.uniform1i( _shaders.getSampler( "uFloorSampler" ), this.floorTextureNumber );
 
 	// set the parameters for the shader program
 	this.setLightData();

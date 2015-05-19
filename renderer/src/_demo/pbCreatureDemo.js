@@ -80,10 +80,11 @@ pbCreatureDemo.prototype.create = function()
 
 	// create the creature renderer using the manager and the texture
 	this.new_creature_renderer = new CreatureRenderer(this.new_manager, this.textureObject.imageData);
+	this.creatureTextureNumber = 2;
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTextureNumber = 0;
-	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.rttTextureNumber = 1;
+	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
@@ -127,7 +128,7 @@ pbCreatureDemo.prototype.update = function()
 
 	// draw the creature with webgl, using this.renderer.useFrameBuffer etc
     var transform = pbMatrix3.makeTransform(0.0, 0.0, 0.0, 0.08, 0.10);
-	this.new_creature_renderer.DrawCreature(transform, this.renderer.graphics, this.stripShaderProgram, 1);
+	this.new_creature_renderer.DrawCreature(transform, this.renderer.graphics, this.stripShaderProgram, this.creatureTextureNumber);
 };
 
 

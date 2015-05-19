@@ -85,7 +85,7 @@ pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _npot, _tiling)
  *
  * @return {Boolean} true if successfully prepared a new texture, false if failed or it was already prepared
  */
-pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textureRegister )
+pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textureNumber )
 {
 	// this _imageData is already the selected texture
 	if (this.currentSrcTexture && this.currentSrcTexture.imageData === _imageData)
@@ -93,11 +93,10 @@ pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textu
 
 	var texture = null;
 
-	// activate the first texture register
-	if (_textureRegister === undefined)
-    	gl.activeTexture( gl.TEXTURE0 );
-    else
-    	gl.activeTexture( _textureRegister );
+	// activate the texture
+	if (_textureNumber === undefined)
+    	_textureNumber = 0;
+   	gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 
 	var index = this.onGPU.indexOf(_imageData);
     if (index != -1 && !_imageData.isDirty)
@@ -461,12 +460,12 @@ pbWebGlTextures.prototype.createTextureFromCanvas = function(_canvas)
  */
 
 // create an empty webgl texture to draw to
-pbWebGlTextures.initTexture = function(_textureRegister, _width, _height)
+pbWebGlTextures.initTexture = function(_textureNumber, _width, _height)
 {
 	var texture = gl.createTexture();
     texture.width = _width;
     texture.height = _height;
-    gl.activeTexture(_textureRegister);
+    gl.activeTexture(gl.TEXTURE0 + _textureNumber);
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);

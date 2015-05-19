@@ -88,7 +88,7 @@ pbLightDepthDemo.prototype.create = function()
 	this.createSurfaces();
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
+	this.rttTexture = pbWebGlTextures.initTexture(1, pbRenderer.width, pbRenderer.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
@@ -97,7 +97,7 @@ pbLightDepthDemo.prototype.create = function()
    	this.renderer.useRenderbuffer = this.rttRenderbuffer;
 
 	// create the filter destination texture and framebuffer
-	this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE2, pbRenderer.width, pbRenderer.height);
+	this.filterTexture = pbWebGlTextures.initTexture(2, pbRenderer.width, pbRenderer.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
@@ -132,12 +132,12 @@ pbLightDepthDemo.prototype.create = function()
     // get the ImageData for the floor
 	var imageData = this.loader.getFile( this.floorImg );
 	// upload the floor image directly to the correct texture register on the GPU (it's hardwired in the shader to texture number 3)
-	this.renderer.graphics.textures.prepare(imageData, false, true, gl.TEXTURE3 );
+	this.renderer.graphics.textures.prepare(imageData, false, true, 3 );
 
     // get the ImageData for the depthmap
 	imageData = this.loader.getFile( this.depthImg );
 	// upload the depthmap image directly to the correct texture register on the GPU (it's hardwired in the shader to texture number 4)
-	this.renderer.graphics.textures.prepare(imageData, false, true, gl.TEXTURE4 );
+	this.renderer.graphics.textures.prepare(imageData, false, true, 4 );
 };
 
 

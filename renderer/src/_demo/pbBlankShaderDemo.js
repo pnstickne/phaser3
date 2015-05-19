@@ -43,13 +43,13 @@ pbBlankShaderDemo.prototype.create = function()
 
 	// create a render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTextureNumber = 0;
-	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + rttTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.rttTexture = pbWebGlTextures.initTexture(rttTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 	// create the filter destination texture
 	this.filterTextureNumber = 1;
-	this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + filterTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.filterTexture = pbWebGlTextures.initTexture(filterTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update (drawing the invaders)

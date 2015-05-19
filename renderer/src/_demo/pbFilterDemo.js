@@ -127,13 +127,13 @@ pbFilterDemo.prototype.update = function()
 	{
 		// create the render-to-texture, depth buffer, and a frame buffer to hold them
 		this.rttTextureNumber = 3;
-		this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
+		this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
 		this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 		this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 		// create the filter texture
 		this.filterTextureNumber = 1;
-		this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.filterTextureNumber, pbRenderer.width, pbRenderer.height);
+		this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbRenderer.width, pbRenderer.height);
 		this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 		// set the transformation for rendering to the render-to-texture

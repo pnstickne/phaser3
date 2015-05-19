@@ -47,7 +47,8 @@ pbRenderTextureDemo.prototype.create = function()
 	this.addSprites();
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
+	this.rttTextureNumber = 0;
+	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
@@ -120,6 +121,6 @@ pbRenderTextureDemo.prototype.update = function()
 
 	// draw the render-to-texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(0, this.rttTexture);
+	this.renderer.graphics.drawTextureToDisplay(this.rttTextureNumber, this.rttTexture);
 };
 
