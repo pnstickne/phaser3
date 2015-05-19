@@ -175,7 +175,7 @@ CreatureRenderer.prototype.DrawCreature = function(_transform, _renderer, _shade
 
     // send the source texture to the GPU texture unit
     _renderer.textures.prepare(this.srcTexture, false, false, _textureNumber);
-    gl.activeTexture( gl.TEXTURE0 + _textureNumber );
+    //gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 
     // update with the new vertices
     gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);

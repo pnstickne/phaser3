@@ -282,6 +282,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _textureNumber, _image, _tr
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 
 	// bind the source texture
+	gl.activeTexture(gl.TEXTURE0 + _textureNumber);
     gl.bindTexture(gl.TEXTURE_2D, this.textures.currentSrcTexture);
     // bind the source buffer
     gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
@@ -318,7 +319,7 @@ pbWebGl.prototype.drawTextureWithTransform = function( _textureNumber, _texture,
 
 	this.shaders.setProgram(this.shaders.imageShaderProgram, _textureNumber);
 
-	gl.activeTexture( gl.TEXTURE0 + _textureNumber );
+	//gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 
 	// split off a small part of the big buffer, for a single display object
 	var buffer = this.drawingArray.subarray(0, 16);
@@ -385,8 +386,6 @@ pbWebGl.prototype.drawTextureToDisplay = function(_textureNumber, _texture, _sha
 	if (!this.positionBuffer)
 		this.prepareBuffer();
 
-	gl.activeTexture( gl.TEXTURE0 + _textureNumber );
-	
 	// create a buffer for the vertices used to transfer the render-to-texture to the display
 	var buffer = this.drawingArray.subarray(0, 16);
 
@@ -401,6 +400,7 @@ pbWebGl.prototype.drawTextureToDisplay = function(_textureNumber, _texture, _sha
     gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
 	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW );
 
+	gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 	gl.bindTexture(gl.TEXTURE_2D, _texture);
 
 	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
@@ -432,6 +432,7 @@ pbWebGl.prototype.applyShaderToTexture = function(_textureNumber, _srcTexture, _
 
 	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW );
 
+	gl.activeTexture(gl.TEXTURE0 + _textureNumber);
 	gl.bindTexture(gl.TEXTURE_2D, _srcTexture);
 
 	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
@@ -1435,9 +1436,10 @@ pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transfor
 	if ( _dirty || !this.textures.currentSrcTexture || this.textures.currentSrcTexture.canvas !== _canvas )
 	{
 		// create a webGl texture from the canvas
-		this.textures.createTextureFromCanvas(_canvas);
+		this.canvasTextureNumber = 0;
+		this.textures.createTextureFromCanvas(this.canvasTextureNumber, _canvas);
 	    // set the fragment shader sampler to use TEXTURE0
-	   	gl.uniform1i( this.shaders.getSampler(), 0 );
+	   	gl.uniform1i( this.shaders.getSampler(), this.canvasTextureNumber );
 		// prepare the projection matrix in the vertex shader
 		gl.uniformMatrix3fv( this.shaders.getUniform( "uProjectionMatrix" ), false, pbMatrix3.makeProjection(gl.drawingBufferWidth, gl.drawingBufferHeight) );
 	}

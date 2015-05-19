@@ -46,7 +46,7 @@ pbWebGlTextures.prototype.destroy = function()
  */
 pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _npot, _tiling)
 {
-	// bind the texture to the active texture register
+	// bind the texture to the currently active texture register
     gl.bindTexture(gl.TEXTURE_2D, _texture);
 
     if (_npot)
@@ -103,7 +103,7 @@ pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textu
     {
 		// the _imageData is already on the GPU
 		texture = this.onGPU[index].gpuTexture;
-		// bind the texture to the active texture register
+		// bind the texture to the currently active texture register
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
     }
     else
@@ -125,7 +125,7 @@ pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textu
 		_imageData.gpuTexture = texture;
 	    _imageData.isDirty = false;
 
-		// bind the texture to the active texture register
+		// bind the texture to the currently active texture register
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
 	    
 	    // target, level, internalformat, width, height, border, format, type, pixels
@@ -193,6 +193,7 @@ pbWebGlTextures.prototype.prepareRenderToTexture = function( _width, _height )
 
 	// create a texture surface to render to
 	this.currentDstTexture = gl.createTexture();
+	// bind the texture to the currently active texture register
     gl.bindTexture(gl.TEXTURE_2D, this.currentDstTexture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
@@ -265,9 +266,9 @@ pbWebGlTextures.prototype.setRenderSourceImage = function( _textureNumber, _imag
 		texture = _imageData.gpuTexture;
 		if (texture === null)
 			console.log("WARNING: imageData has null for gpuTexture.");
+		gl.activeTexture(gl.TEXTURE0 + _textureNumber);
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 		this.currentSrcTexture = texture;
-		gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 	}
 };
 
@@ -429,6 +430,8 @@ pbWebGlTextures.prototype.createTextureFromCanvas = function(_textureNumber, _ca
 //	var p2height = nextHighestPowerOfTwo(_canvas.height);
 
 	var texture = gl.createTexture();
+	// bind the texture to the currently active texture register
+	gl.activeTexture(gl.TEXTURE0 + _textureNumber);
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
     // clamp to permit NPOT textures, no MIP mapping
@@ -440,10 +443,8 @@ pbWebGlTextures.prototype.createTextureFromCanvas = function(_textureNumber, _ca
 	// upload the canvas ImageData into the texture
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _canvas);
 
-	// activate the texture
     this.currentSrcTexture = texture;
     this.currentSrcTexture.canvas = _canvas;
-    gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 
 	// create a buffer to transfer all the vertex position data through
 	this.positionBuffer = gl.createBuffer();

@@ -79,8 +79,8 @@ pbCreatureDemo.prototype.create = function()
     this.textureObject = textures.getFirst("dino");
 
 	// create the creature renderer using the manager and the texture
+	this.creatureTextureNumber = 0;
 	this.new_creature_renderer = new CreatureRenderer(this.new_manager, this.textureObject.imageData);
-	this.creatureTextureNumber = 2;
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTextureNumber = 1;
@@ -126,7 +126,7 @@ pbCreatureDemo.prototype.update = function()
 	// recalculate this creature's point data
 	this.new_creature_renderer.UpdateData();
 
-	// draw the creature with webgl, using this.renderer.useFrameBuffer etc
+	// draw the creature with webgl, the draw destination will be this.renderer.useFrameBuffer
     var transform = pbMatrix3.makeTransform(0.0, 0.0, 0.0, 0.08, 0.10);
 	this.new_creature_renderer.DrawCreature(transform, this.renderer.graphics, this.stripShaderProgram, this.creatureTextureNumber);
 };
@@ -138,7 +138,9 @@ pbCreatureDemo.prototype.postUpdate = function()
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
+	// draw the creature texture from rttTexture to the display
 	// _image, _transform, _z
 	this.renderer.graphics.drawTextureWithTransform( this.rttTextureNumber, this.rttTexture, this.transform, 1.0 );
+	//this.renderer.graphics.drawTextureToDisplay( this.rttTextureNumber, this.rttTexture );
 };
 
