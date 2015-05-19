@@ -422,7 +422,7 @@ pbWebGlTextures.prototype.getTextureData = function(_fb, _texture, _buffer)
 
 // TODO: look into http://www.goocreate.com/learn/procedural-textures/
 
-pbWebGlTextures.prototype.createTextureFromCanvas = function(_canvas)
+pbWebGlTextures.prototype.createTextureFromCanvas = function(_textureNumber, _canvas)
 {
 //	var ctx = _canvas.getContext('2d');
 //	var p2width = nextHighestPowerOfTwo(_canvas.width);
@@ -443,7 +443,7 @@ pbWebGlTextures.prototype.createTextureFromCanvas = function(_canvas)
 	// activate the texture
     this.currentSrcTexture = texture;
     this.currentSrcTexture.canvas = _canvas;
-    gl.activeTexture( gl.TEXTURE0 );
+    gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 
 	// create a buffer to transfer all the vertex position data through
 	this.positionBuffer = gl.createBuffer();
