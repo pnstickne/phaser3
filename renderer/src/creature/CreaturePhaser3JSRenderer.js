@@ -43,7 +43,7 @@
 function CreatureRenderer(manager_in, texture_in)
 {
 	this.creature_manager = manager_in;
-	this.texture = texture_in;
+	this.srcTexture = texture_in;
 	
     this._vertexBuffer = null;
 
@@ -160,9 +160,10 @@ CreatureRenderer.prototype.UpdateData = function()
  * @param {[type]} _transform     - the transform matrix for position, rotation, and scaling
  * @param {[type]} _renderer      - the graphics engine instance
  * @param {[type]} _shaderProgram - the shader program to draw with
+ * @param {[type]} _textureNumber - the number of the texture register where the source texture is stored
  * 
  */
-CreatureRenderer.prototype.DrawCreature = function(_transform, _renderer, _shaderProgram)
+CreatureRenderer.prototype.DrawCreature = function(_transform, _renderer, _shaderProgram, _textureNumber)
 {
     if (!this._vertexBuffer) this._initWebGlBuffers(_renderer);
     
@@ -172,9 +173,9 @@ CreatureRenderer.prototype.DrawCreature = function(_transform, _renderer, _shade
     // set uniforms for the render position
     gl.uniformMatrix3fv( _renderer.shaders.getUniform( "uTransformMatrix" ), gl.FALSE, _transform );
 
-    // send the source texture to the GPU texture0
-    _renderer.textures.prepare(this.texture, false, false, gl.TEXTURE0 );
-    gl.activeTexture( gl.TEXTURE1 );
+    // send the source texture to the GPU texture unit
+    _renderer.textures.prepare(this.srcTexture, false, false, gl.TEXTURE0 + _textureNumber);
+    gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 
     // update with the new vertices
     gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);
