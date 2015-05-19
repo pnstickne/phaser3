@@ -25,7 +25,7 @@ function pbWebGlImage()
 	this.isParticle = false;
 	this.is3D = false;
 	this.isModeZ = false;
-	this.toTexture = false;
+	this.toTexture = -1;		// -1 = false, or texture number (offset from gl.TEXTURE0)
 }
 
 
