@@ -69,7 +69,7 @@ pbCanvas.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, _angle
 
 // TODO: considerable optimisations available here!
 // used by pbWebGlLayer for single sprite drawing
-pbCanvas.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
+pbCanvas.prototype.drawImageWithTransform = function(_textureNumber, _image, _transform, _z_order)
 {
 	var srf = _image.surface;
 	var srcImageData = srf.imageData;
@@ -161,7 +161,7 @@ pbCanvas.prototype.rawBatchDrawImages = function(_list)
 	while(c--)
 	{
 		var s = _list[c];
-		this.drawImageWithTransform(s.image, s.transform, s.z_order);
+		this.drawImageWithTransform(0, s.image, s.transform, s.z_order);
 	}
 };
 
@@ -174,7 +174,7 @@ pbCanvas.prototype.blitDrawImages = function(_list, _surface)
 	while(c--)
 	{
 		var s = _list[c];
-		this.drawImageWithTransform(s.image, s.transform, s.z_order);
+		this.drawImageWithTransform(0, s.image, s.transform, s.z_order);
 	}
 };
 

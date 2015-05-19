@@ -130,7 +130,7 @@ pbBaseGraphics.prototype.drawImage = function(_x, _y, _z, _surface, _cellFrame, 
 	alert("ERROR: the selected graphic mode does not extend drawImage from pbBaseGraphics!");
 };
 
-pbBaseGraphics.prototype.drawImageWithTransform = function(_image, _transform, _z_order)
+pbBaseGraphics.prototype.drawImageWithTransform = function(_textureNumber, _image, _transform, _z_order)
 {
 	alert("ERROR: the selected graphic mode does not extend drawImageWithTransform from pbBaseGraphics!");
 };

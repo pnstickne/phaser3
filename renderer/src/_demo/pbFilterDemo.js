@@ -126,7 +126,7 @@ pbFilterDemo.prototype.update = function()
 	if (this.firstTime)
 	{
 		// create the render-to-texture, depth buffer, and a frame buffer to hold them
-		this.rttTextureNumber = 0;
+		this.rttTextureNumber = 3;
 		this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
 		this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 		this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
@@ -152,7 +152,7 @@ pbFilterDemo.prototype.update = function()
 	// bind the framebuffer so drawing will go to the associated texture and depth buffer
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
 	// draw this.srcImage into the render-to-texture
-	this.renderer.graphics.drawImageWithTransform(this.srcImage, this.srcTransform, 1.0);
+	this.renderer.graphics.drawImageWithTransform(this.rttTextureNumber, this.srcImage, this.srcTransform, 1.0);
 
 	// copy rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);

@@ -87,7 +87,10 @@ pbBaseLayer.prototype.draw = function(_list)
 		else if (obj.image.toTexture != -1)
 			this.renderer.graphics.drawImageToTextureWithTransform( obj.image.toTexture, 256, 256, obj.image, obj.transform, obj.z_order );
 		else
-			this.renderer.graphics.drawImageWithTransform( obj.image, obj.transform, obj.z_order );
+		{
+			// NOTE: use of TEXTURE0 is hard-wired for general sprite drawing
+			this.renderer.graphics.drawImageWithTransform( 0, obj.image, obj.transform, obj.z_order );
+		}
 	}
 	else if (obj.image.isParticle)
 	{
