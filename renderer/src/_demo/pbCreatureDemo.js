@@ -31,7 +31,7 @@ function pbCreatureDemo( docId )
 	this.dinoJSON = this.loader.loadFile( "../img/creatures/dino.CreaExport/character_data.json" );
 	this.loader.loadImage( "dino", "../img/creatures/dino.CreaExport/character_img.png" );
 
-	this.loader.loadImage( "stars", "../img/invader/starfield.png" );
+	this.loader.loadImage( "bg", "../img/sphere3.png" );
 
 	console.log( "pbCreatureDemo c'tor exit" );
 }
