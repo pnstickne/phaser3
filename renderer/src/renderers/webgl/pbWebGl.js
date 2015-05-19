@@ -209,12 +209,12 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
 
 	this.shaders.setProgram(this.shaders.imageShaderProgram, 0);
 
+	if (!this.positionBuffer)
+		this.prepareBuffer();
+
 	var surface = _image.surface;
 	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
-	{
-		this.prepareBuffer();
 		this.shaders.prepare();
-	}
 
 	// split off a small part of the big buffer, for a single display object
 	var buffer = this.drawingArray.subarray(0, 16);
@@ -307,14 +307,18 @@ pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
  * @param  {pbMatrix3} _transform - the transform to apply, can specify translation, rotation and scaling, plus anything else that goes into a 3x3 homogenous matrix
  * @param  {Number} _z - the z depth at which to draw
  */
-pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z )
+pbWebGl.prototype.drawTextureWithTransform = function( _textureNumber, _texture, _transform, _z )
 {
 	// console.log("drawTextureWithTransform", _texture);
+	if (!this.positionBuffer)
+		this.prepareBuffer();
 
 	// _texture, _npot, _tiling
 	this.textures.prepareOnGPU(_texture, true, false);
 
-	this.shaders.setProgram(this.shaders.imageShaderProgram, 0);
+	this.shaders.setProgram(this.shaders.imageShaderProgram, _textureNumber);
+
+	gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 
 	// split off a small part of the big buffer, for a single display object
 	var buffer = this.drawingArray.subarray(0, 16);
@@ -354,12 +358,16 @@ pbWebGl.prototype.drawTextureWithTransform = function( _texture, _transform, _z 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
 
 	// send the transform matrix to the vector shader
+	// OBSCURE ERROR NOTE: "No function was found that matched the signature provided."
+	// is caused by undefined _transform, check the caller.
 	gl.uniformMatrix3fv( this.shaders.getUniform( "uModelMatrix" ), gl.FALSE, _transform );
 
 	// set the depth value
    	gl.uniform1f( this.shaders.getUniform( "uZ" ), _z );
 
 	// point the position attribute at the last bound buffer
+	// OBSCURE ERROR NOTE: "no bound ARRAY_BUFFER"
+	// is caused by null in this.positionBuffer above
     gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, gl.FALSE, 0, 0 );
 
     // four vertices per quad, one quad
@@ -376,6 +384,7 @@ pbWebGl.prototype.drawTextureToDisplay = function(_textureNumber, _texture, _sha
 
 	if (!this.positionBuffer)
 		this.prepareBuffer();
+
 	gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 	
 	// create a buffer for the vertices used to transfer the render-to-texture to the display
@@ -405,6 +414,10 @@ pbWebGl.prototype.applyShaderToTexture = function(_textureNumber, _srcTexture, _
 	// callback to set the shader program and parameters
 	_callback.call(_context, this.shaders, _textureNumber);
 
+	if (!this.positionBuffer)
+		this.prepareBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+
 	// create a buffer for the vertices used to draw the _srcTexture to the _dstTexture
 	var buffer = this.drawingArray.subarray(0, 16);
 
@@ -416,7 +429,7 @@ pbWebGl.prototype.applyShaderToTexture = function(_textureNumber, _srcTexture, _
 		-1, -1,
 		1, -1
 	];
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+
 	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW );
 
 	gl.bindTexture(gl.TEXTURE_2D, _srcTexture);
@@ -438,9 +451,9 @@ pbWebGl.prototype.applyShaderToTexture = function(_textureNumber, _srcTexture, _
  * @param  {[type]} _z         - the depth value for the image
  */
 // single image instances from pbWebGlLayer drawn to a texture
-pbWebGl.prototype.drawImageToTextureWithTransform = function( _width, _height, _image, _transform, _z )
+pbWebGl.prototype.drawImageToTextureWithTransform = function( _textureNumber, _width, _height, _image, _transform, _z )
 {
-	this.shaders.setProgram(this.shaders.imageShaderProgram, 0);
+	this.shaders.setProgram(this.shaders.imageShaderProgram, _textureNumber);
 
 	// create the source texture and initialise webgl (once only)
 	var surface = _image.surface;
@@ -451,7 +464,7 @@ pbWebGl.prototype.drawImageToTextureWithTransform = function( _width, _height, _
 	}
 
 	// set up the source imageData as the render source
-	this.textures.setRenderSourceImage( surface.imageData );
+	this.textures.setRenderSourceImage( _textureNumber, surface.imageData );
 
 	// create the destination texture
 	this.textures.setRenderTargetToTexture(_width, _height);
