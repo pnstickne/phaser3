@@ -72,6 +72,32 @@ pbMultiFilterDemo.prototype.create = function()
 	this.srcImage = new imageClass();
 	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
 	this.srcImage.create(this.surface, 0, 0, 0);
+
+
+	// create the render-to-texture, depth buffer, and a frame buffer to hold them
+	this.rttTextureNumber = 2;
+	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
+	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
+
+	// create the filter texture
+	this.filterTextureNumber = 0;
+	this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.filterTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
+
+	// create the 2nd filter texture
+	this.filter2TextureNumber = 1;
+	this.filter2Texture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.filter2TextureNumber, pbRenderer.width, pbRenderer.height);
+	this.filter2Framebuffer = pbWebGlTextures.initFramebuffer(this.filter2Texture, null);
+
+	// set the transformation for rendering to the render-to-texture
+	this.srcTransform = pbMatrix3.makeTransform(0, 0, 0, 1, 1);
+
+    // clear the gl bindings
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
 };
 
 
@@ -95,6 +121,9 @@ pbMultiFilterDemo.prototype.destroy = function()
 	this.rttRenderbuffer = null;
 	this.rttFramebuffer = null;
 	this.filterTexture = null;
+	this.filterFramebuffer = null;
+	this.filter2Texture = null;
+	this.filter2Framebuffer = null;
 };
 
 
@@ -110,40 +139,9 @@ pbMultiFilterDemo.prototype.restart = function()
 
 pbMultiFilterDemo.prototype.update = function()
 {
-	// one-time initialisation
-	if (this.firstTime)
-	{
-		// create the render-to-texture, depth buffer, and a frame buffer to hold them
-		this.rttTextureNumber = 2;
-		this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
-		this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
-		this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
-
-		// create the filter texture
-		this.filterTextureNumber = 0;
-		this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.filterTextureNumber, pbRenderer.width, pbRenderer.height);
-		this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
-
-		// create the 2nd filter texture
-		this.filter2TextureNumber = 1;
-		this.filter2Texture = pbWebGlTextures.initTexture(gl.TEXTURE0 + this.filter2TextureNumber, pbRenderer.width, pbRenderer.height);
-		this.filter2Framebuffer = pbWebGlTextures.initFramebuffer(this.filter2Texture, null);
-
-		// set the transformation for rendering to the render-to-texture
-		this.srcTransform = pbMatrix3.makeTransform(0, 0, 0, 1, 1);
-
-	    // clear the gl bindings
-	    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-	    gl.bindTexture(gl.TEXTURE_2D, null);
-	    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-		// don't do this again...
-		this.firstTime = false;
-	}
-
 	// draw srcImage using the render-to-texture framebuffer
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
-	this.renderer.graphics.drawImageWithTransform(this.srcImage, this.srcTransform, 1.0);
+	this.renderer.graphics.drawImageWithTransform(this.rttTextureNumber, this.srcImage, this.srcTransform, 1.0);
 
 	// draw rttTexture to the filterTexture, applying a tint shader (from TEXTURE0, filterTexture is on TEXTURE1)
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);

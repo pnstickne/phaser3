@@ -598,6 +598,12 @@ pbWebGlShaders.prototype.createProgram = function( _source )
 };
 
 
+/**
+ * [setProgram description]
+ *
+ * @param {[type]} _programIndex  [description]
+ * @param {[type]} _textureNumber - the texture number offset from TEXTURE0 which will be set into this shader's samplerUniform as its data source
+ */
 pbWebGlShaders.prototype.setProgram = function(_programIndex, _textureNumber)
 {
 	if (pbWebGlShaders.currentProgram != _programIndex)

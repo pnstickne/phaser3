@@ -203,11 +203,11 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 // TODO: third wave of pbWebGL optimisation... these drawing functions are tied to the shaders that support them, maybe set a currentProgram attribute callback?  Definitely need to move these out into their own files.
 
 // single image instances from pbWebGlLayer
-pbWebGl.prototype.drawImageWithTransform = function( _image, _transform, _z )
+pbWebGl.prototype.drawImageWithTransform = function( _textureNumber, _image, _transform, _z )
 {
 	// console.log("drawImageWithTransform", _image);
 
-	this.shaders.setProgram(this.shaders.imageShaderProgram, 0);
+	this.shaders.setProgram(this.shaders.imageShaderProgram, _textureNumber);
 
 	if (!this.positionBuffer)
 		this.prepareBuffer();
