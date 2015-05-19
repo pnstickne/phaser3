@@ -41,7 +41,7 @@ pbInvaderDemoCore.prototype.create = function(_parent, _rootLayer, _useFrame, _s
 
 	this.layer = new layerClass();
 	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-	this.layer.create(this.layer, this.parent.renderer, 0, 0, 0, 0, 1, 1);
+	this.layer.create(this.parent, this.parent.renderer, 0, 0, 0, 0, 1, 1);
 	if (!_separateShadowLayer)
 		this.shadowLayer.addChild(this.layer);
 
