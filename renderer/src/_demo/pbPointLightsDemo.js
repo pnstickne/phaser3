@@ -70,7 +70,8 @@ pbPointLightsDemo.prototype.create = function()
 	this.game.create(this, this.gameLayer, false, true);
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTexture = pbWebGlTextures.initTexture(gl.TEXTURE0, pbRenderer.width, pbRenderer.height);
+	this.rttTextureNumber = 0;
+	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
@@ -79,7 +80,8 @@ pbPointLightsDemo.prototype.create = function()
    	this.renderer.useRenderbuffer = this.rttRenderbuffer;
 
 	// create the filter destination texture and framebuffer
-	this.filterTexture = pbWebGlTextures.initTexture(gl.TEXTURE1, pbRenderer.width, pbRenderer.height);
+	this.filterTextureNumber = 1;
+	this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
@@ -127,7 +129,7 @@ pbPointLightsDemo.prototype.postUpdate = function()
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyShaderToTexture(0, this.rttTexture, this.setShader, this);
+	this.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
 
 	// update transforms and draw sprites that are not shadow casters
 	this.game.layer.update();
@@ -135,7 +137,7 @@ pbPointLightsDemo.prototype.postUpdate = function()
 	// draw the filter texture to the display
 	gl.activeTexture(gl.TEXTURE1);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(1, this.filterTexture);
+	this.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
 };
 
 
