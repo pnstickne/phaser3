@@ -29,7 +29,7 @@ function pbLoader(callback, context)
 }
 
 
-pbLoader.prototype.loadFile = function(filename)
+pbLoader.prototype.loadFile = function(filename, responseType)
 {
 	console.log("pbLoader.loadFile ", filename);
 
@@ -38,7 +38,10 @@ pbLoader.prototype.loadFile = function(filename)
 	
 	this.files[index] = new XMLHttpRequest();
 	this.files[index].open("GET", filename, true);
-	this.files[index].responseType = 'text';
+	if (responseType === undefined)
+		this.files[index].responseType = 'text';
+	else
+		this.files[index].responseType = responseType;
 	this.files[index].onload = function(evt) {
 		_this.loaded.call(_this, evt, "text", index);
 	};
