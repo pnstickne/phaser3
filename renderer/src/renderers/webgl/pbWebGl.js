@@ -310,14 +310,14 @@ pbWebGl.prototype.drawImageWithTransform = function( _textureNumber, _image, _tr
  */
 pbWebGl.prototype.drawTextureWithTransform = function( _textureNumber, _texture, _transform, _z )
 {
+	this.shaders.setProgram(this.shaders.imageShaderProgram, _textureNumber);
+
 	// console.log("drawTextureWithTransform", _texture);
 	if (!this.positionBuffer)
 		this.prepareBuffer();
 
 	// _texture, _npot, _tiling
 	this.textures.prepareOnGPU(_texture, true, false);
-
-	this.shaders.setProgram(this.shaders.imageShaderProgram, _textureNumber);
 
 	//gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 
@@ -354,9 +354,12 @@ pbWebGl.prototype.drawTextureWithTransform = function( _textureNumber, _texture,
 	buffer[ 2 ] = buffer[ 6 ] = buffer[ 7 ] = buffer[ 15] = 0;
 	buffer[ 3 ] = buffer[ 11] = buffer[ 10] = buffer[ 14] = 1.0;
 
-    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
     // bind the source buffer
     gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
+
+	gl.activeTexture( gl.TEXTURE0 + _textureNumber );
+	gl.bindTexture(gl.TEXTURE_2D, _texture);
 
 	// send the transform matrix to the vector shader
 	// OBSCURE ERROR NOTE: "No function was found that matched the signature provided."
@@ -370,6 +373,7 @@ pbWebGl.prototype.drawTextureWithTransform = function( _textureNumber, _texture,
 	// OBSCURE ERROR NOTE: "no bound ARRAY_BUFFER"
 	// is caused by null in this.positionBuffer above
     gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, gl.FALSE, 0, 0 );
+	gl.enableVertexAttribArray(this.shaders.getAttribute( "aPosition" ));
 
     // four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
