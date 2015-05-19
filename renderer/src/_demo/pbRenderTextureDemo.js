@@ -110,7 +110,7 @@ pbRenderTextureDemo.prototype.drawSceneToTexture = function(_fb, _image, _transf
 	gl.clearColor(0, (pbRenderer.frameCount % 100 / 100), 0, 1); // green shades
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	// draw this.srcImage into the render-to-texture
-	this.renderer.graphics.drawImageWithTransform(_image, _transform, 1.0);
+	this.renderer.graphics.drawImageWithTransform(this.rttTextureNumber, _image, _transform, 1.0);
 };
 
 
