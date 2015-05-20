@@ -7,10 +7,10 @@
         "precision mediump float;",
 		
         "varying vec2 vTextureCoord;",
-        "uniform sampler2D uSampler;",
+        "uniform sampler2D uImageSampler;",
 
         "void main(void) {",
-        "   gl_FragColor = texture2D(uSampler, vTextureCoord);",
+        "   gl_FragColor = texture2D(uImageSampler, vTextureCoord);",
         "}"
 		],
 
@@ -32,5 +32,5 @@
     "uniforms":
     	[ "uTransformMatrix" ],
     "samplers":
-    	[ "uSampler" ]
+    	[ "uImageSampler" ]
 }

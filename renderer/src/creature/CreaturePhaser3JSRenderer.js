@@ -175,6 +175,7 @@ CreatureRenderer.prototype.DrawCreature = function(_transform, _renderer, _shade
 
     // send the source texture to the GPU texture unit
     _renderer.textures.prepare(this.srcTexture, false, false, _textureNumber);
+    _renderer.shaders.prepare(_textureNumber);
     //gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 
     // update with the new vertices
@@ -187,6 +188,9 @@ CreatureRenderer.prototype.DrawCreature = function(_transform, _renderer, _shade
     gl.bufferData(gl.ARRAY_BUFFER, this.uvs, gl.DYNAMIC_DRAW);
     gl.vertexAttribPointer( _renderer.shaders.getAttribute( "aTextureCoord" ), 2, gl.FLOAT, gl.FALSE, 0, 0);
     
+	gl.activeTexture(gl.TEXTURE0 + _textureNumber);
+    gl.bindTexture(gl.TEXTURE_2D, _renderer.textures.currentSrcTexture);
+
     // the indices shouldn't change unless the user is hacking with the data and adding/removing tri's
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer);
     //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
