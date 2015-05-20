@@ -56,6 +56,10 @@ pbCreatureDemo.prototype.create = function()
 {
 	console.log("pbCreatureDemo.create");
 
+	// allocate the GPU texture registers
+	this.creatureTextureNumber = 1;		// source texture for dino skin
+	this.rttTextureNumber = 2;			// render-to-texture is source for the sprites
+
 	// get the shader program
 	var jsonString = this.loader.getFile( this.stripShaderJSON ).responseText;
 	this.stripShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
@@ -65,38 +69,13 @@ pbCreatureDemo.prototype.create = function()
 	var dinoJSON = zip.file("character_data.json").asText();
 	var actual_JSON = JSON.parse(dinoJSON);
 
-	// create the creature
-	var new_creature = new Creature(actual_JSON);
-
-	// create an animation object for it
-	var new_animation_1 = new CreatureAnimation(actual_JSON, "default", new_creature);
-	
-	// create a creature manager for it
-	this.new_manager = new CreatureManager(new_creature);
-
-	// add the animation to the manager
-	this.new_manager.AddAnimation(new_animation_1);
-	//this.new_manager.AddAnimation(new_animation_2);
-
-	// prepare the manager settings
-	this.new_manager.SetActiveAnimationName("default", false);
-	this.new_manager.SetShouldLoop(true);
-	this.new_manager.SetIsPlaying(true);
-	this.new_manager.RunAtTime(0);
-
-	// prepare a cache of points to speed up the playback
-	// WARNING: slow - 4 seconds for one animation of the Utah Raptor
-	//this.new_manager.MakePointCache("default");
-
     // get the source texture from the textures dictionary using 'key'
     this.textureObject = textures.getFirst("dino");
 
-	// create the creature renderer using the manager and the texture
-	this.creatureTextureNumber = 1;
-	this.new_creature_renderer = new CreatureRenderer(this.new_manager, this.textureObject.imageData);
+	// make the creature from the json data and texture
+	this.makeCreature(actual_JSON, this.textureObject);
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTextureNumber = 2;
 	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
@@ -128,15 +107,45 @@ pbCreatureDemo.prototype.destroy = function()
 };
 
 
+pbCreatureDemo.prototype.makeCreature = function(json, texture)
+{
+	// create the creature
+	var new_creature = new Creature(json, texture);
+
+	// create an animation object for it
+	var new_animation_1 = new CreatureAnimation(json, "default", new_creature);
+	
+	// create a creature manager for it
+	this.new_manager = new CreatureManager(new_creature);
+
+	// add the animation to the manager
+	this.new_manager.AddAnimation(new_animation_1);
+	//this.new_manager.AddAnimation(new_animation_2);
+
+	// prepare the manager settings
+	this.new_manager.SetActiveAnimationName("default", false);
+	this.new_manager.SetShouldLoop(true);
+	this.new_manager.SetIsPlaying(true);
+	this.new_manager.RunAtTime(0);
+
+	// prepare a cache of points to speed up the playback
+	// WARNING: slow - 4 seconds for one animation of the Utah Raptor
+	//this.new_manager.MakePointCache("default");
+
+	// create the creature renderer using the manager and the texture
+	this.new_creature_renderer = new CreatureRenderer(this.new_manager, texture.imageData);
+};
+
+
 pbCreatureDemo.prototype.update = function()
 {
 	// update the creature manager for a given time interval
-	this.new_manager.Update(0.02);
+	this.new_manager.Update(0.04);
 
 	// recalculate this creature's point data
 	this.new_creature_renderer.UpdateData();
 
-	// draw the creature with webgl, the draw destination will be this.renderer.useFramebuffer
+	// draw the creature with webgl, the draw destination will be this.renderer.useFramebuffer (rttTexture)
     var transform = pbMatrix3.makeTransform(-0.15, 0.0, 0.0, 0.04, 0.04);
 	this.new_creature_renderer.DrawCreature(transform, this.renderer.graphics, this.stripShaderProgram, this.creatureTextureNumber);
 };
@@ -150,10 +159,6 @@ pbCreatureDemo.prototype.postUpdate = function()
 
 	// draw the creature texture from rttTexture to the display
 	this.transform = pbMatrix3.makeTransform(pbRenderer.width * 0.5, pbRenderer.height * 0.5, 0.0, 1.0, 1.0);
-	this.renderer.graphics.drawTextureWithTransform( this.rttTextureNumber, this.rttTexture, this.transform, 1.0 );
-
-	// _image, _transform, _z
-	this.transform = pbMatrix3.makeTransform(pbRenderer.width * 0.25, pbRenderer.height * 0.5, 0.5, 0.5, 0.5);
 	this.renderer.graphics.drawTextureWithTransform( this.rttTextureNumber, this.rttTexture, this.transform, 1.0 );
 };
 
