@@ -39,11 +39,10 @@ pbLoader.prototype.loadFile = function(filename, responseType)
 	this.files[index] = new XMLHttpRequest();
 	this.files[index].open("GET", filename, true);
 	if (responseType === undefined)
-		this.files[index].responseType = 'text';
-	else
-		this.files[index].responseType = responseType;
+		responseType = "text";
+	this.files[index].responseType = responseType;
 	this.files[index].onload = function(evt) {
-		_this.loaded.call(_this, evt, "text", index);
+		_this.loaded.call(_this, evt, responseType, index);
 	};
 
 	this.queue.push(this.files[index]);
