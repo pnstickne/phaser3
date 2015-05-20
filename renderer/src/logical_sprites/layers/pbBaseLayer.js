@@ -81,11 +81,11 @@ pbBaseLayer.prototype.draw = function(_list)
 	if (_list.length === 1)
 	{
 		if (obj.image.isModeZ)
-			this.renderer.graphics.drawModeZ( obj.image, obj.transform, obj.z_order );
+			this.renderer.graphics.drawModeZ( 0, obj.image, obj.transform, obj.z_order );
 		else if (obj.image.is3D)
-			this.renderer.graphics.drawImageWithTransform3D( obj.image, obj.transform, obj.z_order );
+			this.renderer.graphics.drawImageWithTransform3D( 0, obj.image, obj.transform, obj.z_order );
 		else if (obj.image.toTexture != -1)
-			this.renderer.graphics.drawImageToTextureWithTransform( obj.image.toTexture, 256, 256, obj.image, obj.transform, obj.z_order );
+			this.renderer.graphics.drawImageToTextureWithTransform( 0, obj.image.toTexture, 256, 256, obj.image, obj.transform, obj.z_order );
 		else
 		{
 			// NOTE: use of TEXTURE0 is hard-wired for general sprite drawing
@@ -94,11 +94,11 @@ pbBaseLayer.prototype.draw = function(_list)
 	}
 	else if (obj.image.isParticle)
 	{
-		this.renderer.graphics.blitDrawImages( _list, obj.image.surface );
+		this.renderer.graphics.blitDrawImages( 0, _list, obj.image.surface );
 	}
 	else
 	{
-		this.renderer.graphics.rawBatchDrawImages( _list );
+		this.renderer.graphics.rawBatchDrawImages( 0, _list );
 	}
 };
 

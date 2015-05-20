@@ -143,7 +143,8 @@ pbSimpleLayer.prototype.prepareXYUV = function()
  */
 pbSimpleLayer.prototype.draw = function(_length)
 {
-	this.renderer.graphics.blitSimpleDrawImages( this.drawList, _length, this.surface );
+	// hard-wired to TEXTURE0 as the source texture
+	this.renderer.graphics.blitSimpleDrawImages( this.drawList, _length, this.surface, 0 );
 };
 
 
@@ -157,7 +158,8 @@ pbSimpleLayer.prototype.draw = function(_length)
  */
 pbSimpleLayer.prototype.drawPoint = function(_length)
 {
-	this.renderer.graphics.blitDrawImagesPoint( this.drawList, _length, this.surface );
+	// hard-wired to TEXTURE0 as the source texture
+	this.renderer.graphics.blitDrawImagesPoint( this.drawList, _length, this.surface, 0 );
 };
 
 /**
@@ -170,7 +172,8 @@ pbSimpleLayer.prototype.drawPoint = function(_length)
  */
 pbSimpleLayer.prototype.drawPointAnim = function(_length)
 {
-	this.renderer.graphics.blitDrawImagesPointAnim( this.drawList, _length, this.surface );
+	// hard-wired to TEXTURE0 as the source texture
+	this.renderer.graphics.blitDrawImagesPointAnim( this.drawList, _length, this.surface, 0 );
 };
 
 

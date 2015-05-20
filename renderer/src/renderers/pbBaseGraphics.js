@@ -72,7 +72,7 @@ pbBaseGraphics.prototype.baseFillRect = function(param0, y, width, height)
 		return;
 	}
 
-	this.fillRect(x, y, width, height);
+	this.fillRect(x, y, width, height, 0);
 };
 
 
@@ -165,7 +165,7 @@ pbBaseGraphics.prototype.fillStyle = function(_fillColor, _lineColor)
 	alert("ERROR: the selected graphic mode does not fillStyle scissor from pbBaseGraphics!");
 };
 
-pbBaseGraphics.prototype.fillRect = function( x, y, wide, high, color )
+pbBaseGraphics.prototype.fillRect = function( x, y, wide, high, color, _textureNumber )
 {
 	alert("ERROR: the selected graphic mode does not extend fillRect from pbBaseGraphics!");
 };

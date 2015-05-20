@@ -84,7 +84,7 @@ pbWebGl.prototype.create = function( _canvas )
 		gl.enable( gl.BLEND );
 
 		// set the parameters to clear the render area
-		gl.clearColor( 0.0, 0.0, 0.0, 1.0 );
+		gl.clearColor( 0.0, 0.0, 0.0, 0.0 );
 		gl.clearDepth( 1.0 );
 
 		// precalculate the drawing buffer's half-width and height values
@@ -156,11 +156,11 @@ pbWebGl.prototype.fillStyle = function(_fillColor, _lineColor)
 
 
 // test for webgl drawing basics
-pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
+pbWebGl.prototype.fillRect = function( x, y, wide, high, color, _textureNumber )
 {
 	// console.log( "pbWebGl.fillRect" );
 
-	this.shaders.setProgram(this.shaders.graphicsShaderProgram, 0);
+	this.shaders.setProgram(this.shaders.graphicsShaderProgram, _textureNumber);
 
 	var x2 = x + wide;
 	var y2 = y + high;
@@ -214,7 +214,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _textureNumber, _image, _tr
 
 	var surface = _image.surface;
 	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
-		this.shaders.prepare();
+		this.shaders.prepare(_textureNumber);
 
 	// split off a small part of the big buffer, for a single display object
 	var buffer = this.drawingArray.subarray(0, 16);
@@ -279,13 +279,13 @@ pbWebGl.prototype.drawImageWithTransform = function( _textureNumber, _image, _tr
 	buffer[ 10] = buffer[ 14] = rect.x + rect.width;
 	buffer[ 7 ] = buffer[ 15] = rect.y;
 
+    // bind the source buffer
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 
 	// bind the source texture
 	gl.activeTexture(gl.TEXTURE0 + _textureNumber);
     gl.bindTexture(gl.TEXTURE_2D, this.textures.currentSrcTexture);
-    // bind the source buffer
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.positionBuffer );
 
 	// send the transform matrix to the vector shader
 	gl.uniformMatrix3fv( this.shaders.getUniform( "uModelMatrix" ), false, _transform );
@@ -316,10 +316,9 @@ pbWebGl.prototype.drawTextureWithTransform = function( _textureNumber, _texture,
 	if (!this.positionBuffer)
 		this.prepareBuffer();
 
-	// _texture, _npot, _tiling
-	this.textures.prepareOnGPU(_texture, true, false);
-
-	//gl.activeTexture( gl.TEXTURE0 + _textureNumber );
+	// _texture, _tiling, _npot, _textureNumber
+	this.textures.prepareOnGPU(_texture, false, true, _textureNumber);
+	this.shaders.prepare(_textureNumber);
 
 	// split off a small part of the big buffer, for a single display object
 	var buffer = this.drawingArray.subarray(0, 16);
@@ -374,7 +373,6 @@ pbWebGl.prototype.drawTextureWithTransform = function( _textureNumber, _texture,
 	// is caused by null in this.positionBuffer above
     gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, gl.FALSE, 0, 0 );
 	gl.enableVertexAttribArray(this.shaders.getAttribute( "aPosition" ));
-
     // four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 };
@@ -465,7 +463,7 @@ pbWebGl.prototype.drawImageToTextureWithTransform = function( _textureNumber, _w
 	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.shaders.prepare();
+		this.shaders.prepare(_textureNumber);
 	}
 
 	// set up the source imageData as the render source
@@ -561,15 +559,15 @@ pbWebGl.prototype.drawImageToTextureWithTransform = function( _textureNumber, _w
 
 
 // single image instances from pbWebGlLayer
-pbWebGl.prototype.drawModeZ = function( _image, _transform, _z )
+pbWebGl.prototype.drawModeZ = function( _textureNumber, _image, _transform, _z )
 {
-	this.shaders.setProgram(this.shaders.modezShaderProgram, 0);
+	this.shaders.setProgram(this.shaders.modezShaderProgram, _textureNumber);
 
 	var surface = _image.surface;
 	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.shaders.prepare();
+		this.shaders.prepare(_textureNumber);
 	}
 
 	// split off a small part of the big buffer, for a single display object
@@ -655,15 +653,15 @@ pbWebGl.prototype.drawModeZ = function( _image, _transform, _z )
 
 
 // single image instances from pbWebGlLayer using a 3D projection
-pbWebGl.prototype.drawImageWithTransform3D = function( _image, _transform, _z )
+pbWebGl.prototype.drawImageWithTransform3D = function( _textureNumber, _image, _transform, _z )
 {
-	this.shaders.setProgram(this.shaders.imageShaderProgram3D, 0);
+	this.shaders.setProgram(this.shaders.imageShaderProgram3D, _textureNumber);
 
 	var surface = _image.surface;
 	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.shaders.prepare();
+		this.shaders.prepare(_textureNumber);
 	}
 
 	// split off a small part of the big buffer, for a single display object
@@ -716,14 +714,14 @@ pbWebGl.prototype.drawImageWithTransform3D = function( _image, _transform, _z )
 
 
 // unused at present.  Draws a single image, sends the transform matrix as a uniform.
-pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle, _scale )
+pbWebGl.prototype.drawImage = function( _textureNumber, _x, _y, _z, _surface, _cellFrame, _angle, _scale )
 {
-	this.shaders.setProgram(this.shaders.imageShaderProgram, 0);
+	this.shaders.setProgram(this.shaders.imageShaderProgram, _textureNumber);
 
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.shaders.prepare();
+		this.shaders.prepare(_textureNumber);
 	}
 
 	// split off a small part of the big buffer, for a single display object
@@ -793,14 +791,14 @@ pbWebGl.prototype.drawImage = function( _x, _y, _z, _surface, _cellFrame, _angle
 
 // batch images, no transforms, pbSimpleLayer, pbBunnyDemo
 // requires _list to be alternately x and y coordinate values
-pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface )
+pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface, _textureNumber )
 {
-	this.shaders.setProgram(this.shaders.blitShaderProgram, 0);
+	this.shaders.setProgram(this.shaders.blitShaderProgram, _textureNumber);
 
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.shaders.prepare();
+		this.shaders.prepare(_textureNumber);
 	}
 
 	var screenWide2 = gl.drawingBufferWidth * 0.5;
@@ -874,14 +872,14 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface 
 
 // batch images, no transforms
 // _list contains objects with an .x and .y property
-pbWebGl.prototype.blitListDirect = function( _list, _listLength, _surface )
+pbWebGl.prototype.blitListDirect = function( _list, _listLength, _surface, _textureNumber )
 {
-	this.shaders.setProgram(this.shaders.blitShaderProgram, 0);
+	this.shaders.setProgram(this.shaders.blitShaderProgram, _textureNumber);
 
-	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
+	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT, _textureNumber ))
 	{
 		this.prepareBuffer();
-		this.shaders.prepare();
+		this.shaders.prepare(_textureNumber);
 	}
 
 	var screenWide2 = gl.drawingBufferWidth * 0.5;
@@ -955,14 +953,14 @@ pbWebGl.prototype.blitListDirect = function( _list, _listLength, _surface )
 
 // currently unused in demos.  pbImage.isParticle through pbWebGlLayer, sends four floats per vertex (x,y,u,v) to gl, no sprite sheet
 // TODO: don't need u,v stream if it's always 0 & 1 values??
-pbWebGl.prototype.blitDrawImages = function( _list, _surface )
+pbWebGl.prototype.blitDrawImages = function( _textureNumber, _list, _surface )
 {
-	this.shaders.setProgram(this.shaders.blitShaderProgram, 0);
+	this.shaders.setProgram(this.shaders.blitShaderProgram, _textureNumber);
 
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.shaders.prepare();
+		this.shaders.prepare(_textureNumber);
 	}
 
 	var screenWide2 = gl.drawingBufferWidth * 0.5;
@@ -1038,14 +1036,14 @@ pbWebGl.prototype.blitDrawImages = function( _list, _surface )
 // called when pbSimpleLayer.setDrawingFunctions is directed to pbSimpleLayer.drawPoint
 // sends points directly to gl from the source array (no further JS looping required)
 // draws the whole of _surface at the point locations, extremely quickly
-pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
+pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface, _textureNumber )
 {
-	this.shaders.setProgram(this.shaders.blitShaderPointProgram, 0);
+	this.shaders.setProgram(this.shaders.blitShaderPointProgram, _textureNumber);
 
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.shaders.prepare();
+		this.shaders.prepare(_textureNumber);
 
 		var max = Math.max(_surface.cellWide, _surface.cellHigh);
 		// set the size of the 'point' (it's square)
@@ -1074,14 +1072,14 @@ pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 // sends points and texture locations to gl
 // draws a single animation frame from _surface at the point locations, very quickly
 // _list contains x,y,u,v values, repeated for each point sprite
-pbWebGl.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surface )
+pbWebGl.prototype.blitDrawImagesPointAnim = function(_list, _listLength, _surface, _textureNumber )
 {
-	this.shaders.setProgram(this.shaders.blitShaderPointAnimProgram, 0);
+	this.shaders.setProgram(this.shaders.blitShaderPointAnimProgram, _textureNumber);
 
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.shaders.prepare();
+		this.shaders.prepare(_textureNumber);
 
 		var max = Math.max(_surface.cellWide, _surface.cellHigh);
 		// set the size of the 'point' (it's square)
@@ -1119,14 +1117,14 @@ pbWebGl.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surfa
 
 
 // unused.  Sends tx,ty,sin,cos,sx,sy and u,v to gl.
-pbWebGl.prototype.batchDrawImages = function( _list, _surface )
+pbWebGl.prototype.batchDrawImages = function( _textureNumber, _list, _surface )
 {
-	this.shaders.setProgram(this.shaders.batchImageShaderProgram, 0);
+	this.shaders.setProgram(this.shaders.batchImageShaderProgram, _textureNumber);
 
 	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.shaders.prepare();
+		this.shaders.prepare(_textureNumber);
 	}
 
 	// half width, half height (of source frame)
@@ -1257,16 +1255,16 @@ pbWebGl.prototype.batchDrawImages = function( _list, _surface )
 // Used by pbWebGlLayer for multiple sprite instances which are not particles
 // Sends transform matrix elements to gl.
 // _list object format: { image: pbImage, transform: pbMatrix3, z_order: Number }
-pbWebGl.prototype.rawBatchDrawImages = function( _list )
+pbWebGl.prototype.rawBatchDrawImages = function( _textureNumber, _list )
 {
 	var surface = _list[0].image.surface;
 
-	this.shaders.setProgram(this.shaders.rawBatchImageShaderProgram, 0);
+	this.shaders.setProgram(this.shaders.rawBatchImageShaderProgram, _textureNumber);
 
 	if (this.textures.prepare( surface.imageData, _list[0].image.tiling, surface.isNPOT ))
 	{
 		this.prepareBuffer();
-		this.shaders.prepare();
+		this.shaders.prepare(_textureNumber);
 	}
 
 	// half width, half height (of source frame)
@@ -1435,7 +1433,7 @@ pbWebGl.prototype.scissor = function(_x, _y, _width, _height)
 // pbCanvasToGlDemo and pbGlToCanvasDemo.  Uses imageShaderProgram to draw after transfering the canvas data to gl.
 pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transform, _z )
 {
-	this.shaders.setProgram(this.shaders.imageShaderProgram, 0);
+	this.shaders.setProgram(this.shaders.imageShaderProgram);
 
 	if ( _dirty || !this.textures.currentSrcTexture || this.textures.currentSrcTexture.canvas !== _canvas )
 	{

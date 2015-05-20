@@ -117,7 +117,7 @@ pbCanvasToGlDemo.prototype.update = function()
 
 	// change the source canvas contents every frame
 	this.ctxSrc.fillStyle = "rgb(" + (this.count & 0xff) + "," + ((this.count >> 4) & 0xff) + ", 0)";
-	this.ctxSrc.fillRect(0, 0, 300, 100);
+	this.ctxSrc.fillRect(0, 0, 300, 100, 0);
 	this.ctxSrc.fillStyle = "#ffffff";
 	this.ctxSrc.fillText(this.value, 150, 90, 300);
 
@@ -140,6 +140,7 @@ pbCanvasToGlDemo.prototype.update = function()
 		pbMatrix3.setTransform(obj.transform, obj.x, obj.y, obj.angleInRadians, obj.scale, obj.scale);
 
 		// draw the canvas texture into this transformed webGl texture every frame
+		this.textureNumber = 0;
 		this.renderer.graphics.drawCanvasWithTransform(this.canvasSrc, true, obj.transform, 1.0);
 	}
 };

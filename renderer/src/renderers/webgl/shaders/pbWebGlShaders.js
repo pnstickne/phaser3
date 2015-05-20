@@ -663,15 +663,18 @@ pbWebGlShaders.prototype.clearProgram = function()
 
 
 
-pbWebGlShaders.prototype.prepare = function()
+pbWebGlShaders.prototype.prepare = function(_textureNumber)
 {
+	if (_textureNumber === undefined)
+    	_textureNumber = 0;
+	
 	var program = this.programList[ pbWebGlShaders.currentProgram ];
 
 	if (program.samplerUniforms)
 	{
 		// set the shader to use TEXTURE0 and the first sampler uniform
 		if (program.samplerUniforms.uImageSampler)
-   			gl.uniform1i( program.samplerUniforms.uImageSampler, 0 );
+   			gl.uniform1i( program.samplerUniforms.uImageSampler, _textureNumber );
    	}
 
 	if (program.uniforms)

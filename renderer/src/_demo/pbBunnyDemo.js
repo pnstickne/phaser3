@@ -83,6 +83,8 @@ pbBunnyDemo.prototype.addSprites = function(num)
 		var imageData = this.loader.getFile( this.spriteImg );
 		this.surface = new pbSurface();
 		this.surface.create(0, 0, 1, 1, imageData);
+		// set the texture register number where the surface will be kept on the GPU
+		this.textureNumber = 0;
 	}
 
 	for(var i = 0; i < num; i++)
@@ -139,7 +141,7 @@ pbBunnyDemo.prototype.update = function()
 	}
 
 	if (this.list.length > 0)
-		this.renderer.graphics.blitListDirect( this.list, this.list.length, this.surface );
+		this.renderer.graphics.blitListDirect( this.list, this.list.length, this.surface, this.textureNumber );
 
 	if (fps >= 60)
 	{

@@ -44,8 +44,13 @@ pbWebGlTextures.prototype.destroy = function()
  * prepareOnGPU - prepare a texture which is on the GPU to be used as a source surface
  *
  */
-pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _npot, _tiling)
+pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _tiling, _npot, _textureNumber)
 {
+	// activate the texture
+	if (_textureNumber === undefined)
+    	_textureNumber = 0;
+   	gl.activeTexture( gl.TEXTURE0 + _textureNumber );
+	
 	// bind the texture to the currently active texture register
     gl.bindTexture(gl.TEXTURE_2D, _texture);
 
@@ -109,6 +114,7 @@ pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textu
     else
     {
     	// upload it to the GPU
+    	
 	    var maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
 	    if (_imageData.width > maxSize || _imageData.height > maxSize)
 	    {
@@ -127,9 +133,11 @@ pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textu
 
 		// bind the texture to the currently active texture register
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
-	    
+   
+   		// upload the texture to the GPU
 	    // target, level, internalformat, width, height, border, format, type, pixels
 	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _imageData);
+
 	    if (_npot)
 	    {
 		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);

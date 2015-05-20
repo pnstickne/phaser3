@@ -54,14 +54,6 @@ pbCreatureDemo.prototype.allLoaded = function()
 
 pbCreatureDemo.prototype.create = function()
 {
-	this.gameLayer = new layerClass();
-	this.gameLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
-	rootLayer.addChild(this.gameLayer);
-
-	this.game = new pbBackground();
-	this.game.create(this, this.gameLayer);
-
-
 	console.log("pbCreatureDemo.create");
 
 	// get the shader program
@@ -70,8 +62,8 @@ pbCreatureDemo.prototype.create = function()
 
 	// unzip the compressed data file and create the animation JSON data structure
 	var zip = new JSZip( this.loader.getFile( this.dinoZip ).response );
-	this.dinoJSON = zip.file("character_data.json").asText();
-	var actual_JSON = JSON.parse(this.dinoJSON);
+	var dinoJSON = zip.file("character_data.json").asText();
+	var actual_JSON = JSON.parse(dinoJSON);
 
 	// create the creature
 	var new_creature = new Creature(actual_JSON);
@@ -100,11 +92,11 @@ pbCreatureDemo.prototype.create = function()
     this.textureObject = textures.getFirst("dino");
 
 	// create the creature renderer using the manager and the texture
-	this.creatureTextureNumber = 0;
+	this.creatureTextureNumber = 1;
 	this.new_creature_renderer = new CreatureRenderer(this.new_manager, this.textureObject.imageData);
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTextureNumber = 1;
+	this.rttTextureNumber = 2;
 	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
@@ -144,7 +136,7 @@ pbCreatureDemo.prototype.update = function()
 	// recalculate this creature's point data
 	this.new_creature_renderer.UpdateData();
 
-	// draw the creature with webgl, the draw destination will be this.renderer.useFrameBuffer
+	// draw the creature with webgl, the draw destination will be this.renderer.useFramebuffer
     var transform = pbMatrix3.makeTransform(-0.15, 0.0, 0.0, 0.04, 0.04);
 	this.new_creature_renderer.DrawCreature(transform, this.renderer.graphics, this.stripShaderProgram, this.creatureTextureNumber);
 };
