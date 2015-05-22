@@ -12,6 +12,10 @@
  * By Fritz Geller-Grimm and Felix Grimm (Own work)
  * [CC BY-SA 2.5 (http://creativecommons.org/licenses/by-sa/2.5) or CC BY-SA 2.5 (http://creativecommons.org/licenses/by-sa/2.5)]
  * via Wikimedia Commons
+ *
+ * Coel Raptor
+ * by: Aline Ghilardi
+ * from: www.colecionadoresdeossos.com
  * 
  */
 
@@ -38,6 +42,9 @@ function pbCreatureFlockDemo( docId )
 	this.stripShaderJSON = this.loader.loadFile( "../JSON/stripShaderSources.json" );
 	this.dinoZip = this.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
 	this.loader.loadImage( "dino", "../img/creatures/utah.CreaExport/character_img.png" );
+	this.dino2Zip = this.loader.loadFile( "../img/creatures/coel.CreaExport/character_data.zip", "arraybuffer" );
+	this.loader.loadImage( "dino2", "../img/creatures/coel.CreaExport/character_img.png" );
+
 	this.loader.loadImage( "field", "../img/Le_Caylar_fg08.png" );
 	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/8x8/ArkArea (UPL).png", 8, 8, 95, 5 );
 
@@ -69,25 +76,33 @@ pbCreatureFlockDemo.prototype.create = function()
 		this.bg.tiling = false;
 	}
 
-    // get the source texture from the textures dictionary using 'key'
+    // get the source textures from the textures dictionary using 'key'
     this.dinoTexture = textures.getFirst("dino");
+    this.dino2Texture = textures.getFirst("dino2");
 
-	// unzip the compressed data file and create the animation JSON data structure
+	// unzip the compressed data files and create the animation JSON data structures
+
+	// utah raptor
 	var zip = new JSZip( this.loader.getFile( this.dinoZip ).response );
 	var dinoJSON = zip.file("character_data.json").asText();
 	var dinoData = JSON.parse(dinoJSON);
+
+	// coel
+	zip = new JSZip( this.loader.getFile( this.dino2Zip ).response );
+	var dino2JSON = zip.file("character_coel_data.json").asText();
+	var dino2Data = JSON.parse(dino2JSON);
 
 	this.creatures = new pbCreatureHandler(this.renderer, this.stripShaderProgram);
 
 	// create a transform to be applied when drawing a creature to the render-to-texture on the GPU
 	// this controls the offset, rotation and size of the creature's raw sprite source
-    var transform = pbMatrix3.makeTransform(-0.15, 0.0, 0.0, 0.04, 0.04);
+    var transform = pbMatrix3.makeTransform(-0.15, 0.0, 0.0, -0.04, 0.04);
     // add the big dino type
-	this.creatures.Create("big_dino", dinoData, this.dinoTexture, 1, 2, transform, 1.0 );
+	this.creatures.Create("big_dino", dino2Data, this.dino2Texture, 1, 2, transform, 1.0 );
 
 	// add the small dino type
-    transform = pbMatrix3.makeTransform(-0.15, 0.2, 0.0, 0.02, 0.02);
-	this.creatures.Create("little_dino", dinoData, this.dinoTexture, 1, 3, transform, 1.5 );
+    transform = pbMatrix3.makeTransform(-0.15, 0.35, 0.0, 0.02, 0.02);
+	this.creatures.Create("little_dino", dinoData, this.dinoTexture, 1, 3, transform, 2.0 );
 
 	// make the flock
 	this.makeFlock(30);
@@ -104,9 +119,9 @@ pbCreatureFlockDemo.prototype.create = function()
 	// prepare the CC notices for raptor and background images
 	this.text = new pbText();
 	this.text.create("font", this.uiLayer, " ".charCodeAt(0), 95 * 1);
-	this.utahRaptor = this.text.addLine("Utah Raptor: by Ferahgo_the_Assassin CC BY-SA 3.0", 10, 16, 8);
-	this.fieldBackground = this.text.addLine("Background: by Fritz Geller-Grimm and Felix Grimm CC BY-SA 2.5", 10, 36, 8);
-	this.wiki = this.text.addLine("From: www.wikimedia.org", 10, 56, 8);
+	this.coel = this.text.addLine("Coel: by Aline Ghilardi www.colecionadoresdeossos.com", 10, 10, 8);
+	this.utahRaptor = this.text.addLine("Utah Raptor: by Ferahgo_the_Assassin CC BY-SA 3.0 www.wikimedia.org", 10, 22, 8);
+	this.fieldBackground = this.text.addLine("Background: by Fritz Geller-Grimm and Felix Grimm CC BY-SA 2.5 www.wikimedia.org", 10, 34, 8);
 };
 
 
@@ -138,11 +153,13 @@ pbCreatureFlockDemo.prototype.makeFlock = function(_flockSize)
 		{
 			name = "little_dino";
 			speed = 7.0;
+			size = 0.7;
 		}
 		else
 		{
 			name = "big_dino";
 			speed = 4.0;
+			size = 1.5;
 		}
 
 		// handy scaling factor to create a fake depth illusion with perspective
@@ -152,7 +169,7 @@ pbCreatureFlockDemo.prototype.makeFlock = function(_flockSize)
 				pbRenderer.width + 350 + Math.random() * 800, // x
 				pbRenderer.height * 0.30 + pbRenderer.height * 0.50 * pcent,  // y
 				0, // rotation
-				(0.30 + 0.70 * pcent), // scale
+				(Math.random() * 0.15 + 0.20 + 0.65 * pcent) * size, // scale
 				Math.random() * 4.0 + 4.0 * pcent + speed  // speed
 			);
 	}
