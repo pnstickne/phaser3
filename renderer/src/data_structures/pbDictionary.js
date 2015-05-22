@@ -82,6 +82,18 @@ pbDictionary.prototype.get = function(_key)
 };
 
 
+pbDictionary.prototype.getAll = function()
+{
+	var list = [];
+
+	for(var i = 0, l = this.keys.length; i < l; i++)
+		for(var j = 0, m = this.values[i].length; j < m; j++)
+			list.push(this.values[i][j]);
+		
+	return list;
+};
+
+
 pbDictionary.prototype.remove = function(_key)
 {
 	var i = this.keys.indexOf(_key);

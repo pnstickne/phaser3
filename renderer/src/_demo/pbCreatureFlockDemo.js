@@ -27,8 +27,7 @@ function pbCreatureFlockDemo( docId )
 	this.docId = docId;
 
 	this.jsonData = null;
-	this.new_manager = null;
-	this.new_creature_renderer = null;
+	this.creatures = null;
 
 	this.rttTexture = null;
 	this.rttFramebuffer = null;
@@ -57,11 +56,6 @@ pbCreatureFlockDemo.prototype.create = function()
 {
 	console.log("pbCreatureFlockDemo.create");
 
-	// allocate the GPU texture registers
-	this.creatureTextureNumber = 1;		// source texture for dino skin
-	this.rttTextureNumber = 2;			// render-to-texture is source for the sprites
-	this.rttTextureNumber2 = 3;			// render-to-texture is source for the sprites
-
 	// get the shader program
 	var jsonString = this.loader.getFile( this.stripShaderJSON ).responseText;
 	this.stripShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
@@ -74,40 +68,28 @@ pbCreatureFlockDemo.prototype.create = function()
 		this.bg.tiling = false;
 	}
 
+    // get the source texture from the textures dictionary using 'key'
+    this.dinoTexture = textures.getFirst("dino");
+
 	// unzip the compressed data file and create the animation JSON data structure
 	var zip = new JSZip( this.loader.getFile( this.dinoZip ).response );
 	var dinoJSON = zip.file("character_data.json").asText();
-	var actual_JSON = JSON.parse(dinoJSON);
+	var dinoData = JSON.parse(dinoJSON);
 
-    // get the source texture from the textures dictionary using 'key'
-    this.textureObject = textures.getFirst("dino");
+	this.creatures = new pbCreatureHandler(this.renderer, this.stripShaderProgram);
 
-	// make the creature from the json data and texture
-	this.new_manager = this.makeCreature(actual_JSON, this.textureObject);
-	this.new_manager2 = this.makeCreature(actual_JSON, this.textureObject);
+	// create a transform to be applied when drawing a creature to the render-to-texture on the GPU
+	// this controls the offset, rotation and size of the creature's raw sprite source
+    var transform = pbMatrix3.makeTransform(-0.15, 0.0, 0.0, 0.04, 0.04);
+    // add the big dino type
+	this.creatures.Create("big_dino", dinoData, this.dinoTexture, 1, 2, transform, 1.0 );
 
-	// create the creature renderer using the manager and the texture
-	this.new_creature_renderer = new CreatureRenderer(this.new_manager, this.textureObject.imageData);
-	this.new_creature_renderer2 = new CreatureRenderer(this.new_manager2, this.textureObject.imageData);
+	// add the small dino type
+    transform = pbMatrix3.makeTransform(-0.15, 0.2, 0.0, 0.02, 0.02);
+	this.creatures.Create("little_dino", dinoData, this.dinoTexture, 1, 3, transform, 1.5 );
 
-	// make the flocks
-	this.list = [];
-	this.makeFlock([
-			{ prob: 0.2, texture: this.rttTextureNumber, size: 1.0, speed: 2.0, yoff: 0.0 },
-			{ prob: 0.8, texture: this.rttTextureNumber2, size: 0.6, speed: 4.0, yoff: 50.0 }],
-			30);
-
-	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
-	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
-	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
-
-	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTexture2 = pbWebGlTextures.initTexture(this.rttTextureNumber2, pbRenderer.width, pbRenderer.height);
-	this.rttRenderbuffer2 = pbWebGlTextures.initDepth(this.rttTexture2);
-	this.rttFramebuffer2 = pbWebGlTextures.initFramebuffer(this.rttTexture2, this.rttRenderbuffer2);
-
-	this.textureList = [ null, null, this.rttTexture, this.rttTexture2 ];
+	// make the flock
+	this.makeFlock(30);
 
 	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
     this.renderer.postUpdate = this.postUpdate;
@@ -132,96 +114,72 @@ pbCreatureFlockDemo.prototype.destroy = function()
 };
 
 
-pbCreatureFlockDemo.prototype.makeCreature = function(json, texture)
+pbCreatureFlockDemo.prototype.makeFlock = function(_flockSize)
 {
-	// create the creature
-	var new_creature = new Creature(json, texture);
-
-	// create an animation object for it
-	var new_animation_1 = new CreatureAnimation(json, "default", new_creature);
-	
-	// create a creature manager for it
-	var new_manager = new CreatureManager(new_creature);
-
-	// add the animation to the manager
-	new_manager.AddAnimation(new_animation_1);
-
-	// prepare the manager settings
-	new_manager.SetActiveAnimationName("default", false);
-	new_manager.SetShouldLoop(true);
-	new_manager.SetIsPlaying(true);
-	new_manager.RunAtTime(0);
-
-	// prepare a cache of points to speed up the playback
-	// WARNING: slow - 4 seconds for one animation of the Utah Raptor
-	//this.new_manager.MakePointCache("default");
-
-	return new_manager;
-};
-
-
-pbCreatureFlockDemo.prototype.makeFlock = function(_mixtureList, _flockSize)
-{
+	var name, speed;
 	for(var i = 0; i < _flockSize; i++)
 	{
-		var m;
-		do{
-			for(m = 0; m < _mixtureList.length; m++)
-				if (Math.random() < _mixtureList[m].prob)
-					break;
-		}while(m == _mixtureList.length);
+		// make more small ones than big ones
+		if (Math.random() < 0.8)
+		{
+			name = "little_dino";
+			speed = 7.0;
+		}
+		else
+		{
+			name = "big_dino";
+			speed = 4.0;
+		}
 
+		// handy scaling factor to create a fake depth illusion with perspective
 		var pcent = i / (_flockSize - 1);
-		this.list.push( {
-			speed: Math.random() * 4.0 + 4.0 * pcent + _mixtureList[m].speed,
-			x: pbRenderer.width + 350 + Math.random() * 800,
-			y: pbRenderer.height * 0.30 + pbRenderer.height * 0.50 * pcent + _mixtureList[m].yoff,
-			r: 0,
-			scale: (0.30 + 0.70 * pcent) * _mixtureList[m].size,
-			textureNumber: _mixtureList[m].texture
-		});
+		this.creatures.Add(
+				name,
+				pbRenderer.width + 350 + Math.random() * 800, // x
+				pbRenderer.height * 0.30 + pbRenderer.height * 0.50 * pcent,  // y
+				0, // rotation
+				(0.30 + 0.70 * pcent), // scale
+				Math.random() * 4.0 + 4.0 * pcent + speed  // speed
+			);
 	}
 };
 
 
 pbCreatureFlockDemo.prototype.update = function()
 {
-	// update the creature manager for a given time interval
+	// update the creatures and render them to GPU textures
 	var e = this.renderer.rootTimer.elapsedTime;
-	this.new_manager.Update(e / 1000 * 2.0);
-	this.new_manager2.Update(e / 1000 * 3.0);
+	this.creatures.Update(e / 1000 * 2.0);
 
-	// recalculate this creature's point data
-	this.new_creature_renderer.UpdateData();
-	this.new_creature_renderer2.UpdateData();
-
-	// draw the creatures with webgl
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, this.rttRenderbuffer);
-	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-    var transform = pbMatrix3.makeTransform(-0.15, 0.0, 0.0, 0.04, 0.04);
-	this.new_creature_renderer.DrawCreature(transform, this.renderer.graphics, this.stripShaderProgram, this.creatureTextureNumber);
-
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer2);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, this.rttRenderbuffer2);
-	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-	transform = pbMatrix3.makeTransform(-0.15, 0.0, 0.0, 0.03, 0.03);
-	this.new_creature_renderer2.DrawCreature(transform, this.renderer.graphics, this.stripShaderProgram, this.creatureTextureNumber);
-
-	// don't render to texture any more, render to the display instead (this means you, background sprite!)
+	// render to the display from now on (pbRenderer.update: rootLayer.update)
+	// without this all other sprites in the scene will render to the last bound texture
+	// TODO: this should be parameterised in pbRenderer and set before the rootLayer.update call
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 };
 
 
+/**
+ * postUpdate - called after pbRenderer does rootLayer.update
+ * display all of the creature sprite images by rendering to the display from their render-to-textures on the GPU
+ *
+ * @return {[type]} [description]
+ */
 pbCreatureFlockDemo.prototype.postUpdate = function()
 {
-	for(var i = 0, l = this.list.length; i < l; i++)
+	// get all the creature instances
+	var list = this.creatures.GetAll();
+
+	// sort them into descending y coordinates to preserve depth illusion
+	list.sort(function(first, second) { return first.y - second.y; });
+
+	// draw them from their GPU texture sources to the display
+	for(var i = 0, l = list.length; i < l; i++)
 	{
-		var o = this.list[i];
-		// draw the creature
+		var o = list[i];
+		// draw the creature sprite
 		var transform = pbMatrix3.makeTransform(o.x, o.y, o.r, o.scale, o.scale);
-		this.renderer.graphics.drawTextureWithTransform( o.textureNumber, this.textureList[o.textureNumber], transform, 1.0 );
+		this.renderer.graphics.drawTextureWithTransform( o.textureNumber, o.texture, transform, 1.0 );
 		o.x -= o.speed;
 		if (o.x < -300) o.x = pbRenderer.width + 350 + Math.random() * 100;
 	}

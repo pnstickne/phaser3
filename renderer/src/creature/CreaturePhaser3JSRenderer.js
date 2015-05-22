@@ -66,7 +66,7 @@ function CreatureRenderer(manager_in, texture_in)
 
 // constructor
 //CreatureRenderer.prototype = Object.create(PIXI.DisplayObjectContainer.prototype);
-//CreatureRenderer.prototype.constructor = CreatureRenderer;
+CreatureRenderer.prototype.constructor = CreatureRenderer;
 
 
 CreatureRenderer.prototype._initWebGlBuffers = function(_renderer)
