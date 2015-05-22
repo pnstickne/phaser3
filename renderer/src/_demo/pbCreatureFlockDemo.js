@@ -39,6 +39,7 @@ function pbCreatureFlockDemo( docId )
 	this.dinoZip = this.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
 	this.loader.loadImage( "dino", "../img/creatures/utah.CreaExport/character_img.png" );
 	this.loader.loadImage( "field", "../img/Le_Caylar_fg08.png" );
+	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/8x8/ArkArea (UPL).png", 8, 8, 95, 5 );
 
 	console.log( "pbCreatureFlockDemo c'tor exit" );
 }
@@ -93,6 +94,19 @@ pbCreatureFlockDemo.prototype.create = function()
 
 	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
     this.renderer.postUpdate = this.postUpdate;
+
+	// add a top layer for ui text messages
+	this.uiLayer = new layerClass();
+	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
+	this.uiLayer.create(rootLayer, this.renderer, 0, 0, 0, 0, 1, 1);
+	rootLayer.addChild(this.uiLayer);
+
+	// prepare the CC notices for raptor and background images
+	this.text = new pbText();
+	this.text.create("font", this.uiLayer, " ".charCodeAt(0), 95 * 1);
+	this.utahRaptor = this.text.addLine("Utah Raptor: by Ferahgo_the_Assassin CC BY-SA 3.0", 10, 16, 8);
+	this.fieldBackground = this.text.addLine("Background: by Fritz Geller-Grimm and Felix Grimm CC BY-SA 2.5", 10, 36, 8);
+	this.wiki = this.text.addLine("From: www.wikimedia.org", 10, 56, 8);
 };
 
 

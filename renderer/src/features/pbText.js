@@ -15,15 +15,17 @@ function pbText()
 	this.layer = null;
 	this.firstAscii = 0;
 	this.lines = null;
+	this.offset = 0;
 }
 
 
-pbText.prototype.create = function(_key, _layer, _firstAscii)
+pbText.prototype.create = function(_key, _layer, _firstAscii, _offset)
 {
     this.textureObject = textures.getFirst(_key);
 	this.surface = this.textureObject.surface;
 	this.layer = _layer;
 	this.firstAscii = _firstAscii;
+	if (_offset) this.offset = _offset;
 	this.lines = [];
 };
 
@@ -52,7 +54,7 @@ pbText.prototype.addLine = function(_text, _x, _y, _gap)
 
 	for(var i = 0, l = _text.length; i < l; i++)
 	{
-		var c = _text.charCodeAt(i) - this.firstAscii;
+		var c = _text.charCodeAt(i) - this.firstAscii + this.offset;
 		var img = new imageClass();
 		img.create(this.surface, c, 0.5, 0.5);
 
