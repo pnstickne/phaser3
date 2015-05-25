@@ -282,6 +282,32 @@ var graphicsShaderSources = {
 };
 
 
+var lineShaderSources = {
+	fragment:
+		"  precision mediump float;\n" +
+		"  uniform vec4 uColor;\n" +
+		"  void main(void) {\n" +
+		"    gl_FragColor = uColor;\n" +
+		"  }\n",
+
+	vertex:
+		"  uniform vec2 resolution;\n" +
+		"  attribute vec2 aPosition;\n" +
+		"  void main(void) {\n" +
+		"    vec2 zeroToOne = aPosition / resolution;\n" +
+		"    vec2 zeroToTwo = zeroToOne * 2.0;\n" +
+		"    vec2 clipSpace = zeroToTwo - 1.0;\n" +
+		"    gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);\n" +
+		"  }\n",
+
+	attributes:
+		[ "aPosition" ],
+
+	uniforms:
+		[ "resolution", "uColor" ]
+};
+
+
 /**
  * imageShaderSource3D - shaders for single image drawing with 3D projection including matrix transforms for scalex,scaley, rotation and translation
  * @type {Array}
@@ -404,6 +430,7 @@ function pbWebGlShaders()
 
 	// hardwired shaders used by the renderer
 	this.graphicsShaderProgram = -1;
+	this.lineShaderProgram = -1;
 	this.imageShaderProgram = -1;
 	this.imageShaderProgram3D = -1;
 	this.modezShaderProgram = -1;
@@ -424,6 +451,7 @@ pbWebGlShaders.prototype.create = function()
 
 	// drawing
 	this.graphicsShaderProgram = this.add( graphicsShaderSources );
+	this.lineShaderProgram = this.add( lineShaderSources );
 
 	// individual sprite processing
 	this.imageShaderProgram = this.add( imageShaderSources );
@@ -448,6 +476,7 @@ pbWebGlShaders.prototype.destroy = function()
 	this.programList = null;
 
 	this.graphicsShaderProgram = -1;
+	this.lineShaderProgram = -1;
 	this.imageShaderProgram = -1;
 	this.imageShaderProgram3D = -1;
 	this.modezShaderProgram = -1;
@@ -544,7 +573,7 @@ pbWebGlShaders.prototype.createProgram = function( _source )
 		return null;
 	}
 
-	// establish links to attributes, uniforms, and the texture sampler
+	// establish links to attributes
 	if (_source.attributes)
 	{
 		program.attributes = {};
@@ -693,6 +722,7 @@ pbWebGlShaders.prototype.prepare = function(_textureNumber)
 pbWebGlShaders.prototype.getAttribute = function( nameString )
 {
 	var program = this.programList[ pbWebGlShaders.currentProgram ];
+	if (program.attributes[ nameString ] === undefined) console.log("ERROR: undefined Attribute ", nameString);	// might be a uniform?
 	return program.attributes[ nameString ];
 };
 
@@ -700,6 +730,7 @@ pbWebGlShaders.prototype.getAttribute = function( nameString )
 pbWebGlShaders.prototype.getUniform = function( nameString )
 {
 	var program = this.programList[ pbWebGlShaders.currentProgram ];
+	if (program.uniforms[ nameString ] === undefined) console.log("ERROR: undefined Uniform ", nameString);	// might be an attribute?
 	return program.uniforms[ nameString ];
 };
 

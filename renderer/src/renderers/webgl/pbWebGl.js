@@ -156,11 +156,11 @@ pbWebGl.prototype.fillStyle = function(_fillColor, _lineColor)
 
 
 // test for webgl drawing basics
-pbWebGl.prototype.fillRect = function( x, y, wide, high, color, _textureNumber )
+pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 {
 	// console.log( "pbWebGl.fillRect" );
 
-	this.shaders.setProgram(this.shaders.graphicsShaderProgram, _textureNumber);
+	this.shaders.setProgram(this.shaders.graphicsShaderProgram);
 
 	var x2 = x + wide;
 	var y2 = y + high;
@@ -177,6 +177,11 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color, _textureNumber )
 	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgVertexBuffer );
 	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( vertices ), gl.STATIC_DRAW );
 
+	color.r /= 255.0;
+	color.g /= 255.0;
+	color.b /= 255.0;
+	color.a /= 255.0;
+	
 	var colors =
 	[
 		color.r, color.g, color.b, color.a,
@@ -196,7 +201,49 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color, _textureNumber )
 	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgColorBuffer );
 	gl.vertexAttribPointer( this.shaders.getAttribute( "aColor" ), 4, gl.FLOAT, gl.FALSE, 0, 0 );
 
+	gl.uniform2f( this.shaders.getUniform( "resolution" ), pbRenderer.width, pbRenderer.height );
+
 	gl.drawArrays( gl.TRIANGLE_STRIP, 0, this.bgVertexBuffer.numPoints );
+};
+
+
+// test for webgl drawing basics
+pbWebGl.prototype.drawRect = function( x, y, wide, high, color )
+{
+	// console.log( "pbWebGl.drawRect" );
+
+	// TODO: this is the only line that differs from fillRect... merge them
+	this.shaders.setProgram(this.shaders.lineShaderProgram);
+
+	var x2 = x + wide;
+	var y2 = y + high;
+	var vertices =
+	[
+         x, y, x2, y,
+         x2, y, x2, y2,
+         x2, y2, x, y2,
+         x, y2, x, y
+    ];
+
+	this.bgVertexBuffer = gl.createBuffer();
+	this.bgVertexBuffer.numPoints = 4 * 2;
+	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgVertexBuffer );
+	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( vertices ), gl.STATIC_DRAW );
+
+	color.r /= 255.0;
+	color.g /= 255.0;
+	color.b /= 255.0;
+	color.a /= 255.0;
+	gl.uniform4fv( this.shaders.getUniform( "uColor" ), [ color.r, color.g, color.b, color.a ] );
+
+	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgVertexBuffer );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 2, gl.FLOAT, gl.FALSE, 0, 0 );
+
+	gl.uniform2f( this.shaders.getUniform( "resolution" ), pbRenderer.width, pbRenderer.height );
+
+	gl.lineWidth(1.0);
+	// TODO: use LINESTRIP
+	gl.drawArrays( gl.LINES, 0, this.bgVertexBuffer.numPoints );
 };
 
 
