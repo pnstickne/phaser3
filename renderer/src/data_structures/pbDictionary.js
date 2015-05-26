@@ -22,6 +22,12 @@ pbDictionary.prototype.create = function()
 };
 
 
+pbDictionary.prototype.destroy = function()
+{
+	this.keys = null;
+	this.values = null;
+};
+
 /**
  * [add description]
  *
