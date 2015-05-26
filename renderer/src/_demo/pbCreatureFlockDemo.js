@@ -153,13 +153,13 @@ pbCreatureFlockDemo.prototype.makeFlock = function(_flockSize)
 		{
 			name = "little_dino";
 			speed = 7.0;
-			size = 0.7;
+			size = 1.0;
 		}
 		else
 		{
 			name = "big_dino";
 			speed = 4.0;
-			size = 1.5;
+			size = 1.0;
 		}
 
 		// handy scaling factor to create a fake depth illusion with perspective
@@ -167,7 +167,7 @@ pbCreatureFlockDemo.prototype.makeFlock = function(_flockSize)
 		this.creatures.Add(
 				name,
 				pbRenderer.width + 350 + Math.random() * 800, // x
-				pbRenderer.height * 0.30 + pbRenderer.height * 0.50 * pcent,  // y
+				pbRenderer.height * 0.30 + pbRenderer.height * 0.40 * pcent,  // y
 				0, // rotation
 				(Math.random() * 0.15 + 0.20 + 0.65 * pcent) * size, // scale
 				Math.random() * 4.0 + 4.0 * pcent + speed  // speed
@@ -202,7 +202,9 @@ pbCreatureFlockDemo.prototype.postUpdate = function()
 	var list = this.creatures.GetAll();
 
 	// sort them into descending y coordinates to preserve depth illusion
-	list.sort(function(first, second) { return first.y - second.y; });
+	list.sort(function(first, second) {
+					return ((first.y + first.type.dstTexture.height * first.scale) - (second.y + second.type.dstTexture.height * second.scale));
+				});
 
 	// draw them from their GPU texture sources to the display
 	for(var i = 0, l = list.length; i < l; i++)
@@ -210,12 +212,12 @@ pbCreatureFlockDemo.prototype.postUpdate = function()
 		var o = list[i];
 		// draw the creature sprite
 		var transform = pbMatrix3.makeTransform(o.x, o.y, o.r, o.scale, o.scale);
-		this.renderer.graphics.drawTextureWithTransform( o.type.dstTextureRegister, o.type.dstTexture, transform, 1.0 );
+		this.renderer.graphics.drawTextureWithTransform( o.type.dstTextureRegister, o.type.dstTexture, transform, 1.0, { x:0.5, y:1.0 } );
 
-	   	// debug box
-	   	var wide = o.type.dstTexture.width * o.scale;
-	   	var high = o.type.dstTexture.height * o.scale;
-    	this.renderer.graphics.drawRect(o.x - wide * 0.5, o.y - high * 0.5, wide, high, {r:0xff, g:0xff, b:0xff, a:0xff});
+	   	// debug texture area boxes
+	   	// var wide = o.type.dstTexture.width * o.scale;
+	   	// var high = o.type.dstTexture.height * o.scale;
+    	// this.renderer.graphics.drawRect(o.x - wide * 0.5, o.y + high * 1.0, wide, -high, {r:0xff, g:0xff, b:0xff, a:0xff});
 
 		o.x -= o.speed;
 		if (o.x < -300) o.x = pbRenderer.width + 350 + Math.random() * 100;
