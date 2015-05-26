@@ -22,11 +22,18 @@ function pbText()
 pbText.prototype.create = function(_key, _layer, _firstAscii, _offset)
 {
     this.textureObject = textures.getFirst(_key);
-	this.surface = this.textureObject.surface;
-	this.layer = _layer;
-	this.firstAscii = _firstAscii;
-	if (_offset) this.offset = _offset;
-	this.lines = [];
+    if (this.textureObject)
+    {
+		this.surface = this.textureObject.surface;
+		this.layer = _layer;
+		this.firstAscii = _firstAscii;
+		if (_offset) this.offset = _offset;
+		this.lines = [];
+	}
+	else
+	{
+		alert("ERROR: (pbText) no texture is available for " + _key)
+	}
 };
 
 
@@ -103,8 +110,8 @@ pbText.prototype.changeLine = function(_whichLine, _text)
 	if (oldText.length != _text.length)
 	{
 		var x = this.lines[_whichLine].x;
-		var y = this.lines[_whichLine].x;
-		var gap = this.lines[_whichLine].x;
+		var y = this.lines[_whichLine].y;
+		var gap = this.lines[_whichLine].gap;
 		this.removeLine(_whichLine);
 		return this.addLine(_text, x, y, gap);
 	}
@@ -113,7 +120,7 @@ pbText.prototype.changeLine = function(_whichLine, _text)
 	var line = this.lines[_whichLine].line;
 	for(var i = 0, l = _text.length; i < l; i++)
 	{
-		var c = _text.charCodeAt(i) - this.firstAscii;
+		var c = _text.charCodeAt(i) - this.firstAscii + this.offset;
 		line[i].image.cellFrame = c;
 	}
 
