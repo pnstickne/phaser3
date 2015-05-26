@@ -22,9 +22,9 @@ pbCreatureHandler.prototype.constructor = pbCreatureHandler;
  *
  * @param {[type]} name    [description]
  * @param {[type]} json    [description]
- * @param {[type]} textureImage [description]
+ * @param {[type]} srcTexture [description]
  */
-pbCreatureHandler.prototype.Create = function(name, json, textureImage, srcTextureRegister, dstTextureRegister, transform, animSpeed)
+pbCreatureHandler.prototype.Create = function(name, json, srcTexture, srcTextureRegister, dstTextureRegister, dstWidth, dstHeight, transform, animSpeed)
 {
 	console.log("pbCreatureHandler.Create " + name);
 
@@ -41,7 +41,7 @@ pbCreatureHandler.prototype.Create = function(name, json, textureImage, srcTextu
 	}
 
 	// create the creature
-	var new_creature = new Creature(json, textureImage);
+	var new_creature = new Creature(json, srcTexture);
 	// create an animation object for it
 	var new_animation = new CreatureAnimation(json, "default", new_creature);
 	// create a creature manager for it
@@ -59,10 +59,10 @@ pbCreatureHandler.prototype.Create = function(name, json, textureImage, srcTextu
 	//new_manager.MakePointCache("default");
 
 	// create the creature renderer using the manager and the texture
-	var new_renderer = new CreatureRenderer(new_manager, textureImage.imageData);
+	var new_renderer = new CreatureRenderer(new_manager, srcTexture.imageData);
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	var rttTexture = pbWebGlTextures.initTexture(dstTextureRegister, pbRenderer.width, pbRenderer.height);
+	var rttTexture = pbWebGlTextures.initTexture(dstTextureRegister, dstWidth, dstHeight);
 	var rttRenderbuffer = pbWebGlTextures.initDepth(rttTexture);
 	var rttFramebuffer = pbWebGlTextures.initFramebuffer(rttTexture);
 
@@ -83,6 +83,14 @@ pbCreatureHandler.prototype.Create = function(name, json, textureImage, srcTextu
 	};
 
 	this.dictionary.add(name, data);
+};
+
+
+pbCreatureHandler.prototype.Destroy = function()
+{
+	if (this.dictionary)
+		this.dictionary.destroy();
+	this.dictionary = null;
 };
 
 
@@ -109,9 +117,8 @@ pbCreatureHandler.prototype.Add = function(name, x, y, r, scale, speed)
 			r: r,
 			scale: scale,
 			speed: speed,
-			// carry over some 'creature type' values to make drawing each instance faster
-			textureNumber: type.dstTextureRegister,
-			texture: type.dstTexture
+			// useful reference to the creature type data (circular, beware if serializing)
+			type: type
 		};
 
 		type.list.push(data);
@@ -120,6 +127,32 @@ pbCreatureHandler.prototype.Add = function(name, x, y, r, scale, speed)
 	{
 		console.log("ERROR: attempting to add an unknown creature: " + name + "!");
 	}
+};
+
+
+/**
+ * Bounds - calculate the maximum bounds for the given creature type and animation.
+ * NOTE: this iterates through the whole animation, so it's *slow*
+ * NOTE: it uses the given time-step value, smaller values will give more accurate results but take longer
+ * NOTE: this won't work well if the animation changes dimensions rapidly and the time-step misses the largest frames!
+ */
+// pbCreatureHandler.prototype.Bounds = function(_typeName, _animation, _timeStep)
+// {
+// 	var creatureData = this.dictionary.getFirst(_typeName);
+// 	creatureData.manager.ResetToStartTimes();
+	
+// 	creatureData.manager.Update(_timeStep);
+
+// };
+
+
+pbCreatureHandler.prototype.Adjust = function(_name, _transform)
+{
+	var creatureData = this.dictionary.get(_name);
+
+	// there's only one dictionary entry per type
+	if (creatureData && creatureData[0])
+		creatureData[0].transform = _transform;
 };
 
 
@@ -165,8 +198,9 @@ pbCreatureHandler.prototype.GetAll = function()
 
 	// for each key (a creature type), copy the list contents (the instances of that creature) into creatureList
 	this.dictionary.iterateKeys(function getList(_data) {
-			for(var i = 0, l = _data[0].list.length; i < l; i++)
-				creatureList.push(_data[0].list[i]);
+			if (_data[0].list)
+				for(var i = 0, l = _data[0].list.length; i < l; i++)
+					creatureList.push(_data[0].list[i]);
 		}, this);
 
 	return creatureList;
