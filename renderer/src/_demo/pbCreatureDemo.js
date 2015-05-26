@@ -38,8 +38,6 @@ function pbCreatureDemo( docId )
 	this.dinoZip = this.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
 	this.loader.loadImage( "dino", "../img/creatures/utah.CreaExport/character_img.png" );
 
-	this.loader.loadImage( "bg", "../img/sphere3.png" );
-
 	console.log( "pbCreatureDemo c'tor exit" );
 }
 

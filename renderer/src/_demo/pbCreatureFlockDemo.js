@@ -89,20 +89,20 @@ pbCreatureFlockDemo.prototype.create = function()
 
 	// coel
 	zip = new JSZip( this.loader.getFile( this.dino2Zip ).response );
-	var dino2JSON = zip.file("character_coel_data.json").asText();
+	var dino2JSON = zip.file("character_data.json").asText();
 	var dino2Data = JSON.parse(dino2JSON);
 
 	this.creatures = new pbCreatureHandler(this.renderer, this.stripShaderProgram);
 
-	// create a transform to be applied when drawing a creature to the render-to-texture on the GPU
+    // add the big dino type (numbers obtained from creatureAssist utility)
+	// create a transform to be applied when drawing each creature to it's render-to-texture on the GPU
 	// this controls the offset, rotation and size of the creature's raw sprite source
-    var transform = pbMatrix3.makeTransform(-0.15, 0.0, 0.0, -0.04, 0.04);
-    // add the big dino type
-	this.creatures.Create("big_dino", dino2Data, this.dino2Texture, 1, 2, transform, 1.0 );
+    var transform = pbMatrix3.makeTransform(-0.34, 0.63, 0.0, -0.048, 0.048);
+	this.creatures.Create("big_dino", dino2Data, this.dino2Texture, 1, 2, 512, 256, transform, 1.0 );
 
-	// add the small dino type
-    transform = pbMatrix3.makeTransform(-0.15, 0.35, 0.0, 0.02, 0.02);
-	this.creatures.Create("little_dino", dinoData, this.dinoTexture, 1, 3, transform, 2.0 );
+	// add the small dino type (numbers obtained from creatureAssist utility)
+    transform = pbMatrix3.makeTransform(-0.73, 0.85, 0.0, 0.013, 0.013);
+	this.creatures.Create("little_dino", dinoData, this.dinoTexture, 1, 3, 256, 128, transform, 2.0 );
 
 	// make the flock
 	this.makeFlock(30);
@@ -116,7 +116,7 @@ pbCreatureFlockDemo.prototype.create = function()
 	this.uiLayer.create(rootLayer, this.renderer, 0, 0, 0, 0, 1, 1);
 	rootLayer.addChild(this.uiLayer);
 
-	// prepare the CC notices for raptor and background images
+	// prepare the CC notices for raptors and background images
 	this.text = new pbText();
 	this.text.create("font", this.uiLayer, " ".charCodeAt(0), 95 * 1);
 	this.coel = this.text.addLine("Coel: by Aline Ghilardi www.colecionadoresdeossos.com", 10, 10, 8);
@@ -210,7 +210,13 @@ pbCreatureFlockDemo.prototype.postUpdate = function()
 		var o = list[i];
 		// draw the creature sprite
 		var transform = pbMatrix3.makeTransform(o.x, o.y, o.r, o.scale, o.scale);
-		this.renderer.graphics.drawTextureWithTransform( o.textureNumber, o.texture, transform, 1.0 );
+		this.renderer.graphics.drawTextureWithTransform( o.type.dstTextureRegister, o.type.dstTexture, transform, 1.0 );
+
+	   	// debug box
+	   	var wide = o.type.dstTexture.width * o.scale;
+	   	var high = o.type.dstTexture.height * o.scale;
+    	this.renderer.graphics.drawRect(o.x - wide * 0.5, o.y - high * 0.5, wide, high, {r:0xff, g:0xff, b:0xff, a:0xff});
+
 		o.x -= o.speed;
 		if (o.x < -300) o.x = pbRenderer.width + 350 + Math.random() * 100;
 	}
