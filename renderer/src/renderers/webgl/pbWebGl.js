@@ -355,7 +355,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _textureNumber, _image, _tr
  * @param  {pbMatrix3} _transform - the transform to apply, can specify translation, rotation and scaling, plus anything else that goes into a 3x3 homogenous matrix
  * @param  {Number} _z - the z depth at which to draw
  */
-pbWebGl.prototype.drawTextureWithTransform = function( _textureNumber, _texture, _transform, _z )
+pbWebGl.prototype.drawTextureWithTransform = function( _textureNumber, _texture, _transform, _z, _anchor )
 {
 	this.shaders.setProgram(this.shaders.imageShaderProgram, _textureNumber);
 
@@ -381,16 +381,24 @@ pbWebGl.prototype.drawTextureWithTransform = function( _textureNumber, _texture,
 	// r, b,		8,9
 	// r, t,		12,13
 	var l, r, t, b;
+	if (_anchor)
+	{
+		l = -wide * _anchor.x;
+		r = wide + l;
+		t = high * _anchor.y;
+		b = -high + t;
+	}
+	else
 	{
 		l = -wide * 0.5;
 		r = wide + l;
 		t = high * 0.5;
 		b = -high + t;
-		buffer[ 0 ] = buffer[ 4 ] = l;
-		buffer[ 1 ] = buffer[ 9 ] = b;
-		buffer[ 8 ] = buffer[ 12] = r;
-		buffer[ 5 ] = buffer[ 13] = t;
 	}
+	buffer[ 0 ] = buffer[ 4 ] = l;
+	buffer[ 1 ] = buffer[ 9 ] = b;
+	buffer[ 8 ] = buffer[ 12] = r;
+	buffer[ 5 ] = buffer[ 13] = t;
 
 	// texture source position (use the whole texture)
 	// x, b,		2,3
