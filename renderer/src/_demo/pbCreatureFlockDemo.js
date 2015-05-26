@@ -102,7 +102,7 @@ pbCreatureFlockDemo.prototype.create = function()
 
 	// add the small dino type (numbers obtained from creatureAssist utility)
     transform = pbMatrix3.makeTransform(-0.73, 0.85, 0.0, 0.013, 0.013);
-	this.creatures.Create("little_dino", dinoData, this.dinoTexture, 1, 3, 256, 128, transform, 2.0 );
+	this.creatures.Create("little_dino", dinoData, this.dinoTexture, 3, 4, 256, 128, transform, 2.0 );
 
 	// make the flock
 	this.makeFlock(30);
