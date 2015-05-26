@@ -92,17 +92,15 @@ CreatureRenderer.prototype._initWebGlBuffers = function(_renderer)
 
 CreatureRenderer.prototype.UpdateCreatureBounds = function()
 {
-	// update bounds
 	var target_creature = this.creature_manager.target_creature;
 		
+	// update bounds (destination texture size)
 	target_creature.ComputeBoundaryMinMax();
 
-	// this.creatureBoundsMin.set(target_creature.boundary_min[0],
-	//  							-target_creature.boundary_min[1]);
-	// this.creatureBoundsMax.set(target_creature.boundary_max[0],
-	//  							-target_creature.boundary_max[1]);
-	// this.worldTransform.apply(this.creatureBoundsMin, this.creatureBoundsMin);	
-	// this.worldTransform.apply(this.creatureBoundsMax, this.creatureBoundsMax);				
+	this.left = target_creature.boundary_min[0];
+	this.bottom = target_creature.boundary_min[1];
+	this.width = target_creature.boundary_max[0] - this.left;
+	this.height = target_creature.boundary_max[1] - this.bottom;
 };
 
 
@@ -139,6 +137,7 @@ CreatureRenderer.prototype.UpdateRenderData = function(inputVerts, inputUVs)
 		write_pt_index += 2;
 	}
 };
+
 
 
 /**
@@ -196,5 +195,5 @@ CreatureRenderer.prototype.DrawCreature = function(_transform, _renderer, _shade
     //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
     
     // draw it
-    gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);  
+    gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);
 };
