@@ -110,20 +110,15 @@ pbWebGlLayer.prototype.draw = function(_list)
 		if (srf)
 		{
 			if (obj.image.surface.frameBuffer)
-				gl.bindFramebuffer(gl.FRAMEBUFFER, _fb);
+				gl.bindFramebuffer(gl.FRAMEBUFFER, obj.image.surface.frameBuffer);
 			else
 				gl.bindFramebuffer(gl.FRAMEBUFFER, this.renderer.useFramebuffer);
 			if (obj.image.surface.renderBuffer)
-				gl.bindRenderbuffer(gl.RENDERBUFFER, _rb);	
+				gl.bindRenderbuffer(gl.RENDERBUFFER, obj.image.surface.renderBuffer);	
 			else
 				gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderer.useRenderbuffer);
 		}
 
-		// is this surface a render-to-texture?
-		if (srf.rttTexture)
-		{
-			
-		}
 	}
 
 	this.super(pbWebGlLayer, 'draw', _list);
