@@ -22,14 +22,30 @@ function pbSurface()
 	this.frameBuffer = null;
 	this.renderBuffer = null;
 	this.rttTexture = null;
+	this.rttTextureRegister = -1;
 }
 
 
-pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageData, _rttTexture)
+pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageData, _rttTexture, _rttTextureRegister)
 {
 	if (_rttTexture === undefined) _rttTexture = null;
-	if (_wide === 0) _wide = _imageData.width;
-	if (_high === 0) _high = _imageData.height;
+	if (_rttTextureRegister === undefined) _rttTextureRegister = 0;
+
+	var srcWide, srcHigh;
+	if (_rttTexture)
+	{
+		srcWide = _rttTexture.width;
+		srcHigh = _rttTexture.height;
+	}
+	else if (_imageData)
+	{
+		srcWide = _imageData.width;
+		srcHigh = _imageData.height;
+	}
+	this.isNPOT = !(is_power_of_2(srcWide) && is_power_of_2(srcHigh));
+
+	if (_wide === 0) _wide = srcWide;
+	if (_high === 0) _high = srcHigh;
 	
 	this.cellWide = _wide;
 	this.cellHigh = _high;
@@ -37,17 +53,17 @@ pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageDa
 	this.cellsHigh = _numHigh;
 
 	this.rttTexture = _rttTexture;
+	this.rttTextureRegister = _rttTextureRegister;
 	this.imageData = _imageData;
-	this.isNPOT = !(is_power_of_2(_imageData.width) && is_power_of_2(_imageData.height));
-
+	
 	console.log("pbSurface.create " + this.cellWide +  "x" + this.cellHigh + " " + this.cellsWide + "x" + this.cellsHigh + " isNPOT = " + (this.isNPOT ? "true" : "false"));
 
 	// dimensions of one cell in texture coordinates (0 = left/top, 1 = right/bottom)
 	if (_imageData)
 	{
 		// _image may have padding around the animation cells
-		texWide = 1.0 / (this.imageData.width / this.cellWide);
-		texHigh = 1.0 / (this.imageData.height / this.cellHigh);
+		texWide = 1.0 / (srcWide / this.cellWide);
+		texHigh = 1.0 / (srcHigh / this.cellHigh);
 	}
 	else
 	{
