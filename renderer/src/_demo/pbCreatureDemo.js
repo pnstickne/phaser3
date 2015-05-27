@@ -3,7 +3,8 @@
  * "Creature" animation system demo
  *
  * Based in part on PixiJs-Demo.html and CreaturePixiJSRenderer.js from the Creatures GitHub repository.
- *
+ * This example does not use the pbCreatureHandler and shows how to access all of the lower level
+ * CreaturePhaser3JSRenderer functions directly.
  * 
  * Utah Raptor original image
  * from: https://commons.wikimedia.org/wiki/Category:Utahraptor#/media/File:Utahraptor_updated.png

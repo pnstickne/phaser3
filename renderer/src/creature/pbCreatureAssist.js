@@ -82,10 +82,10 @@ pbCreatureAssist.prototype.create = function()
     this.typeTransform = pbMatrix3.makeTransform(this.xpos, this.ypos, this.rot, this.scale, this.scale);
 
     // add the creature type to the creature handler, using it's name for future reference
-	this.creatures.Create("creatureType", creatureData, this.dinoTexture, 1, 3, this.dstWidth, this.dstHeight, this.typeTransform, 1.0 );
+	this.creatures.create("creatureType", creatureData, this.dinoTexture, 1, 3, this.dstWidth, this.dstHeight, this.typeTransform, 1.0 );
 
 	// add an instance of the creature to the creature handler
-	this.creatures.Add(
+	this.creatures.add(
 			"creatureType",				// the type name used in Create
 			pbRenderer.width * 0.5, 	// x
 			pbRenderer.height * 0.5,	// y
@@ -175,7 +175,7 @@ pbCreatureAssist.prototype.destroy = function()
 	console.log("pbCreatureAssist.destroy");
 
 	if (this.creatures)
-		this.creatures.Destroy();
+		this.creatures.destroy();
 	this.creatures = null;
 
 	this.dinoTexture = null;
@@ -223,7 +223,7 @@ pbCreatureAssist.prototype.update = function()
 
 		// create the new transform
 	    this.typeTransform = pbMatrix3.makeTransform(this.xpos, this.ypos, this.rot, this.scale, this.scale);
-	    this.creatures.Adjust("creatureType", this.typeTransform);
+	    this.creatures.adjust("creatureType", this.typeTransform);
 
 	    // update the UI display
 		this.text.changeLine(this.x_text, "x position: " + this.xpos.toFixed(3));
@@ -236,7 +236,7 @@ pbCreatureAssist.prototype.update = function()
 
 	// update the creatures and render them to GPU textures
 	var e = this.renderer.rootTimer.elapsedTime;
-	this.creatures.Update(e / 1000 * 2.0);
+	this.creatures.update(e / 1000 * 2.0);
 
 	// render to the display from now on (pbRenderer.update: rootLayer.update)
 	// without this all other sprites in the scene will render to the last bound texture
@@ -255,7 +255,7 @@ pbCreatureAssist.prototype.update = function()
 pbCreatureAssist.prototype.postUpdate = function()
 {
 	// get all the creature instances
-	var list = this.creatures.GetAll();
+	var list = this.creatures.getAll();
 
 	// we're only showing one...
 	var o = list[0];

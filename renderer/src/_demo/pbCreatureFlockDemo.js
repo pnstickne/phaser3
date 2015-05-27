@@ -1,6 +1,13 @@
 /**
  *
- * "Creature" animation system demo showing a flock of dinosaurs
+ * "Creature" animation system demo showing a flock of dinosaurs.
+ * 
+ * This example shows how to use the pbCreatureHandler class to simplify the creation and management
+ * of multiple types and instances of each Creature.
+ * Each "type" is rendered to a texture once per frame.
+ * Each "instance" is a separate sprite object that uses the render-to-texture of a "type".
+ * This allows us to have dozens of instances of two dino types with very low CPU/GPU requirements.
+ * 
  *
  * Utah Raptor original image
  * from: https://commons.wikimedia.org/wiki/Category:Utahraptor#/media/File:Utahraptor_updated.png
@@ -98,11 +105,11 @@ pbCreatureFlockDemo.prototype.create = function()
 	// create a transform to be applied when drawing each creature to it's render-to-texture on the GPU
 	// this controls the offset, rotation and size of the creature's raw sprite source
     var transform = pbMatrix3.makeTransform(-0.34, 0.63, 0.0, -0.048, 0.048);
-	this.creatures.Create("big_dino", dino2Data, this.dino2Texture, 1, 2, 512, 256, transform, 1.0 );
+	this.creatures.create("big_dino", dino2Data, this.dino2Texture, 1, 2, 512, 256, transform, 1.0 );
 
 	// add the small dino type (numbers obtained from creatureAssist utility)
     transform = pbMatrix3.makeTransform(-0.73, 0.85, 0.0, 0.013, 0.013);
-	this.creatures.Create("little_dino", dinoData, this.dinoTexture, 3, 4, 256, 128, transform, 2.0 );
+	this.creatures.create("little_dino", dinoData, this.dinoTexture, 3, 4, 256, 128, transform, 2.0 );
 
 	// make the flock
 	this.makeFlock(30);
@@ -164,7 +171,7 @@ pbCreatureFlockDemo.prototype.makeFlock = function(_flockSize)
 
 		// handy scaling factor to create a fake depth illusion with perspective
 		var pcent = i / (_flockSize - 1);
-		this.creatures.Add(
+		this.creatures.add(
 				name,
 				pbRenderer.width + 350 + Math.random() * 800, // x
 				pbRenderer.height * 0.30 + pbRenderer.height * 0.40 * pcent,  // y
@@ -180,13 +187,7 @@ pbCreatureFlockDemo.prototype.update = function()
 {
 	// update the creatures and render them to GPU textures
 	var e = this.renderer.rootTimer.elapsedTime;
-	this.creatures.Update(e / 1000 * 2.0);
-
-	// render to the display from now on (pbRenderer.update: rootLayer.update)
-	// without this all other sprites in the scene will render to the last bound texture
-	// TODO: this should be parameterised in pbRenderer and set before the rootLayer.update call
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	this.creatures.update(e / 1000 * 2.0);
 };
 
 
@@ -199,7 +200,7 @@ pbCreatureFlockDemo.prototype.update = function()
 pbCreatureFlockDemo.prototype.postUpdate = function()
 {
 	// get all the creature instances
-	var list = this.creatures.GetAll();
+	var list = this.creatures.getAll();
 
 	// sort them into descending y coordinates to preserve depth illusion
 	list.sort(function(first, second) {
