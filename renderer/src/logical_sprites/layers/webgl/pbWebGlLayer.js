@@ -98,3 +98,34 @@ pbWebGlLayer.prototype.update = function(_dictionary)
 
 	return true;
 };
+
+
+pbWebGlLayer.prototype.draw = function(_list)
+{
+	var obj = _list[0];
+
+	if (obj.image)
+	{
+		var srf = obj.image.surface;
+		if (srf)
+		{
+			if (obj.image.surface.frameBuffer)
+				gl.bindFramebuffer(gl.FRAMEBUFFER, _fb);
+			else
+				gl.bindFramebuffer(gl.FRAMEBUFFER, this.renderer.useFramebuffer);
+			if (obj.image.surface.renderBuffer)
+				gl.bindRenderbuffer(gl.RENDERBUFFER, _rb);	
+			else
+				gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderer.useRenderbuffer);
+		}
+
+		// is this surface a render-to-texture?
+		if (srf.rttTexture)
+		{
+			
+		}
+	}
+
+	this.super(pbWebGlLayer, 'draw', _list);
+};
+

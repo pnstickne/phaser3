@@ -18,11 +18,16 @@ function pbSurface()
 	this.imageData = null;
 	this.cellTextureBounds = null;
 	this.isNPOT = false;
+
+	this.frameBuffer = null;
+	this.renderBuffer = null;
+	this.rttTexture = null;
 }
 
 
-pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageData)
+pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageData, _rttTexture)
 {
+	if (_rttTexture === undefined) _rttTexture = null;
 	if (_wide === 0) _wide = _imageData.width;
 	if (_high === 0) _high = _imageData.height;
 	
@@ -30,6 +35,8 @@ pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageDa
 	this.cellHigh = _high;
 	this.cellsWide = _numWide;
 	this.cellsHigh = _numHigh;
+
+	this.rttTexture = _rttTexture;
 	this.imageData = _imageData;
 	this.isNPOT = !(is_power_of_2(_imageData.width) && is_power_of_2(_imageData.height));
 
@@ -65,6 +72,25 @@ pbSurface.prototype.destroy = function()
 {
 	this.imageData = null;
 	this.cellTextureBounds = null;
+};
+
+
+/**
+ * setBuffers - set buffer information for the batch renderer (currently webgl only)
+ * 
+ * The batch renderer automatically batches all same-surface sprites and draws them together.
+ * By allowing each surface to specify a frame-buffer and a render-buffer we permit complex
+ * scenes to be created where elements are drawn to different texture destinations.
+ *
+ * TODO: canvas doesn't currently need this, consider splitting this class into base, webgl and canvas versions.
+ *
+ * @param {[type]} _fb [description]
+ * @param {[type]} _rb [description]
+ */
+pbSurface.prototype.setBuffers = function(_fb, _rb)
+{
+	this.frameBuffer = _fb;
+	this.renderBuffer = _rb;
 };
 
 
