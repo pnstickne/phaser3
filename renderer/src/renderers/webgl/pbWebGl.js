@@ -156,9 +156,11 @@ pbWebGl.prototype.fillStyle = function(_fillColor, _lineColor)
 
 
 // test for webgl drawing basics
-pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
+pbWebGl.prototype.fillRect = function( x, y, wide, high, color, targetWidth, targetHeight )
 {
 	// console.log( "pbWebGl.fillRect" );
+	if (targetWidth === undefined) targetWidth = pbRenderer.width;
+	if (targetHeight === undefined) targetHeight = pbRenderer.height;
 
 	this.shaders.setProgram(this.shaders.graphicsShaderProgram);
 
@@ -177,17 +179,17 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgVertexBuffer );
 	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( vertices ), gl.STATIC_DRAW );
 
-	color.r /= 255.0;
-	color.g /= 255.0;
-	color.b /= 255.0;
-	color.a /= 255.0;
+	var r = color.r / 255.0;
+	var g = color.g / 255.0;
+	var b = color.b / 255.0;
+	var a = color.a / 255.0;
 	
 	var colors =
 	[
-		color.r, color.g, color.b, color.a,
-		color.r, color.g, color.b, color.a,
-		color.r, color.g, color.b, color.a,
-		color.r, color.g, color.b, color.a
+		r,g,b,a,
+		r,g,b,a,
+		r,g,b,a,
+		r,g,b,a
 	];
 
 	this.bgColorBuffer = gl.createBuffer();
@@ -201,16 +203,18 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color )
 	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgColorBuffer );
 	gl.vertexAttribPointer( this.shaders.getAttribute( "aColor" ), 4, gl.FLOAT, gl.FALSE, 0, 0 );
 
-	gl.uniform2f( this.shaders.getUniform( "resolution" ), pbRenderer.width, pbRenderer.height );
+	gl.uniform2f( this.shaders.getUniform( "resolution" ), targetWidth, targetHeight );
 
 	gl.drawArrays( gl.TRIANGLE_STRIP, 0, this.bgVertexBuffer.numPoints );
 };
 
 
 // test for webgl drawing basics
-pbWebGl.prototype.drawRect = function( x, y, wide, high, color )
+pbWebGl.prototype.drawRect = function( x, y, wide, high, color, targetWidth, targetHeight )
 {
 	// console.log( "pbWebGl.drawRect" );
+	if (targetWidth === undefined) targetWidth = pbRenderer.width;
+	if (targetHeight === undefined) targetHeight = pbRenderer.height;
 
 	// TODO: this is the only line that differs from fillRect... merge them
 	this.shaders.setProgram(this.shaders.lineShaderProgram);
@@ -230,16 +234,17 @@ pbWebGl.prototype.drawRect = function( x, y, wide, high, color )
 	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgVertexBuffer );
 	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( vertices ), gl.STATIC_DRAW );
 
-	color.r /= 255.0;
-	color.g /= 255.0;
-	color.b /= 255.0;
-	color.a /= 255.0;
-	gl.uniform4fv( this.shaders.getUniform( "uColor" ), [ color.r, color.g, color.b, color.a ] );
+	var r = color.r / 255.0;
+	var g = color.g / 255.0;
+	var b = color.b / 255.0;
+	var a = color.a / 255.0;
+	
+	gl.uniform4fv( this.shaders.getUniform( "uColor" ), [ r,g,b,a ] );
 
 	gl.bindBuffer( gl.ARRAY_BUFFER, this.bgVertexBuffer );
 	gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 2, gl.FLOAT, gl.FALSE, 0, 0 );
 
-	gl.uniform2f( this.shaders.getUniform( "resolution" ), pbRenderer.width, pbRenderer.height );
+	gl.uniform2f( this.shaders.getUniform( "resolution" ), targetWidth, targetHeight );
 
 	gl.lineWidth(1.0);
 	// TODO: use LINESTRIP
@@ -250,18 +255,16 @@ pbWebGl.prototype.drawRect = function( x, y, wide, high, color )
 // TODO: third wave of pbWebGL optimisation... these drawing functions are tied to the shaders that support them, maybe set a currentProgram attribute callback?  Definitely need to move these out into their own files.
 
 // single image instances from pbWebGlLayer
-pbWebGl.prototype.drawImageWithTransform = function( _textureNumber, _image, _transform, _z )
+pbWebGl.prototype.drawImageWithTransform = function( _srcTextureRegister, _image, _transform, _z )
 {
-	// console.log("drawImageWithTransform", _image);
-
-	this.shaders.setProgram(this.shaders.imageShaderProgram, _textureNumber);
+	this.shaders.setProgram(this.shaders.imageShaderProgram, _srcTextureRegister);
 
 	if (!this.positionBuffer)
 		this.prepareBuffer();
 
 	var surface = _image.surface;
-	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
-		this.shaders.prepare(_textureNumber);
+	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT, _srcTextureRegister ))
+		this.shaders.prepare(_srcTextureRegister);
 
 	// split off a small part of the big buffer, for a single display object
 	var buffer = this.drawingArray.subarray(0, 16);
@@ -331,7 +334,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _textureNumber, _image, _tr
     gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
 
 	// bind the source texture
-	gl.activeTexture(gl.TEXTURE0 + _textureNumber);
+	gl.activeTexture(gl.TEXTURE0 + _srcTextureRegister);
     gl.bindTexture(gl.TEXTURE_2D, this.textures.currentSrcTexture);
 
 	// send the transform matrix to the vector shader
@@ -364,6 +367,7 @@ pbWebGl.prototype.drawTextureWithTransform = function( _textureNumber, _texture,
 		this.prepareBuffer();
 
 	// _texture, _tiling, _npot, _textureNumber
+// TODO: set correct values for _tiling and _npot instead of hard-wiring them here
 	this.textures.prepareOnGPU(_texture, false, true, _textureNumber);
 	this.shaders.prepare(_textureNumber);
 
@@ -496,121 +500,6 @@ pbWebGl.prototype.applyShaderToTexture = function(_textureNumber, _srcTexture, _
 	gl.enableVertexAttribArray(0);
 	gl.drawArrays(gl.TRIANGLES, 0, 3 * 2);	// three vertices per tri, two tris
 };
-
-
-/**
- * drawImageToTextureWithTransform - draw images to a render texture
- * - after each call the framebuffer is released, so no further action is required when rendering to texture is completed
- *
- * @param  {[type]} _width     - size of the texture to render to
- * @param  {[type]} _height    - size of the texture to render to
- * @param  {[type]} _image     - the image to render
- * @param  {[type]} _transform - the transform matrix for the image
- * @param  {[type]} _z         - the depth value for the image
- */
-// single image instances from pbWebGlLayer drawn to a texture
-pbWebGl.prototype.drawImageToTextureWithTransform = function( _textureNumber, _width, _height, _image, _transform, _z )
-{
-	this.shaders.setProgram(this.shaders.imageShaderProgram, _textureNumber);
-
-	// create the source texture and initialise webgl (once only)
-	var surface = _image.surface;
-	if (this.textures.prepare( surface.imageData, _image.tiling, surface.isNPOT ))
-	{
-		this.prepareBuffer();
-		this.shaders.prepare(_textureNumber);
-	}
-
-	// set up the source imageData as the render source
-	this.textures.setRenderSourceImage( _textureNumber, surface.imageData );
-
-	// create the destination texture
-	this.textures.setRenderTargetToTexture(_width, _height);
-
-	// this indented block is identical to part of drawImageWithTransform...
-	// TODO: how many of these are there? Worth adding a function? DRY
-
-		// split off a small part of the big buffer, for a single display object
-		var buffer = this.drawingArray.subarray(0, 16);
-
-		// set up the animation frame
-		var cell = Math.floor(_image.cellFrame);
-		var rect = surface.cellTextureBounds[cell % surface.cellsWide][Math.floor(cell / surface.cellsWide)];
-
-		var wide, high;
-		if (_image.fullScreen)
-		{
-			rect.width = gl.drawingBufferWidth / surface.cellWide;
-			rect.height = gl.drawingBufferHeight / surface.cellHigh;
-			wide = gl.drawingBufferWidth;
-			high = gl.drawingBufferHeight;
-		}
-		else
-		{
-			// half width, half height (of source frame)
-			wide = surface.cellWide;
-			high = surface.cellHigh;
-		}
-
-		// screen destination position
-		// l, b,		0,1
-		// l, t,		4,5
-		// r, b,		8,9
-		// r, t,		12,13
-		var l, r, t, b;
-		if (_image.corners)
-		{
-			var cnr = _image.corners;
-			l = -wide * _image.anchorX;
-			r = wide + l;
-			t = -high * _image.anchorY;
-			b = high + t;
-			// object has corner offets (skewing/perspective etc)
-			buffer[ 0 ] = cnr.lbx * l; buffer[ 1 ] = cnr.lby * b;
-			buffer[ 4 ] = cnr.ltx * l; buffer[ 5 ] = cnr.lty * t;
-			buffer[ 8 ] = cnr.rbx * r; buffer[ 9 ] = cnr.rby * b;
-			buffer[ 12] = cnr.rtx * r; buffer[ 13] = cnr.rty * t;
-		}
-		else
-		{
-			l = -wide * _image.anchorX;
-			r = wide + l;
-			t = -high * _image.anchorY;
-			b = high + t;
-			buffer[ 0 ] = buffer[ 4 ] = l;
-			buffer[ 1 ] = buffer[ 9 ] = b;
-			buffer[ 8 ] = buffer[ 12] = r;
-			buffer[ 5 ] = buffer[ 13] = t;
-		}
-
-		// texture source position
-		// x, b,		2,3
-		// x, y,		6,7
-		// r, b,		10,11
-		// r, y,		14,15
-		buffer[ 2 ] = buffer[ 6 ] = rect.x;
-		buffer[ 3 ] = buffer[ 11] = rect.y + rect.height;
-		buffer[ 10] = buffer[ 14] = rect.x + rect.width;
-		buffer[ 7 ] = buffer[ 15] = rect.y;
-
-	    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
-
-		// send the transform matrix to the vector shader
-		gl.uniformMatrix3fv( this.shaders.getUniform( "uModelMatrix" ), false, _transform );
-
-		// set the depth value
-	   	gl.uniform1f( this.shaders.getUniform( "uZ" ), _z );
-
-		// point the position attribute at the last bound buffer
-	    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
-
-	    // four vertices per quad, one quad
-	    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-   	// cease rendering to the render texture
-   	this.textures.stopRenderTexture();
-};
-
 
 
 // single image instances from pbWebGlLayer
