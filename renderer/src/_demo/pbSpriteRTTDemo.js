@@ -1,12 +1,15 @@
 /**
  *
- * Demo showing Sprites which use render-to-texture as their sources, for the new Phaser 3 renderer.
+ * Demo showing sprites which use render-to-texture as their sources, for the new Phaser 3 renderer.
  *
+ * This demo illustrates how to render to a texture then attach that texture to a pbSurface.
+ * From there on the rest of creating a pbImage and displaying pbTransformObject transformations of
+ * it is exactly the same as the pbTransforms demo... proving that the render-to-texture now fits
+ * seamlessly into the rendering engine.
+ * 
  */
 
 
-
-// created while the data is loading (preloader)
 function pbSpriteRTTDemo( docId )
 {
 	console.log( "pbSpriteRTTDemo c'tor entry" );
@@ -35,7 +38,7 @@ pbSpriteRTTDemo.prototype.create = function()
 {
 	console.log("pbSpriteRTTDemo.create");
 
-	// render the loaded image to a texture
+	// render the loaded image to a texture and create a pbSurface to hold it
 	this.renderToTexture();
 
 	// add some sprites that use the rendered texture for their source
@@ -92,13 +95,16 @@ pbSpriteRTTDemo.prototype.renderToTexture = function()
 	// draw the loaded image into the render-to-texture
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
 	gl.bindRenderbuffer(gl.RENDERBUFFER, this.rttRenderbuffer);
+	// TODO: setting the viewport to the texture size means everything has to be scaled up to compensate... try to find another way
 	gl.viewport(0, 0, this.rttTexture.width, this.rttTexture.height);
-	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-	this.renderer.graphics.drawImageWithTransform( srcTextureRegister, img, pbMatrix3.makeTransform(pbRenderer.width/2 , pbRenderer.height/2, 0, pbRenderer.width/this.rttTexture.width, pbRenderer.height/this.rttTexture.height), 1.0 );
+	// offset to the middle of the texture and scale it up
+	// TODO: despite the viewport scaling, we have to use pbRenderer.width and height for the offset... why??
+	var transform = pbMatrix3.makeTransform(pbRenderer.width/2 , pbRenderer.height/2, 0, pbRenderer.width/this.rttTexture.width, pbRenderer.height/this.rttTexture.height);
+	this.renderer.graphics.drawImageWithTransform( srcTextureRegister, img, transform, 1.0 );
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
-	// create a render-to-texture surface using the render-to-texture texture
+	// create a surface using the render-to-texture texture as the source
 	this.rttSurface = new pbSurface();
 	this.rttSurface.create(0, 0, 1, 1, null, this.rttTexture, this.rttTextureRegister);
 };

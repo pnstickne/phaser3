@@ -1343,6 +1343,154 @@ pbWebGl.prototype.rawBatchDrawImages = function( _textureNumber, _list )
 };
 
 
+// Used by pbBaseGlLayer for multiple sprite instances using GPU texture sources
+// Sends transform matrix elements to gl.
+// _list object format: { image: pbImage, transform: pbMatrix3, z_order: Number }
+pbWebGl.prototype.rawBatchDrawTextures = function( _list )
+{
+	var surface = _list[0].image.surface;
+	var srcTexture = surface.rttTexture;
+	var srcTextureRegister = surface.rttTextureRegister;
+
+	this.shaders.setProgram(this.shaders.rawBatchImageShaderProgram, srcTextureRegister);
+
+	if (!this.positionBuffer)
+		this.prepareBuffer();
+
+	this.textures.prepareOnGPU( srcTexture, _list[0].image.tiling, _list[0].image.isNPOT, srcTextureRegister );
+	this.shaders.prepare(srcTextureRegister);
+
+	// TODO: generate warning if length is capped
+	var len = Math.min(_list.length, MAX_SPRITES);
+	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
+    var buffer = this.drawingArray.subarray(0, len * (44 + 22) - 22);
+
+	var wide, high;
+	// half width, half height (of source frame)
+	wide = srcTexture.width;
+	high = srcTexture.height;
+
+    var l, r, t, b;
+
+	for ( var i = -1, c = 0; ++i < len; c += 44 )
+	{
+		var obj = _list[i];
+		var img = obj.image;
+
+		// set up texture reference coordinates based on the image frame number
+		var cell = Math.floor(img.cellFrame);
+		var cx = cell % surface.cellsWide;
+		var cy = Math.floor(cell / surface.cellsWide);
+		var rect = surface.cellTextureBounds[cx][cy];
+		if (!rect)
+			console.log("ERROR: invalid cellFrame", cx, cy);
+		var tex_x = rect.x;
+		var tex_y = rect.y;
+		var tex_r = rect.x + rect.width;
+		var tex_b = rect.y + rect.height;
+
+		if ( i > 0)
+		{
+			// degenerate triangle: repeat the last vertex and the next vertex
+			// 
+			// screen destination position
+			buffer[ c     ] = buffer[ c - 44 + 33 ];
+			buffer[ c + 1 ] = buffer[ c - 44 + 34 ];
+
+			// last transform matrix
+			buffer[ c + 4 ] = buffer[ c + 4  - 44 ];
+			buffer[ c + 5 ] = buffer[ c + 5  - 44 ];
+			buffer[ c + 6 ] = buffer[ c + 6  - 44 ];
+			buffer[ c + 7 ] = buffer[ c + 7  - 44 ];
+			buffer[ c + 8 ] = buffer[ c + 8  - 44 ];
+			buffer[ c + 9 ] = buffer[ c + 9  - 44 ];
+			buffer[ c + 10] = buffer[ c + 10 - 44 ];
+
+			c += 22;
+		}
+
+		// screen destination position
+		// l, b,		0,1
+		// l, t,		11,12
+		// r, b,		22,23
+		// r, t,		33,34
+		if (img.corners)
+		{
+			var cnr = img.corners;
+			l = -wide * img.anchorX;
+			r = wide + l;
+			t = -high * img.anchorY;
+			b = high + t;
+			// object has corner offets (skewing/perspective etc)
+			buffer[ c     ] = cnr.lbx * l; buffer[ c + 1 ] = cnr.lby * b;
+			buffer[ c + 11] = cnr.ltx * l; buffer[ c + 12] = cnr.lty * t;
+			buffer[ c + 22] = cnr.rbx * r; buffer[ c + 23] = cnr.rby * b;
+			buffer[ c + 33] = cnr.rtx * r; buffer[ c + 34] = cnr.rty * t;
+		}
+		else
+		{
+			l = -wide * img.anchorX;
+			r = wide + l;
+			t = -high * img.anchorY;
+			b = high + t;
+			buffer[ c     ] = l; buffer[ c + 1 ] = b;
+			buffer[ c + 11] = l; buffer[ c + 12] = t;
+			buffer[ c + 22] = r; buffer[ c + 23] = b;
+			buffer[ c + 33] = r; buffer[ c + 34] = t;
+		}
+
+		// texture source position
+		// l, b,		2,3
+		// l, t,		13,14
+		// r, b,		24,25
+		// r, t,		35,36
+		buffer[ c + 2 ] = buffer[ c + 13] = tex_x;		// l
+		buffer[ c + 3 ] = buffer[ c + 25] = tex_b;		// b
+		buffer[ c + 24] = buffer[ c + 35] = tex_r;		// r
+		buffer[ c + 14] = buffer[ c + 36] = tex_y;		// t
+
+
+		if ( i > 0 )
+		{
+			// next transform matrix for degenerate triangle preceding this entry
+
+			// destination corner (left, bottom)
+			buffer[ c - 22 + 11] = buffer[ c     ];
+			buffer[ c - 22 + 12] = buffer[ c + 1 ];
+
+			// model matrix and z_order
+			buffer[ c - 22 + 15 ] = buffer[ c + 4 ] = buffer[ c + 15] = buffer[ c + 26] = buffer[ c + 37] = obj.transform[0];
+			buffer[ c - 22 + 16 ] = buffer[ c + 5 ] = buffer[ c + 16] = buffer[ c + 27] = buffer[ c + 38] = obj.transform[1];
+			buffer[ c - 22 + 17 ] = buffer[ c + 6 ] = buffer[ c + 17] = buffer[ c + 28] = buffer[ c + 39] = obj.transform[3];
+			buffer[ c - 22 + 18 ] = buffer[ c + 7 ] = buffer[ c + 18] = buffer[ c + 29] = buffer[ c + 40] = obj.transform[4];
+			buffer[ c - 22 + 19 ] = buffer[ c + 8 ] = buffer[ c + 19] = buffer[ c + 30] = buffer[ c + 41] = obj.transform[6];
+			buffer[ c - 22 + 20 ] = buffer[ c + 9 ] = buffer[ c + 20] = buffer[ c + 31] = buffer[ c + 42] = obj.transform[7];
+			buffer[ c - 22 + 21 ] = buffer[ c + 10] = buffer[ c + 21] = buffer[ c + 32] = buffer[ c + 43] = obj.z_order;
+		}
+		else
+		{
+			// model matrix and z_order (no degenerate triangle preceeds the first triangle in the strip)
+			buffer[ c + 4 ] = buffer[ c + 15] = buffer[ c + 26] = buffer[ c + 37] = obj.transform[0];
+			buffer[ c + 5 ] = buffer[ c + 16] = buffer[ c + 27] = buffer[ c + 38] = obj.transform[1];
+			buffer[ c + 6 ] = buffer[ c + 17] = buffer[ c + 28] = buffer[ c + 39] = obj.transform[3];
+			buffer[ c + 7 ] = buffer[ c + 18] = buffer[ c + 29] = buffer[ c + 40] = obj.transform[4];
+			buffer[ c + 8 ] = buffer[ c + 19] = buffer[ c + 30] = buffer[ c + 41] = obj.transform[6];
+			buffer[ c + 9 ] = buffer[ c + 20] = buffer[ c + 31] = buffer[ c + 42] = obj.transform[7];
+			buffer[ c + 10] = buffer[ c + 21] = buffer[ c + 32] = buffer[ c + 43] = obj.z_order;
+		}
+	}
+
+	// point the attributes at the buffer (stride and offset are in bytes, there are 4 bytes per gl.FLOAT)
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ),     4, gl.FLOAT, false, 11 * 4,  0 * 4 );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aModelMatrix0" ), 2, gl.FLOAT, false, 11 * 4,  4 * 4 );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aModelMatrix1" ), 2, gl.FLOAT, false, 11 * 4,  6 * 4 );
+	gl.vertexAttribPointer( this.shaders.getAttribute( "aModelMatrix2" ), 3, gl.FLOAT, false, 11 * 4,  8 * 4 );
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, len * 6 - 2);		// four vertices per sprite plus two degenerate points, except for the last one
+};
+
+
 pbWebGl.prototype.reset = function()
 {
     gl.bindBuffer( gl.ARRAY_BUFFER, null );

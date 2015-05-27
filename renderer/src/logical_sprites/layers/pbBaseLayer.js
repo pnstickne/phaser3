@@ -79,7 +79,7 @@ pbBaseLayer.prototype.draw = function(_list)
 	var obj = _list[0];
 	var srf = obj.image.surface;
 	
-	if (_list.length === 1 || srf.rttTexture)
+	if (_list.length === 1)
 	{
 		if (srf.rttTexture)
 		{
@@ -106,11 +106,20 @@ pbBaseLayer.prototype.draw = function(_list)
 	}
 	else if (obj.image.isParticle)
 	{
+		// NOTE: use of TEXTURE0 is hard-wired for general sprite drawing
 		this.renderer.graphics.blitDrawImages( 0, _list, obj.image.surface );
 	}
 	else
 	{
-		this.renderer.graphics.rawBatchDrawImages( 0, _list );
+		if (srf.rttTexture)
+		{
+			this.renderer.graphics.rawBatchDrawTextures( _list );
+		}
+		else
+		{
+			// NOTE: use of TEXTURE0 is hard-wired for general sprite drawing
+			this.renderer.graphics.rawBatchDrawImages( 0, _list );
+		}
 	}
 };
 
