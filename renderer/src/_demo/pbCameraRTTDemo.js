@@ -142,6 +142,6 @@ pbCameraRTTDemo.prototype.postUpdate = function()
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
 	// _image, _transform, _z
-	this.renderer.graphics.drawTextureWithTransform( 4, this.rttTexture, this.transform, 1.0 );
+	this.renderer.graphics.drawTextureWithTransform( this.textureNumber, this.rttTexture, this.transform, 1.0 );
 };
 
