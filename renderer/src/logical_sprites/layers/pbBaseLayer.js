@@ -77,15 +77,27 @@ pbBaseLayer.prototype.update = function(_drawList)
 pbBaseLayer.prototype.draw = function(_list)
 {
 	var obj = _list[0];
+	var srf = obj.image.surface;
 	
-	if (_list.length === 1)
+	if (_list.length === 1 || srf.rttTexture)
 	{
-		if (obj.image.isModeZ)
+		if (srf.rttTexture)
+		{
+			this.renderer.graphics.drawTextureWithTransform( srf.rttTextureRegister, srf.rttTexture, obj.transform, obj.z_order, { x:0.5, y:1.0 } );
+		}
+		else if (obj.image.isModeZ)
+		{
 			this.renderer.graphics.drawModeZ( 0, obj.image, obj.transform, obj.z_order );
+		}
 		else if (obj.image.is3D)
+		{
 			this.renderer.graphics.drawImageWithTransform3D( 0, obj.image, obj.transform, obj.z_order );
+		}
 		else if (obj.image.toTexture != -1)
+		{
+			// TODO: fix hard-wired width,height
 			this.renderer.graphics.drawImageToTextureWithTransform( 0, obj.image.toTexture, 256, 256, obj.image, obj.transform, obj.z_order );
+		}
 		else
 		{
 			// NOTE: use of TEXTURE0 is hard-wired for general sprite drawing
