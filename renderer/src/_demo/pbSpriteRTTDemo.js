@@ -16,22 +16,12 @@ function pbSpriteRTTDemo( docId )
 
 	var _this = this;
 
-	this.docId = docId;
-
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "ball", "../img/sphere3.png" );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( useRenderer, this.create, this.update, this );
+	this.spriteImg = pbPhaserRender.loader.loadImage( "ball", "../img/sphere3.png" );
 
 	console.log( "pbSpriteRTTDemo c'tor exit" );
 }
-
-
-pbSpriteRTTDemo.prototype.allLoaded = function()
-{
-	console.log( "pbSpriteRTTDemo.allLoaded" );
-
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
-};
 
 
 pbSpriteRTTDemo.prototype.create = function()
@@ -56,8 +46,8 @@ pbSpriteRTTDemo.prototype.destroy = function()
 	this.rttSurface.destroy();
 	this.rttSurface = null;
 
-	this.renderer.destroy();
-	this.renderer = null;
+	this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 
@@ -75,7 +65,7 @@ pbSpriteRTTDemo.prototype.renderToTexture = function()
 	console.log("pbSpriteRTTDemo.renderToTexture");
 
 	// get the loaded image into a surface and create an image to hold it
-	var imageData = this.loader.getFile( this.spriteImg );
+	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
 	this.surface.create(0, 0, 1, 1, imageData);
 	var img = new imageClass();
@@ -100,7 +90,7 @@ pbSpriteRTTDemo.prototype.renderToTexture = function()
 	// offset to the middle of the texture and scale it up
 	// TODO: despite the viewport scaling, we have to use pbRenderer.width and height for the offset... why??
 	var transform = pbMatrix3.makeTransform(pbRenderer.width/2 , pbRenderer.height/2, 0, pbRenderer.width/this.rttTexture.width, pbRenderer.height/this.rttTexture.height);
-	this.renderer.graphics.drawImageWithTransform( srcTextureRegister, img, transform, 1.0 );
+	pbPhaserRender.renderer.graphics.drawImageWithTransform( srcTextureRegister, img, transform, 1.0 );
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
