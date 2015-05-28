@@ -29,8 +29,8 @@ no longer used because: cameraRTT demo changed to leave the texture on the GPU a
 	//
 
 	// get the scene we just drew to the rttTexture into the prepared RAM surface
-	this.renderer.graphics.textures.prepareTextureForAccess(this.rttTexture);
-	this.renderer.graphics.textures.getTextureToSurface(this.textureSurface);
+	pbPhaserRender.renderer.graphics.textures.prepareTextureForAccess(this.rttTexture);
+	pbPhaserRender.renderer.graphics.textures.getTextureToSurface(this.textureSurface);
 	// make sure the new surface contents are uploaded to the GPU when it's time to draw
 	this.textureSurface.image.isDirty = true;
 */		
