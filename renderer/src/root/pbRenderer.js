@@ -44,11 +44,13 @@ pbRenderer.prototype.destroy = function( )
  *
  * TODO: expand for other graphics mode, ie. DOM sprites: http://buildnewgames.com/dom-sprites/
  */
-pbRenderer.prototype.create = function( _preferredRenderer, _canvas )
+pbRenderer.prototype.create = function( _preferredRenderer, _canvas, _gameContext )
 {
 	console.log("pbRenderer.create");
 
 	this.canvas = _canvas;
+	this.gameContext = _gameContext;
+	
 	// reset the canvas (erase its contents and set all properties to defaults)
 	this.canvas.width = this.canvas.width;
 

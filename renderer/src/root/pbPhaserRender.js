@@ -152,13 +152,18 @@ pbPhaserRender.prototype.destroy = function()
 
 pbPhaserRender.prototype.update = function()
 {
+	// TODO: I'd like to move this first conditional into an 'init' function
+	// 	need to solve the issues from async loading and DOM boot... we don't know which one will finish first
+	//  also needs to handle when there's no loading to be done
+	// 	it could be handled with a latch variable, but that's almost as ugly as this is
+
 	// if there was nothing to load, or the loading has completed...
 	if ((this.state === "create" && !pbPhaserRender.loader.stillLoading())
 			|| this.state === "loaded")
 	{
 		// create the renderer sub-system
 		pbPhaserRender.renderer = new pbRenderer( this );
-		pbPhaserRender.renderer.create( this.renderMode, pbPhaserRender.canvas );
+		pbPhaserRender.renderer.create( this.renderMode, pbPhaserRender.canvas, this.gameContext );
 
 		// create the rootLayer container for all graphics
 		rootLayer = new layerClass();
