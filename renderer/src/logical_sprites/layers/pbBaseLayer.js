@@ -11,7 +11,7 @@ function pbBaseLayer()
 
 	this.list = null;
 	this.parent = null;
-	this.renderer = null;
+	this.phaserRender = null;
 	this.clip = null;
 }
 
@@ -33,7 +33,7 @@ pbBaseLayer.prototype.create = function(_parent, _renderer, _x, _y, _z, _angleIn
 	// TODO: add pass-through option so that layers can choose not to inherit their parent's transforms and will use the rootLayer transform instead
 	// TODO: pbBaseLayer is rotating around it's top-left corner (because there's no width/height and no anchor point??)
 
-	this.renderer = _renderer;
+	this.phaserRender = _renderer;
 
 	this.parent = _parent;
 	this.list = [];
@@ -53,7 +53,7 @@ pbBaseLayer.prototype.destroy = function()
 
 	this.clip = null;
 
-	this.renderer = null;
+	this.phaserRender = null;
 
 	if (this.parent && this.parent.list)
 	{
@@ -83,42 +83,42 @@ pbBaseLayer.prototype.draw = function(_list)
 	{
 		if (srf.rttTexture)
 		{
-			this.renderer.graphics.drawTextureWithTransform( srf.rttTextureRegister, srf.rttTexture, obj.transform, obj.z_order, { x:0.5, y:1.0 } );
+			pbPhaserRender.renderer.graphics.drawTextureWithTransform( srf.rttTextureRegister, srf.rttTexture, obj.transform, obj.z_order, { x:0.5, y:1.0 } );
 		}
 		else if (obj.image.isModeZ)
 		{
-			this.renderer.graphics.drawModeZ( 0, obj.image, obj.transform, obj.z_order );
+			pbPhaserRender.renderer.graphics.drawModeZ( 0, obj.image, obj.transform, obj.z_order );
 		}
 		else if (obj.image.is3D)
 		{
-			this.renderer.graphics.drawImageWithTransform3D( 0, obj.image, obj.transform, obj.z_order );
+			pbPhaserRender.renderer.graphics.drawImageWithTransform3D( 0, obj.image, obj.transform, obj.z_order );
 		}
 		else if (obj.image.toTexture != -1)
 		{
 			// TODO: fix hard-wired width,height
-			this.renderer.graphics.drawImageToTextureWithTransform( 0, obj.image.toTexture, 256, 256, obj.image, obj.transform, obj.z_order );
+			pbPhaserRender.renderer.graphics.drawImageToTextureWithTransform( 0, obj.image.toTexture, 256, 256, obj.image, obj.transform, obj.z_order );
 		}
 		else
 		{
 			// NOTE: use of TEXTURE0 is hard-wired for general sprite drawing
-			this.renderer.graphics.drawImageWithTransform( 0, obj.image, obj.transform, obj.z_order );
+			pbPhaserRender.renderer.graphics.drawImageWithTransform( 0, obj.image, obj.transform, obj.z_order );
 		}
 	}
 	else if (obj.image.isParticle)
 	{
 		// NOTE: use of TEXTURE0 is hard-wired for general sprite drawing
-		this.renderer.graphics.blitDrawImages( 0, _list, obj.image.surface );
+		pbPhaserRender.renderer.graphics.blitDrawImages( 0, _list, obj.image.surface );
 	}
 	else
 	{
 		if (srf.rttTexture)
 		{
-			this.renderer.graphics.rawBatchDrawTextures( _list );
+			pbPhaserRender.renderer.graphics.rawBatchDrawTextures( _list );
 		}
 		else
 		{
 			// NOTE: use of TEXTURE0 is hard-wired for general sprite drawing
-			this.renderer.graphics.rawBatchDrawImages( 0, _list );
+			pbPhaserRender.renderer.graphics.rawBatchDrawImages( 0, _list );
 		}
 	}
 };
