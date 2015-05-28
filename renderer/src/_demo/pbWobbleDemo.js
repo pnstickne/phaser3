@@ -20,22 +20,9 @@ function pbWobbleDemo( docId )
 {
 	console.log( "pbWobbleDemo c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
-	// // dat.GUI controlled variables and callbacks
-	// this.useBatch = true;
-	// this.numSprites = 0;
-	// var gui = new dat.GUI();
-	// var numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
-	// numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
-	// var btcCtrl = gui.add(this, "useBatch");
-	// btcCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
-
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "image", "../img/screen1.jpg" );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( useRenderer, this.create, this.update, this );
+	this.spriteImg = pbPhaserRender.loader.loadImage( "image", "../img/screen1.jpg" );
 
 	console.log( "pbWobbleDemo c'tor exit" );
 }
@@ -45,7 +32,7 @@ pbWobbleDemo.prototype.allLoaded = function()
 {
 	console.log( "pbWobbleDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
@@ -64,8 +51,8 @@ pbWobbleDemo.prototype.destroy = function()
 	this.surface.destroy();
 	this.surface = null;
 
-	this.renderer.destroy();
-	this.renderer = null;
+	this.phaserRender.destroy();
+	this.phaserRender = null;
 
 	this.sprList = null;
 };
@@ -84,7 +71,7 @@ pbWobbleDemo.prototype.addSprites = function()
 {
 	console.log("pbWobbleDemo.addSprites");
 
-	var imageData = this.loader.getFile( this.spriteImg );
+	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
 	this.surface.create(80, 100, 10, 6, imageData);
 

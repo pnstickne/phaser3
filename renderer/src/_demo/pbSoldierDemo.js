@@ -40,6 +40,8 @@ pbSoldierDemo.prototype.create = function()
 	this.targety = 600 - 20;
 
 	this.spriteList = [];
+
+	this.addSprites(50);
 };
 
 

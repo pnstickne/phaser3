@@ -11,24 +11,12 @@ function pbTransformDemo( docId )
 {
 	console.log( "pbTransformDemo c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "ball", "../img/sphere3.png" );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( useRenderer, this.create, this.update, this );
+	this.spriteImg = pbPhaserRender.loader.loadImage( "ball", "../img/sphere3.png" );
 
 	console.log( "pbTransformDemo c'tor exit" );
 }
-
-
-pbTransformDemo.prototype.allLoaded = function()
-{
-	console.log( "pbTransformDemo.allLoaded" );
-
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
-};
 
 
 pbTransformDemo.prototype.create = function()
@@ -43,11 +31,12 @@ pbTransformDemo.prototype.destroy = function()
 {
 	console.log("pbTransformDemo.destroy");
 
-	this.surface.destroy();
+	if (this.surface)
+		this.surface.destroy();
 	this.surface = null;
 
-	this.renderer.destroy();
-	this.renderer = null;
+	this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 
@@ -65,7 +54,7 @@ pbTransformDemo.prototype.addSprites = function()
 	console.log("pbTransformDemo.addSprites");
 
 	// create animation data and set destination for movement
-	var imageData = this.loader.getFile( this.spriteImg );
+	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
 	this.surface.create(0, 0, 1, 1, imageData);
 

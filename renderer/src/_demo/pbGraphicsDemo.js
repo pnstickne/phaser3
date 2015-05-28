@@ -47,7 +47,7 @@ pbGraphicsDemo.prototype.restart = function()
 pbGraphicsDemo.prototype.update = function()
 {
    	// debug box
-   	this.phaserRender.graphics.drawRect(pbRenderer.width / 2, pbRenderer.height / 4, 100, 75, {r:0xff, g:0xff, b:0xff, a:0xff});
-   	this.phaserRender.graphics.fillRect(pbRenderer.width / 2, pbRenderer.height / 4 * 3, 100, 75, {r:0xff, g:0xff, b:0xff, a:0xff});
+   	pbPhaserRender.renderer.graphics.drawRect(pbRenderer.width / 2, pbRenderer.height / 4, 100, 75, {r:0xff, g:0xff, b:0xff, a:0xff});
+   	pbPhaserRender.renderer.graphics.fillRect(pbRenderer.width / 2, pbRenderer.height / 4 * 3, 100, 75, {r:0xff, g:0xff, b:0xff, a:0xff});
 };
 
