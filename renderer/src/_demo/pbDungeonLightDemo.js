@@ -106,7 +106,8 @@ pbDungeonLightDemo.prototype.create = function()
 	this.topLayer = new layerClass();
 	this.topLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
 
-    this.wiz = new pbSprite(32, 32, "wizard", this.topLayer);
+    this.wiz = new pbSprite();
+    this.wiz.createWithKey(32, 32, "wizard", this.topLayer);
     this.wiz.z = 0;
     this.wiz.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 50 };
     this.wiz.light = { x : 0, y : 0, r : 0.0, g : 0.0, b : 10.0, range : 0.40 };

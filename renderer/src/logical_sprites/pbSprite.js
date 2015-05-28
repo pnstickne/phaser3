@@ -6,26 +6,59 @@
 
 
 
+function pbSprite()
+{
+    this.layer = null;
+    this.textureObject = null;
+    this.surface = null;
+    this.image = null;
+    this.transform = null;
+}
 
-function pbSprite(_x, _y, _key, _layer)
+
+pbSprite.prototype.constructor = pbSprite;
+
+
+pbSprite.prototype.createWithKey = function(_x, _y, _key, _layer)
 {
     this.layer = _layer || null;
 
     // get the texture object from the textures dictionary using 'key'
     this.textureObject = textures.getFirst(_key);
     // set up easy access to the surface
-	this.surface = this.textureObject.surface;
-	// create an image holder and attach the surface
-	this.image = new imageClass();
-	this.image.create(this.surface);
-	// create a transform object for the image
-	this.transform = new pbTransformObject();
-	this.transform.create(this.image, _x, _y);
+    this.surface = this.textureObject.surface;
+    // create an image holder and attach the surface
+    this.image = new imageClass();
+    this.image.create(this.surface);
+    // create a transform object for the image
+    this.transform = new pbTransformObject();
+    this.transform.create(this.image, _x, _y);
 
-	// if a layer is specified, add the new object as a child of it
-	if (this.layer !== null)
-		this.layer.addChild(this.transform);
-}
+    // if a layer is specified, add the new object as a child of it
+    if (this.layer !== null)
+        this.layer.addChild(this.transform);
+};
+
+
+// pbSprite.prototype.createWithTexture = function(_x, _y, _texture, _layer)
+// {
+//     this.layer = _layer || null;
+
+//     // get the texture object from the textures dictionary using 'key'
+//     this.textureObject = textures.getFirst(_key);
+//     // set up easy access to the surface
+//     this.surface = this.textureObject.surface;
+//     // create an image holder and attach the surface
+//     this.image = new imageClass();
+//     this.image.create(this.surface);
+//     // create a transform object for the image
+//     this.transform = new pbTransformObject();
+//     this.transform.create(this.image, _x, _y);
+
+//     // if a layer is specified, add the new object as a child of it
+//     if (this.layer !== null)
+//         this.layer.addChild(this.transform);
+// };
 
 
 pbSprite.prototype.destroy = function()

@@ -109,7 +109,8 @@ pbLightDepthDemo.prototype.create = function()
 
 	// create the wizard
 	// NOTE: 'move' uses fixed point integers with three decimal places of precision (* 1000)
-    this.wiz = new pbSprite(32, 32, "wizard", this.topLayer);
+    this.wiz = new pbSprite();
+    this.wiz.createWithKey(32, 32, "wizard", this.topLayer);
     this.wiz.z = 0;
     this.wiz.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 50 };
     this.wiz.light = { x : this.wiz.surface.cellWide * 0.5, y : this.wiz.surface.cellHigh * 0.5, r : 0.0, g : 0.0, b : 8.0, range : 0.40 };
@@ -118,7 +119,8 @@ pbLightDepthDemo.prototype.create = function()
     this.enemy = [];
     for(var e = 0; e < 10; e++)
     {
-    	var enemy = new pbSprite(32, 32, "minotaur", this.topLayer);
+    	var enemy = new pbSprite();
+    	enemy.createWithKey(32, 32, "minotaur", this.topLayer);
 	    enemy.z = 0;
     	enemy.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 10 + Math.floor(Math.random() * 40) };
     	enemy.light = { x : enemy.surface.cellWide * 0.5, y : enemy.surface.cellHigh * 0.5, r : 0.50 + Math.random() * 0.5, g : 0.50 + Math.random() * 0.5, b : 0.0, range : 0.15 + e / 50.0 };
@@ -421,7 +423,8 @@ pbLightDepthDemo.prototype.shoot = function(who)
 {
 	if (this.bullets.length < 5)
 	{
-		var bullet = new pbSprite(32, 32, "bullet", this.topLayer);
+		var bullet = new pbSprite();
+		bullet.createWithKey(32, 32, "bullet", this.topLayer);
 		bullet.anchorX = bullet.anchorY = 0.5;
 	    bullet.z = 0;
 	    bullet.life = 60 * 5;

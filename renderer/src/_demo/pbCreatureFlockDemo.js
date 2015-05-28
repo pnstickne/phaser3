@@ -78,7 +78,8 @@ pbCreatureFlockDemo.prototype.create = function()
 	// background
 	if (textures.exists("field"))
 	{
-		this.bg = new pbSprite(0, 0, "field", rootLayer);
+		this.bg = new pbSprite();
+		this.bg.createWithKey(0, 0, "field", rootLayer);
 		this.bg.fullScreen = true;
 		this.bg.tiling = false;
 	}

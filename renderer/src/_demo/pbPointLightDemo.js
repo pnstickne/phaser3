@@ -65,7 +65,8 @@ pbPointLightDemo.prototype.create = function()
 	// draw a big logo shadow-caster
 	//
 
-	this.logo = new pbSprite(pbRenderer.width * 0.5, pbRenderer.height * 0.75, "logo");
+	this.logo = new pbSprite();
+	this.logo.createWithKey(pbRenderer.width * 0.5, pbRenderer.height * 0.75, "logo");
 	// TODO: this is pretty horrible... because the logo isn't attached to a layer (it is drawn separately in the update function),
 	// changes to its transform variables never get recalculated into the transform matrix.  Here I'm calling the transform.create
 	// function a second time (first time is in pbSprite) to force it to change scale and to set the z depth to zero.

@@ -103,13 +103,15 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	// background
 	if (textures.exists("stars"))
 	{
-		this.bg = new pbSprite(0, 0, "stars", this.layer);
+		this.bg = new pbSprite();
+		this.bg.createWithKey(0, 0, "stars", this.layer);
 		this.bg.fullScreen = true;
 		this.bg.tiling = true;
 	}
 
 	// player
-	this.player = new pbSprite(pbRenderer.width * 0.5, pbRenderer.height * 0.9, "player", this.layer);
+	this.player = new pbSprite();
+	this.player.createWithKey(pbRenderer.width * 0.5, pbRenderer.height * 0.9, "player", this.layer);
 	this.player.z = 0.0;
 	this.player.anchorX = 0.5;
 	this.player.anchorY = 0.5;
@@ -122,7 +124,8 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	var i;
 	for(i = 0; i < 100; i++)
 	{
-		var bullet = new pbSprite(0, 0, "bullet");
+		var bullet = new pbSprite();
+		bullet.createWithKey(0, 0, "bullet");
 		bullet.z = 0.0;
 		// anchor point at front of bullet for easy collisions...
 		bullet.anchorX = 0.5;
@@ -136,7 +139,8 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.rockets = [];			// list of rockets which are firing
 	for(i = 0; i < 100; i++)
 	{
-		var rocket = new pbSprite(0, 0, "rocket");
+		var rocket = new pbSprite();
+		rocket.createWithKey(0, 0, "rocket");
 		rocket.z = 0.0;
 		rocket.anchorX = 0.5;
 		rocket.anchorY = 0.5;
@@ -151,7 +155,8 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.bombs = [];			// list of bombs which are firing
 	for(i = 0; i < 100; i++)
 	{
-		var bomb = new pbSprite(0, 0, "bomb");
+		var bomb = new pbSprite();
+		bomb.createWithKey(0, 0, "bomb");
 		bomb.z = 0.0;
 		bomb.anchorX = 0.5;
 		bomb.anchorY = 0.5;
@@ -165,7 +170,8 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.explosions = [];
 	for(i = 0; i < 100; i++)
 	{
-		var explosion = new pbSprite(0, 0, "explosion");
+		var explosion = new pbSprite();
+		explosion.createWithKey(0, 0, "explosion");
 		explosion.z = 0.0;
 		explosion.anchorX = 0.5;
 		explosion.anchorY = 0.5;
@@ -179,7 +185,8 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	this.smokes = [];
 	for(i = 0; i < 200; i++)
 	{
-		var smoke = new pbSprite(0, 0, "smoke");
+		var smoke = new pbSprite();
+		smoke.createWithKey(0, 0, "smoke");
 		smoke.z = 0.0;
 		smoke.anchorX = 0.5;
 		smoke.anchorY = 0.5;
@@ -189,18 +196,22 @@ pbInvaderDemoCore.prototype.addSprites = function()
 	// display a 'frame' around the game instance
 	if (this.useFrame)
 	{
-		var sprite = new pbSprite(0, 0, "frame_l", this.uiLayer);
+		var sprite = new pbSprite();
+		sprite.createWithKey(0, 0, "frame_l", this.uiLayer);
 		sprite.z = 0.0;
 		
-		sprite = new pbSprite(0, 0, "frame_t", this.uiLayer);
+		sprite = new pbSprite();
+		sprite.createWithKey(0, 0, "frame_t", this.uiLayer);
 		sprite.z = 0.0;
 
-		sprite = new pbSprite(pbRenderer.width, 0, "frame_r", this.uiLayer);
+		sprite = new pbSprite();
+		sprite.createWithKey(pbRenderer.width, 0, "frame_r", this.uiLayer);
 		sprite.z = 0.0;
 		sprite.anchorX = 1.0;
 		sprite.anchorY = 0.0;
 
-		sprite = new pbSprite(0, pbRenderer.height, "frame_b", this.uiLayer);
+		sprite = new pbSprite();
+		sprite.createWithKey(0, pbRenderer.height, "frame_b", this.uiLayer);
 		sprite.z = 0.0;
 		sprite.anchorX = 0.0;
 		sprite.anchorY = 1.0;
@@ -215,7 +226,8 @@ pbInvaderDemoCore.prototype.addInvaders = function()
 	{
 		for(var x = 0; x < 12; x++)
 		{
-			var invader = new pbSprite(20 + x * 48, 80 + y * 48, "invader", this.shadowLayer);
+			var invader = new pbSprite();
+			invader.createWithKey(20 + x * 48, 80 + y * 48, "invader", this.shadowLayer);
 			invader.z = 0.0;
 			invader.anchorX = 0.5;
 			invader.anchorY = 0.5;

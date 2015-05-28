@@ -63,7 +63,8 @@ pbBlankDemo.prototype.addSprites = function()
 	console.log("pbBlankDemo.addSprites");
 
 	// add a single 'ball' sprite to the rootLayer
-	this.spr = new pbSprite(200, 200, "ball", rootLayer);
+	this.spr = new pbSprite();
+	this.spr.createWithKey(200, 200, "ball", rootLayer);
 };
 
 
