@@ -11,10 +11,6 @@ function pbPointLightDemo( docId )
 {
 	console.log( "pbPointLightDemo c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
 	this.gameLayer = null;
 	this.game = null;
 
@@ -22,11 +18,8 @@ function pbPointLightDemo( docId )
 	this.rttFramebuffer = null;
 	this.rttRenderbuffer = null;
 
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
-
-	this.pointLightShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/pointLightSources.json" );
-
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( 'webgl', this.create, this.update, this );
 	pbPhaserRender.loader.loadImage( "player", "../img/invader/player.png" );
 	pbPhaserRender.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
 	//pbPhaserRender.loader.loadImage( "stars", "../img/invader/starfield.png" );
@@ -37,20 +30,13 @@ function pbPointLightDemo( docId )
 	pbPhaserRender.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
 	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
 
+	this.pointLightShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/pointLightSources.json" );
 
 	pbPhaserRender.loader.loadImage( "logo", "../img/phaser_128x32.png" );
 
+
 	console.log( "pbPointLightDemo c'tor exit" );
 }
-
-
-pbPointLightDemo.prototype.allLoaded = function()
-{
-	console.log( "pbPointLightDemo.allLoaded" );
-
-	// callback to this.create when ready, callback to this.update once every frame
-	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
-};
 
 
 pbPointLightDemo.prototype.create = function()

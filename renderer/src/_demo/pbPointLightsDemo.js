@@ -11,10 +11,6 @@ function pbPointLightsDemo( docId )
 {
 	console.log( "pbPointLightsDemo c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
 	this.gameLayer = null;
 	this.game = null;
 
@@ -22,11 +18,8 @@ function pbPointLightsDemo( docId )
 	this.rttFramebuffer = null;
 	this.rttRenderbuffer = null;
 
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
-
-	this.multiLightShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/multiLightSources.json" );
-
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( 'webgl', this.create, this.update, this );
 	pbPhaserRender.loader.loadImage( "player", "../img/invader/player.png" );
 	pbPhaserRender.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
 	//pbPhaserRender.loader.loadImage( "stars", "../img/invader/starfield.png" );
@@ -37,17 +30,10 @@ function pbPointLightsDemo( docId )
 	pbPhaserRender.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
 	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
 
+	this.multiLightShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/multiLightSources.json" );
+
 	console.log( "pbPointLightsDemo c'tor exit" );
 }
-
-
-pbPointLightsDemo.prototype.allLoaded = function()
-{
-	console.log( "pbPointLightsDemo.allLoaded" );
-
-	// callback to this.create when ready, callback to this.update once every frame
-	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
-};
 
 
 pbPointLightsDemo.prototype.create = function()

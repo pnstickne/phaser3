@@ -11,16 +11,12 @@ function pbDungeonLightDemo( docId )
 {
 	console.log( "pbDungeonLightDemo c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
 	this.rttTexture = null;
 	this.rttFramebuffer = null;
 	this.rttRenderbuffer = null;
 
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( 'webgl', this.create, this.update, this );
 	this.multiLightBgShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/multiLightBgSources.json" );
 	this.levelData = pbPhaserRender.loader.loadFile( "../img/tiles/dungeon.json" );
 	this.tileImg = pbPhaserRender.loader.loadImage( "tiles", "../img/tiles/gridtiles.png" );
@@ -29,14 +25,6 @@ function pbDungeonLightDemo( docId )
 
 	console.log( "pbDungeonLightDemo c'tor exit" );
 }
-
-
-pbDungeonLightDemo.prototype.allLoaded = function()
-{
-	console.log( "pbDungeonLightDemo.allLoaded" );
-
-	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
-};
 
 
 pbDungeonLightDemo.prototype.create = function()
