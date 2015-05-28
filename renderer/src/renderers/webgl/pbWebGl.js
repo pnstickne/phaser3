@@ -646,9 +646,6 @@ pbWebGl.prototype.drawImageWithTransform3D = function( _textureNumber, _image, _
 	// send the transform matrix to the vector shader
 	gl.uniformMatrix4fv( this.shaders.getUniform( "uModelMatrix4" ), false, _transform );
 
-	// set the depth value
-   	gl.uniform1f( this.shaders.getUniform( "uZ" ), _z );
-
 	// point the position attribute at the last bound buffer
     gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 

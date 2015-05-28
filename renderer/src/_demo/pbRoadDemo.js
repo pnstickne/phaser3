@@ -13,24 +13,15 @@ function pbRoadDemo( docId )
 
 	var _this = this;
 
-	this.docId = docId;
 	this.surface = null;
 	this.layer = null;
 
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( useRenderer, this.create, this.update, this );
 	this.spriteImg = pbPhaserRender.loader.loadImage( "road", "../img/roadSand.png" );
 
 	console.log( "pbRoadDemo c'tor exit" );
 }
-
-
-pbRoadDemo.prototype.allLoaded = function()
-{
-	console.log( "pbRoadDemo.allLoaded" );
-
-	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
-};
 
 
 pbRoadDemo.prototype.create = function()

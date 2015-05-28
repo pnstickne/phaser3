@@ -12,10 +12,6 @@ function pbRenderTextureDemo( docId )
 {
 	console.log( "pbRenderTextureDemo c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
 	this.surface = null;
 	this.srcImage = null;
 	this.renderSurface = null;
@@ -24,20 +20,12 @@ function pbRenderTextureDemo( docId )
 	this.rttFramebuffer = null;
 	this.rttRenderbuffer = null;
 
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( useRenderer, this.create, this.update, this );
 	this.spriteImg = pbPhaserRender.loader.loadImage( "image", "../img/screen1.jpg" );
 
 	console.log( "pbRenderTextureDemo c'tor exit" );
 }
-
-
-pbRenderTextureDemo.prototype.allLoaded = function()
-{
-	console.log( "pbRenderTextureDemo.allLoaded" );
-
-	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
-};
 
 
 pbRenderTextureDemo.prototype.create = function()

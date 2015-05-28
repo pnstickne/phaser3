@@ -13,10 +13,8 @@ function pbTiltDemo( docId )
 
 	var _this = this;
 
-	this.docId = docId;
-
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( 'webgl', this.create, this.update, this );
 	this.spriteImg = pbPhaserRender.loader.loadImage( "car", "../img/car.png" );
 
 	console.log( "pbTiltDemo c'tor exit" );
@@ -27,7 +25,6 @@ pbTiltDemo.prototype.allLoaded = function()
 {
 	console.log( "pbTiltDemo.allLoaded" );
 
-	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
@@ -76,7 +73,7 @@ pbTiltDemo.prototype.addSprites = function()
 	img.create(this.surface, 0, 0.5, 0.5);
 	img.is3D = true;
 
-	// create a layer and add it to the root
+	// create a 3D layer and add it to the root
 	var layer3D = new pbWebGlLayer();
 	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
 	layer3D.create(rootLayer, this.phaserRender, 0,0,0, 0, 1,1);
