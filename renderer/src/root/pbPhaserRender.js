@@ -113,15 +113,6 @@ pbPhaserRender.prototype.allLoaded = function()
 {
 	console.log( "pbPhaserRender.allLoaded" );
 	this.state = "loaded";
-
-	// create the renderer sub-system
-	pbPhaserRender.renderer = new pbRenderer( this );
-	pbPhaserRender.renderer.create( this.renderMode, pbPhaserRender.canvas );
-
-	// create the rootLayer container for all graphics
-	// TODO: this doesn't belong here!
-	rootLayer = new layerClass();
-	rootLayer.create(null, pbPhaserRender.renderer, 0, 0, 0, 0, 1, 1);
 };
 
 
@@ -161,9 +152,17 @@ pbPhaserRender.prototype.destroy = function()
 
 pbPhaserRender.prototype.update = function()
 {
-	if (this.state === "loaded")
+	if (this.state === "create" || this.state === "loaded")
 	{
-	    // call the game's boot callback when the renderer is ready
+		// create the renderer sub-system
+		pbPhaserRender.renderer = new pbRenderer( this );
+		pbPhaserRender.renderer.create( this.renderMode, pbPhaserRender.canvas );
+
+		// create the rootLayer container for all graphics
+		rootLayer = new layerClass();
+		rootLayer.create(null, pbPhaserRender.renderer, 0, 0, 0, 0, 1, 1);
+		
+	    // call the game's boot callback if there's nothing left to load
 	    this.bootCallback.call( this.gameContext );
 
 		this.state = "running";
