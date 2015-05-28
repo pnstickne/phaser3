@@ -101,7 +101,11 @@ pbTransformObject.prototype.destroy = function()
 
 	// remove me from my parent
 	if (this.parent)
+	{
+		if (this.parent.removeChild === undefined)
+			alert("Invalid parent type for a pbTransformObject!\n" + this.parent.constructor.name);
 		this.parent.removeChild(this);
+	}
 	this.parent = null;
 
 	this.image = null;

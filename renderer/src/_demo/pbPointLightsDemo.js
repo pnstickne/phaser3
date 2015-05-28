@@ -63,6 +63,7 @@ pbPointLightsDemo.prototype.create = function()
 	//
 
 	this.gameLayer = new layerClass();
+	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
 	this.gameLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.gameLayer);
 
@@ -93,9 +94,6 @@ pbPointLightsDemo.prototype.destroy = function()
 {
 	console.log("pbPointLightsDemo.destroy");
 
-	this.gameLayer.destroy();
-	this.gameLayer = null;
-
 	this.renderer.destroy();
 	this.renderer = null;
 
@@ -108,6 +106,9 @@ pbPointLightsDemo.prototype.destroy = function()
 
 	this.filterTexture = null;
 	this.filterFramebuffer = null;
+
+	this.gameLayer.destroy();
+	this.gameLayer = null;
 };
 
 
