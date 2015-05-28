@@ -53,8 +53,8 @@ pbRenderer.prototype.create = function( _preferredRenderer, _canvas )
 	this.canvas.width = this.canvas.width;
 
 	// useful stuff held local to renderer
-	pbRenderer.width = this.canvas.width;
-	pbRenderer.height = this.canvas.height;
+	pbPhaserRender.width = this.canvas.width;
+	pbPhaserRender.height = this.canvas.height;
 	this.graphics = null;
 	
 	//
@@ -103,7 +103,7 @@ pbRenderer.prototype.create = function( _preferredRenderer, _canvas )
 pbRenderer.prototype.update = function( _callback, _context )
 {
 	// prepare to draw (erase screen)
-	this.graphics.preRender( pbRenderer.width, pbRenderer.height, this.useFramebuffer, this.useRenderbuffer );
+	this.graphics.preRender( pbPhaserRender.width, pbPhaserRender.height, this.useFramebuffer, this.useRenderbuffer );
 	
 	// update game logic
 	_callback.call( _context );

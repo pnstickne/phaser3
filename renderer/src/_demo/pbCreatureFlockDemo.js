@@ -46,14 +46,14 @@ function pbCreatureFlockDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.stripShaderJSON = this.loader.loadFile( "../JSON/stripShaderSources.json" );
-	this.dinoZip = this.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
-	this.loader.loadImage( "dino", "../img/creatures/utah.CreaExport/character_img.png" );
-	this.dino2Zip = this.loader.loadFile( "../img/creatures/coel.CreaExport/character_data.zip", "arraybuffer" );
-	this.loader.loadImage( "dino2", "../img/creatures/coel.CreaExport/character_img.png" );
+	this.stripShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/stripShaderSources.json" );
+	this.dinoZip = pbPhaserRender.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
+	pbPhaserRender.loader.loadImage( "dino", "../img/creatures/utah.CreaExport/character_img.png" );
+	this.dino2Zip = pbPhaserRender.loader.loadFile( "../img/creatures/coel.CreaExport/character_data.zip", "arraybuffer" );
+	pbPhaserRender.loader.loadImage( "dino2", "../img/creatures/coel.CreaExport/character_img.png" );
 
-	this.loader.loadImage( "field", "../img/Le_Caylar_fg08.png" );
-	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/8x8/ArkArea (UPL).png", 8, 8, 95, 5 );
+	pbPhaserRender.loader.loadImage( "field", "../img/Le_Caylar_fg08.png" );
+	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/8x8/ArkArea (UPL).png", 8, 8, 95, 5 );
 
 	console.log( "pbCreatureFlockDemo c'tor exit" );
 }
@@ -63,7 +63,7 @@ pbCreatureFlockDemo.prototype.allLoaded = function()
 {
 	console.log( "pbCreatureFlockDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( "webgl", this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( "webgl", this.docId, this.create, this.update, this );
 };
 
 
@@ -72,8 +72,8 @@ pbCreatureFlockDemo.prototype.create = function()
 	console.log("pbCreatureFlockDemo.create");
 
 	// get the shader program
-	var jsonString = this.loader.getFile( this.stripShaderJSON ).responseText;
-	this.stripShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
+	var jsonString = pbPhaserRender.loader.getFile( this.stripShaderJSON ).responseText;
+	this.stripShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
 	// background
 	if (textures.exists("field"))
@@ -91,16 +91,16 @@ pbCreatureFlockDemo.prototype.create = function()
 	// unzip the compressed data files and create the animation JSON data structures
 
 	// utah raptor
-	var zip = new JSZip( this.loader.getFile( this.dinoZip ).response );
+	var zip = new JSZip( pbPhaserRender.loader.getFile( this.dinoZip ).response );
 	var dinoJSON = zip.file("character_data.json").asText();
 	var dinoData = JSON.parse(dinoJSON);
 
 	// coel
-	zip = new JSZip( this.loader.getFile( this.dino2Zip ).response );
+	zip = new JSZip( pbPhaserRender.loader.getFile( this.dino2Zip ).response );
 	var dino2JSON = zip.file("character_data.json").asText();
 	var dino2Data = JSON.parse(dino2JSON);
 
-	this.creatures = new pbCreatureHandler(this.renderer, this.stripShaderProgram);
+	this.creatures = new pbCreatureHandler(this.phaserRender, this.stripShaderProgram);
 
     // add the big dino type (numbers obtained from creatureAssist utility)
 	// create a transform to be applied when drawing each creature to it's render-to-texture on the GPU
@@ -116,12 +116,12 @@ pbCreatureFlockDemo.prototype.create = function()
 	this.makeFlock(30);
 
 	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
-    this.renderer.postUpdate = this.postUpdate;
+    this.phaserRender.postUpdate = this.postUpdate;
 
 	// add a top layer for ui text messages
 	this.uiLayer = new layerClass();
 	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-	this.uiLayer.create(rootLayer, this.renderer, 0, 0, 0, 0, 1, 1);
+	this.uiLayer.create(rootLayer, this.phaserRender, 0, 0, 0, 0, 1, 1);
 	rootLayer.addChild(this.uiLayer);
 
 	// prepare the CC notices for raptors and background images
@@ -141,9 +141,9 @@ pbCreatureFlockDemo.prototype.destroy = function()
 	this.new_creature_renderer = null;
 	this.textureObject = null;
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 
 	this.rttTexture = null;
 	this.rttRenderbuffer = null;
@@ -174,8 +174,8 @@ pbCreatureFlockDemo.prototype.makeFlock = function(_flockSize)
 		var pcent = i / (_flockSize - 1);
 		this.creatures.add(
 				name,
-				pbRenderer.width + 350 + Math.random() * 800, // x
-				pbRenderer.height * 0.30 + pbRenderer.height * 0.40 * pcent,  // y
+				pbPhaserRender.width + 350 + Math.random() * 800, // x
+				pbPhaserRender.height * 0.30 + pbPhaserRender.height * 0.40 * pcent,  // y
 				0, // rotation
 				(Math.random() * 0.15 + 0.20 + 0.65 * pcent) * size, // scale
 				Math.random() * 4.0 + 4.0 * pcent + speed  // speed
@@ -187,7 +187,7 @@ pbCreatureFlockDemo.prototype.makeFlock = function(_flockSize)
 pbCreatureFlockDemo.prototype.update = function()
 {
 	// update the creatures and render them to GPU textures
-	var e = this.renderer.rootTimer.elapsedTime;
+	var e = this.phaserRender.rootTimer.elapsedTime;
 	this.creatures.update(e / 1000 * 2.0);
 };
 
@@ -214,15 +214,15 @@ pbCreatureFlockDemo.prototype.postUpdate = function()
 		var o = list[i];
 		// draw the creature sprite
 		var transform = pbMatrix3.makeTransform(o.x, o.y, o.r, o.scale, o.scale);
-		this.renderer.graphics.drawTextureWithTransform( o.type.dstTextureRegister, o.type.dstTexture, transform, 1.0, { x:0.5, y:1.0 } );
+		pbPhaserRender.renderer.graphics.drawTextureWithTransform( o.type.dstTextureRegister, o.type.dstTexture, transform, 1.0, { x:0.5, y:1.0 } );
 
 	   	// debug texture area boxes
 	   	// var wide = o.type.dstTexture.width * o.scale;
 	   	// var high = o.type.dstTexture.height * o.scale;
-    	// this.renderer.graphics.drawRect(o.x - wide * 0.5, o.y + high * 1.0, wide, -high, {r:0xff, g:0xff, b:0xff, a:0xff});
+    	// pbPhaserRender.renderer.graphics.drawRect(o.x - wide * 0.5, o.y + high * 1.0, wide, -high, {r:0xff, g:0xff, b:0xff, a:0xff});
 
 		o.x -= o.speed;
-		if (o.x < -300) o.x = pbRenderer.width + 350 + Math.random() * 100;
+		if (o.x < -300) o.x = pbPhaserRender.width + 350 + Math.random() * 100;
 	}
 };
 

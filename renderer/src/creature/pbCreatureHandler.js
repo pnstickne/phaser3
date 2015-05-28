@@ -8,7 +8,7 @@
 
 function pbCreatureHandler(_renderer, _shaderProgram)
 {
-	this.renderer = _renderer;
+	this.phaserRender = _renderer;
 	this.shaderProgram = _shaderProgram;
 	this.dictionary = null;
 }
@@ -187,7 +187,7 @@ pbCreatureHandler.prototype.updateType = function(creatures)
 	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
 	// draw the creature into the bound webgl destination texture
-	creatureData.renderer.DrawCreature(creatureData.transform, this.renderer.graphics, this.shaderProgram, creatureData.srcTextureRegister);
+	creatureData.renderer.DrawCreature(creatureData.transform, pbPhaserRender.renderer.graphics, this.shaderProgram, creatureData.srcTextureRegister);
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);

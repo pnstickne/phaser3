@@ -8,7 +8,7 @@
 function pbSimpleLayer()
 {
 	this.parent = null;
-	this.renderer = null;
+	this.phaserRender = null;
 	this.surface = null;
 	this.drawList = null;
 	this.drawCall = null;
@@ -24,7 +24,7 @@ pbSimpleLayer.prototype.__super__ = pbTransformObject;		// http://stackoverflow.
 pbSimpleLayer.prototype.create = function(_parent, _renderer, _x, _y, _surface)
 {
 	this.parent = _parent;
-	this.renderer = _renderer;
+	this.phaserRender = _renderer;
 	// call the pbTransformObject create for this pbSimpleLayer
 	this.__super__.prototype.create.call(this, null, _x, _y);
 	this.surface = _surface;
@@ -40,7 +40,7 @@ pbSimpleLayer.prototype.destroy = function()
 	// call the pbTransformObject destroy for this pbSimpleLayer
 	this.__super__.prototype.destroy.call(this);
 	this.parent = null;
-	this.renderer = null;
+	this.phaserRender = null;
 	this.surface = null;
 	this.drawList = null;
 	this.drawCall = null;
@@ -144,7 +144,7 @@ pbSimpleLayer.prototype.prepareXYUV = function()
 pbSimpleLayer.prototype.draw = function(_length)
 {
 	// hard-wired to TEXTURE0 as the source texture
-	this.renderer.graphics.blitSimpleDrawImages( this.drawList, _length, this.surface, 0 );
+	pbPhaserRender.renderer.graphics.blitSimpleDrawImages( this.drawList, _length, this.surface, 0 );
 };
 
 
@@ -159,7 +159,7 @@ pbSimpleLayer.prototype.draw = function(_length)
 pbSimpleLayer.prototype.drawPoint = function(_length)
 {
 	// hard-wired to TEXTURE0 as the source texture
-	this.renderer.graphics.blitDrawImagesPoint( this.drawList, _length, this.surface, 0 );
+	pbPhaserRender.renderer.graphics.blitDrawImagesPoint( this.drawList, _length, this.surface, 0 );
 };
 
 /**
@@ -173,7 +173,7 @@ pbSimpleLayer.prototype.drawPoint = function(_length)
 pbSimpleLayer.prototype.drawPointAnim = function(_length)
 {
 	// hard-wired to TEXTURE0 as the source texture
-	this.renderer.graphics.blitDrawImagesPointAnim( this.drawList, _length, this.surface, 0 );
+	pbPhaserRender.renderer.graphics.blitDrawImagesPointAnim( this.drawList, _length, this.surface, 0 );
 };
 
 

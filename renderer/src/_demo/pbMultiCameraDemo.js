@@ -27,20 +27,20 @@ function pbMultiCameraDemo( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 
-	this.loader.loadImage( "player", "../img/invader/player.png" );
-	this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
-	this.loader.loadImage( "stars", "../img/invader/starfield.png" );
-	this.loader.loadImage( "bullet", "../img/invader/bullet.png" );
-	this.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
-	this.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png", 32, 32, 8, 1 );
-	this.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
-	this.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
-	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
+	pbPhaserRender.loader.loadImage( "player", "../img/invader/player.png" );
+	pbPhaserRender.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
+	pbPhaserRender.loader.loadImage( "stars", "../img/invader/starfield.png" );
+	pbPhaserRender.loader.loadImage( "bullet", "../img/invader/bullet.png" );
+	pbPhaserRender.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
+	pbPhaserRender.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png", 32, 32, 8, 1 );
+	pbPhaserRender.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
+	pbPhaserRender.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
+	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
 
-	this.frame_l = this.loader.loadImage( "frame_l", "../img/frame_l.png" );
-	this.frame_r = this.loader.loadImage( "frame_r", "../img/frame_r.png" );
-	this.frame_t = this.loader.loadImage( "frame_t", "../img/frame_t.png" );
-	this.frame_b = this.loader.loadImage( "frame_b", "../img/frame_b.png" );
+	this.frame_l = pbPhaserRender.loader.loadImage( "frame_l", "../img/frame_l.png" );
+	this.frame_r = pbPhaserRender.loader.loadImage( "frame_r", "../img/frame_r.png" );
+	this.frame_t = pbPhaserRender.loader.loadImage( "frame_t", "../img/frame_t.png" );
+	this.frame_b = pbPhaserRender.loader.loadImage( "frame_b", "../img/frame_b.png" );
 
 	console.log( "pbMultiCameraDemo c'tor exit" );
 }
@@ -51,7 +51,7 @@ pbMultiCameraDemo.prototype.allLoaded = function()
 	console.log( "pbMultiCameraDemo.allLoaded" );
 
 	// callback to this.create when ready, callback to this.update once every frame
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
@@ -60,7 +60,7 @@ pbMultiCameraDemo.prototype.create = function()
 	console.log("pbMultiCameraDemo.create");
 
 	this.gameLayer = new layerClass();
-	this.gameLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
+	this.gameLayer.create(rootLayer, this.phaserRender, 0, 0, 1.0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.gameLayer);
 
 	// add the game instance to a layer which is attached to the rootLayer
@@ -71,7 +71,7 @@ pbMultiCameraDemo.prototype.create = function()
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTextureNumber = 1;
-	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
@@ -87,9 +87,9 @@ pbMultiCameraDemo.prototype.create = function()
 	for(var i = 0; i < 100; i++)
 	{
 		// bouncing, scaling, spinning variables
-		this.tx[i] = Math.random() * pbRenderer.width;
+		this.tx[i] = Math.random() * pbPhaserRender.width;
 		this.tdx[i] = 6 * Math.random() - 3;
-		this.ty[i] = Math.random() * pbRenderer.height;
+		this.ty[i] = Math.random() * pbPhaserRender.height;
 		this.tdy[i] = 4 * Math.random() - 2;
 		this.tr[i] = Math.PI * 2.0 * Math.random();
 		this.tdr[i] = 0.02 * Math.random() - 0.01;
@@ -100,11 +100,11 @@ pbMultiCameraDemo.prototype.create = function()
 	}
 
 	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
-    this.renderer.postUpdate = this.postUpdate;
+    this.phaserRender.postUpdate = this.postUpdate;
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update
-   	this.renderer.useFramebuffer = this.rttFramebuffer;
-   	this.renderer.useRenderbuffer = this.rttRenderbuffer;
+   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
+   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
 };
 
 
@@ -115,8 +115,8 @@ pbMultiCameraDemo.prototype.destroy = function()
 	this.gameLayer.destroy();
 	this.gameLayer = null;
 
-	this.renderer.destroy();
-	this.renderer = null;
+	this.phaserRender.destroy();
+	this.phaserRender = null;
 
 	this.game.destroy();
 	this.game = null;
@@ -148,9 +148,9 @@ pbMultiCameraDemo.prototype.postUpdate = function()
 	{
 		// move the draw image around
 		this.tx[i] += this.tdx[i];
-		if (this.tx[i] <= 0 || this.tx[i] >= pbRenderer.width) this.tdx[i] = -this.tdx[i];
+		if (this.tx[i] <= 0 || this.tx[i] >= pbPhaserRender.width) this.tdx[i] = -this.tdx[i];
 		this.ty[i] += this.tdy[i];
-		if (this.ty[i] <= 0 || this.ty[i] >= pbRenderer.height) this.tdy[i] = -this.tdy[i];
+		if (this.ty[i] <= 0 || this.ty[i] >= pbPhaserRender.height) this.tdy[i] = -this.tdy[i];
 		this.tr[i] += this.tdr[i];
 		if (this.tr[i] >= Math.PI * 2.0) this.tr[i] -= Math.PI * 2.0;
 		this.ts[i] += this.tds[i];
@@ -158,7 +158,7 @@ pbMultiCameraDemo.prototype.postUpdate = function()
 		this.transform[i] = pbMatrix3.makeTransform(this.tx[i], this.ty[i], this.tr[i], this.ts[i], this.ts[i]);
 
 		// _image, _transform, _z
-		this.renderer.graphics.drawTextureWithTransform( this.rttTextureNumber, this.rttTexture, this.transform[i], 1.0 );
+		pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.rttTextureNumber, this.rttTexture, this.transform[i], 1.0 );
 	}
 };
 

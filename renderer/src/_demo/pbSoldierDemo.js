@@ -92,7 +92,7 @@ pbSoldierDemo.prototype.addSprites = function(num)
 	for( var i = 0; i < num; i++ )
 	{
 		// start from the top of the screen
-		var x = Math.random() * pbRenderer.width;
+		var x = Math.random() * pbPhaserRender.width;
 		var y = 0;
 
 		// unique image holder per soldier (permits individual animation)

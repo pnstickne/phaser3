@@ -18,18 +18,18 @@ function pbCreatureAssist( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 	// font for User Interface
-	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/8x8/Battle Bakraid (Eighting).png", 8, 8, 95, 5 );
+	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/8x8/Battle Bakraid (Eighting).png", 8, 8, 95, 5 );
 
 	// TODO: change these values for your Creature
 
 	// the shader we'll use to draw the Creature (usually "stripShaderSources.json")
-	this.creatureShaderJSON = this.loader.loadFile( "../JSON/stripShaderSources.json" );
+	this.creatureShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/stripShaderSources.json" );
 	// the creature animation data in a .zip file (just zip the .json data output by the Creature editor)
-//	this.creatureDataZip = this.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
-	this.creatureDataZip = this.loader.loadFile( "../img/creatures/coel.CreaExport/character_data.zip", "arraybuffer" );
+//	this.creatureDataZip = pbPhaserRender.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
+	this.creatureDataZip = pbPhaserRender.loader.loadFile( "../img/creatures/coel.CreaExport/character_data.zip", "arraybuffer" );
 	// the creature source image (usually a 32 bit .png file)
-//	this.loader.loadImage( "creature", "../img/creatures/utah.CreaExport/character_img.png" );
-	this.loader.loadImage( "creature", "../img/creatures/coel.CreaExport/character_img.png" );
+//	pbPhaserRender.loader.loadImage( "creature", "../img/creatures/utah.CreaExport/character_img.png" );
+	pbPhaserRender.loader.loadImage( "creature", "../img/creatures/coel.CreaExport/character_img.png" );
 
 	// size of the destination texture
 //    this.dstWidth = 256;
@@ -43,7 +43,7 @@ pbCreatureAssist.prototype.allLoaded = function()
 {
 	console.log( "pbCreatureAssist.allLoaded" );
 
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -52,19 +52,19 @@ pbCreatureAssist.prototype.create = function()
 	console.log("pbCreatureAssist.create");
 
 	// get the shader program into the shaders system
-	var jsonString = this.loader.getFile( this.creatureShaderJSON ).responseText;
-	this.creatureShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
+	var jsonString = pbPhaserRender.loader.getFile( this.creatureShaderJSON ).responseText;
+	this.creatureShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
     // get the source texture using 'key'
     this.dinoTexture = textures.getFirst("creature");
 
 	// unzip the compressed data file and create the animation JSON data structures
-	var zip = new JSZip( this.loader.getFile( this.creatureDataZip ).response );
+	var zip = new JSZip( pbPhaserRender.loader.getFile( this.creatureDataZip ).response );
 	var creatureJSON = zip.file("character_data.json").asText();
 	var creatureData = JSON.parse(creatureJSON);
 
 	// make a creature handler
-	this.creatures = new pbCreatureHandler(this.renderer, this.creatureShaderProgram);
+	this.creatures = new pbCreatureHandler(this.phaserRender, this.creatureShaderProgram);
 
 	// initial values for the creature transform
 	this.scale = 0.25;
@@ -87,8 +87,8 @@ pbCreatureAssist.prototype.create = function()
 	// add an instance of the creature to the creature handler
 	this.creatures.add(
 			"creatureType",				// the type name used in Create
-			pbRenderer.width * 0.5, 	// x
-			pbRenderer.height * 0.5,	// y
+			pbPhaserRender.width * 0.5, 	// x
+			pbPhaserRender.height * 0.5,	// y
 			0, 							// rotation
 			1.0,						// scale
 			0.0							// speed
@@ -100,12 +100,12 @@ pbCreatureAssist.prototype.create = function()
 	// 
 
 	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
-    this.renderer.postUpdate = this.postUpdate;
+    this.phaserRender.postUpdate = this.postUpdate;
 
 	// add a top layer for ui text messages
 	this.uiLayer = new layerClass();
 	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-	this.uiLayer.create(rootLayer, this.renderer, 0, 0, 0, 0, 1, 1);
+	this.uiLayer.create(rootLayer, this.phaserRender, 0, 0, 0, 0, 1, 1);
 	rootLayer.addChild(this.uiLayer);
 
 	// prepare the text strings
@@ -191,9 +191,9 @@ pbCreatureAssist.prototype.destroy = function()
 		this.buttons.destroy();
 	this.buttons = null;
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 	this.rttTexture = null;
 	this.rttRenderbuffer = null;
 	this.rttFramebuffer = null;
@@ -235,7 +235,7 @@ pbCreatureAssist.prototype.update = function()
 	}
 
 	// update the creatures and render them to GPU textures
-	var e = this.renderer.rootTimer.elapsedTime;
+	var e = this.phaserRender.rootTimer.elapsedTime;
 	this.creatures.update(e / 1000 * 2.0);
 
 	// render to the display from now on (pbRenderer.update: rootLayer.update)
@@ -262,14 +262,14 @@ pbCreatureAssist.prototype.postUpdate = function()
 
 	// draw the creature sprite
 	var transform = pbMatrix3.makeTransform(o.x, o.y, o.r, o.scale, o.scale);
-	this.renderer.graphics.drawTextureWithTransform( o.type.dstTextureRegister, o.type.dstTexture, transform, 1.0 );
+	pbPhaserRender.renderer.graphics.drawTextureWithTransform( o.type.dstTextureRegister, o.type.dstTexture, transform, 1.0 );
 
    	// debug box
 //   	var wide = o.type.renderer.width * this.dstWidth * this.scale;
 //   	var high = o.type.renderer.height * this.dstHeight * this.scale;
-//		this.renderer.graphics.drawRect(o.x + o.type.renderer.left, o.y + o.type.renderer.bottom - high, wide, high, {r:0xff, g:0xff, b:0xff, a:0xff});
+//		pbPhaserRender.renderer.graphics.drawRect(o.x + o.type.renderer.left, o.y + o.type.renderer.bottom - high, wide, high, {r:0xff, g:0xff, b:0xff, a:0xff});
 
 	// outline of texture box
-	this.renderer.graphics.drawRect(pbRenderer.width * 0.5 - this.dstWidth * 0.5, pbRenderer.height * 0.5 - this.dstHeight * 0.5, this.dstWidth, this.dstHeight, {r:0xff, g:0xff, b:0xff, a:0xff});
+	pbPhaserRender.renderer.graphics.drawRect(pbPhaserRender.width * 0.5 - this.dstWidth * 0.5, pbPhaserRender.height * 0.5 - this.dstHeight * 0.5, this.dstWidth, this.dstHeight, {r:0xff, g:0xff, b:0xff, a:0xff});
 };
 

@@ -90,8 +90,8 @@ pbCanvas.prototype.drawImageWithTransform = function(_textureNumber, _image, _tr
 	if (_image.fullScreen)
 	{
 		// TODO: 'fullScreen' flag... WRAP to fit (not stretch to fit)
-		w = pbRenderer.width;
-		h = pbRenderer.height;
+		w = pbPhaserRender.width;
+		h = pbPhaserRender.height;
 		// a single stretched image, use 5 parameter drawImage call
 		this.ctx.drawImage(srcImageData,
 			e - w * _image.anchorX, f - h * _image.anchorY,

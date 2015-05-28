@@ -21,7 +21,7 @@ function pbGlToCanvasDemo( docId )
 	this.canvasSrc = null;
 
 	// force to 'webgl' renderer, this demo makes no sense in canvas mode
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 
 	console.log( "pbGlToCanvasDemo c'tor exit" );
 }
@@ -100,9 +100,9 @@ pbGlToCanvasDemo.prototype.destroy = function()
 	if (this.div)
 		this.div.parentNode.removeChild( this.div );
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 
@@ -130,15 +130,15 @@ pbGlToCanvasDemo.prototype.update = function()
 
 	// draw the source canvas texture into a transformed webGl texture
 	// it will be marked as 'dirty' only when the displayed value changes
-	this.renderer.graphics.drawCanvasWithTransform(this.canvasSrc, (last !== this.value), this.transform, 1.0);
+	pbPhaserRender.renderer.graphics.drawCanvasWithTransform(this.canvasSrc, (last !== this.value), this.transform, 1.0);
 
 	// prepare the texture to be grabbed by attaching it to a frame buffer (once only)
-	if (!this.renderer.graphics.textures.canReadTexture)
-		this.renderer.graphics.textures.prepareTextureForAccess(this.renderer.graphics.textures.currentSrcTexture);
+	if (!pbPhaserRender.renderer.graphics.textures.canReadTexture)
+		pbPhaserRender.renderer.graphics.textures.prepareTextureForAccess(pbPhaserRender.renderer.graphics.textures.currentSrcTexture);
 
 	var c = this.list.length;
 	while(c--)
 		// grab the webGl.currentSrcTexture and draw it into the destination canvas as ImageData
-		this.renderer.graphics.textures.getTextureToCanvas(this.list[c].ctxDst);
+		pbPhaserRender.renderer.graphics.textures.getTextureToCanvas(this.list[c].ctxDst);
 };
 

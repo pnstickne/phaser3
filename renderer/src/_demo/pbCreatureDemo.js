@@ -35,9 +35,9 @@ function pbCreatureDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.stripShaderJSON = this.loader.loadFile( "../JSON/stripShaderSources.json" );
-	this.dinoZip = this.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
-	this.loader.loadImage( "dino", "../img/creatures/utah.CreaExport/character_img.png" );
+	this.stripShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/stripShaderSources.json" );
+	this.dinoZip = pbPhaserRender.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
+	pbPhaserRender.loader.loadImage( "dino", "../img/creatures/utah.CreaExport/character_img.png" );
 
 	console.log( "pbCreatureDemo c'tor exit" );
 }
@@ -47,7 +47,7 @@ pbCreatureDemo.prototype.allLoaded = function()
 {
 	console.log( "pbCreatureDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( "webgl", this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( "webgl", this.docId, this.create, this.update, this );
 };
 
 
@@ -60,11 +60,11 @@ pbCreatureDemo.prototype.create = function()
 	this.rttTextureNumber = 2;			// render-to-texture is source for the sprites
 
 	// get the shader program
-	var jsonString = this.loader.getFile( this.stripShaderJSON ).responseText;
-	this.stripShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
+	var jsonString = pbPhaserRender.loader.getFile( this.stripShaderJSON ).responseText;
+	this.stripShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
 	// unzip the compressed data file and create the animation JSON data structure
-	var zip = new JSZip( this.loader.getFile( this.dinoZip ).response );
+	var zip = new JSZip( pbPhaserRender.loader.getFile( this.dinoZip ).response );
 	var dinoJSON = zip.file("character_data.json").asText();
 	var actual_JSON = JSON.parse(dinoJSON);
 
@@ -75,16 +75,16 @@ pbCreatureDemo.prototype.create = function()
 	this.makeCreature(actual_JSON, this.textureObject);
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
-    this.renderer.postUpdate = this.postUpdate;
+    this.phaserRender.postUpdate = this.postUpdate;
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update
-   	this.renderer.useFramebuffer = this.rttFramebuffer;
-   	this.renderer.useRenderbuffer = this.rttRenderbuffer;
+   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
+   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
 };
 
 
@@ -96,9 +96,9 @@ pbCreatureDemo.prototype.destroy = function()
 	this.new_creature_renderer = null;
 	this.textureObject = null;
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 
 	this.rttTexture = null;
 	this.rttRenderbuffer = null;
@@ -144,9 +144,9 @@ pbCreatureDemo.prototype.update = function()
 	// recalculate this creature's point data
 	this.new_creature_renderer.UpdateData();
 
-	// draw the creature with webgl, the draw destination will be this.renderer.useFramebuffer (rttTexture)
+	// draw the creature with webgl, the draw destination will be this.phaserRender.useFramebuffer (rttTexture)
     var transform = pbMatrix3.makeTransform(-0.15, 0.0, 0.0, 0.04, 0.04);
-	this.new_creature_renderer.DrawCreature(transform, this.renderer.graphics, this.stripShaderProgram, this.creatureTextureNumber);
+	this.new_creature_renderer.DrawCreature(transform, pbPhaserRender.renderer.graphics, this.stripShaderProgram, this.creatureTextureNumber);
 };
 
 
@@ -157,7 +157,7 @@ pbCreatureDemo.prototype.postUpdate = function()
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
 	// draw the creature texture from rttTexture to the display
-	this.transform = pbMatrix3.makeTransform(pbRenderer.width * 0.5, pbRenderer.height * 0.5, 0.0, 1.0, 1.0);
-	this.renderer.graphics.drawTextureWithTransform( this.rttTextureNumber, this.rttTexture, this.transform, 1.0 );
+	this.transform = pbMatrix3.makeTransform(pbPhaserRender.width * 0.5, pbPhaserRender.height * 0.5, 0.0, 1.0, 1.0);
+	pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.rttTextureNumber, this.rttTexture, this.transform, 1.0 );
 };
 

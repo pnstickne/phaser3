@@ -25,17 +25,17 @@ function pbPointLightsDemo( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 
-	this.multiLightShaderJSON = this.loader.loadFile( "../JSON/multiLightSources.json" );
+	this.multiLightShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/multiLightSources.json" );
 
-	this.loader.loadImage( "player", "../img/invader/player.png" );
-	this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
-	//this.loader.loadImage( "stars", "../img/invader/starfield.png" );
-	this.loader.loadImage( "bullet", "../img/invader/bullet.png" );
-	this.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
-	this.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png", 32, 32, 8, 1 );
-	this.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
-	this.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
-	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
+	pbPhaserRender.loader.loadImage( "player", "../img/invader/player.png" );
+	pbPhaserRender.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
+	//pbPhaserRender.loader.loadImage( "stars", "../img/invader/starfield.png" );
+	pbPhaserRender.loader.loadImage( "bullet", "../img/invader/bullet.png" );
+	pbPhaserRender.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
+	pbPhaserRender.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png", 32, 32, 8, 1 );
+	pbPhaserRender.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
+	pbPhaserRender.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
+	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
 
 	console.log( "pbPointLightsDemo c'tor exit" );
 }
@@ -46,7 +46,7 @@ pbPointLightsDemo.prototype.allLoaded = function()
 	console.log( "pbPointLightsDemo.allLoaded" );
 
 	// callback to this.create when ready, callback to this.update once every frame
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
@@ -55,8 +55,8 @@ pbPointLightsDemo.prototype.create = function()
 	console.log("pbPointLightsDemo.create");
 
 	// add the shader
-	var jsonString = this.loader.getFile( this.multiLightShaderJSON ).responseText;
-	this.multiLightShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
+	var jsonString = pbPhaserRender.loader.getFile( this.multiLightShaderJSON ).responseText;
+	this.multiLightShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
 	//
 	// draw an instance of invaders
@@ -64,7 +64,7 @@ pbPointLightsDemo.prototype.create = function()
 
 	this.gameLayer = new layerClass();
 	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY)
-	this.gameLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
+	this.gameLayer.create(rootLayer, this.phaserRender, 0, 0, 1.0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.gameLayer);
 
 	this.game = new pbInvaderDemoCore();
@@ -72,21 +72,21 @@ pbPointLightsDemo.prototype.create = function()
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTextureNumber = 0;
-	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update (drawing the invaders)
-   	this.renderer.useFramebuffer = this.rttFramebuffer;
-   	this.renderer.useRenderbuffer = this.rttRenderbuffer;
+   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
+   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
 
 	// create the filter destination texture and framebuffer
 	this.filterTextureNumber = 1;
-	this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
-    this.renderer.postUpdate = this.postUpdate;
+    this.phaserRender.postUpdate = this.postUpdate;
 };
 
 
@@ -94,8 +94,8 @@ pbPointLightsDemo.prototype.destroy = function()
 {
 	console.log("pbPointLightsDemo.destroy");
 
-	this.renderer.destroy();
-	this.renderer = null;
+	this.phaserRender.destroy();
+	this.phaserRender = null;
 
 	this.game.destroy();
 	this.game = null;
@@ -130,7 +130,7 @@ pbPointLightsDemo.prototype.postUpdate = function()
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
 
 	// update transforms and draw sprites that are not shadow casters
 	this.game.layer.update();
@@ -138,7 +138,7 @@ pbPointLightsDemo.prototype.postUpdate = function()
 	// draw the filter texture to the display
 	gl.activeTexture(gl.TEXTURE1);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
 };
 
 
@@ -173,8 +173,8 @@ function pack(_r, _g, _b)
 pbPointLightsDemo.prototype.setLightData = function()
 {
 	// first light is attached to the player ship
-	lightData[0 * 4 + 0] = this.game.player.x / pbRenderer.width;
-	lightData[0 * 4 + 1] = 1.0 - this.game.player.y / pbRenderer.height;
+	lightData[0 * 4 + 0] = this.game.player.x / pbPhaserRender.width;
+	lightData[0 * 4 + 1] = 1.0 - this.game.player.y / pbPhaserRender.height;
 	lightData[0 * 4 + 2] = pack(0.0, 0.75, 0.0);
 	lightData[0 * 4 + 3] = 0.05 + Math.abs((pbPhaserRender.frameCount % 64) - 32.0) / 32.0 * 0.05;
 
@@ -186,8 +186,8 @@ pbPointLightsDemo.prototype.setLightData = function()
 		var life = explosion.image.cellFrame / 16.0;
 
 		j = (i + 1) * 4;
-		lightData[j + 0] = explosion.x / pbRenderer.width;
-		lightData[j + 1] = 1.0 - explosion.y / pbRenderer.height;
+		lightData[j + 0] = explosion.x / pbPhaserRender.width;
+		lightData[j + 1] = 1.0 - explosion.y / pbPhaserRender.height;
 		// fade from orange/yellow through to blue as the explosion ages
 		lightData[j + 2] = pack(5.0 * (1.0 - life), 3.0 * (1.0 - life), 1.0 * life);
 		// grow as the explosion ages
@@ -205,8 +205,8 @@ pbPointLightsDemo.prototype.setLightData = function()
 		var bomb = this.game.bombs[i];
 
 		j = (i + 8) * 4;
-		lightData[j + 0] = bomb.x / pbRenderer.width;
-		lightData[j + 1] = 1.0 - bomb.y / pbRenderer.height;
+		lightData[j + 0] = bomb.x / pbPhaserRender.width;
+		lightData[j + 1] = 1.0 - bomb.y / pbPhaserRender.height;
 		lightData[j + 2] = pack(1.0, 0, 0);
 		lightData[j + 3] = 0.1;
 	}

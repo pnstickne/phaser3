@@ -26,7 +26,7 @@ function pbBunnyDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "bunny", "../img/bunny_pot.png" );
+	this.spriteImg = pbPhaserRender.loader.loadImage( "bunny", "../img/bunny_pot.png" );
 
 	console.log( "pbBunnyDemo c'tor exit" );
 }
@@ -36,7 +36,7 @@ pbBunnyDemo.prototype.allLoaded = function()
 {
 	console.log( "pbBunnyDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -60,8 +60,8 @@ pbBunnyDemo.prototype.destroy = function()
 	this.surface.destroy();
 	this.surface = null;
 
-	this.renderer.destroy();
-	this.renderer = null;
+	this.phaserRender.destroy();
+	this.phaserRender = null;
 
 };
 
@@ -80,7 +80,7 @@ pbBunnyDemo.prototype.addSprites = function(num)
 	// create animation data and set destination for movement
 	if (!this.surface)
 	{
-		var imageData = this.loader.getFile( this.spriteImg );
+		var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 		this.surface = new pbSurface();
 		this.surface.create(0, 0, 1, 1, imageData);
 		// set the texture register number where the surface will be kept on the GPU
@@ -119,14 +119,14 @@ pbBunnyDemo.prototype.update = function()
 			obj.x = 13;
 			obj.vx = -obj.vx;
 		}
-		else if (obj.x > pbRenderer.width - 13)
+		else if (obj.x > pbPhaserRender.width - 13)
 		{
-			obj.x = pbRenderer.width - 13;
+			obj.x = pbPhaserRender.width - 13;
 			obj.vx = -obj.vx;
 		}
-		if (obj.y >= pbRenderer.height)
+		if (obj.y >= pbPhaserRender.height)
 		{
-			obj.y = pbRenderer.height;
+			obj.y = pbPhaserRender.height;
 			obj.vy *= - 0.85;
 			if (Math.random() > 0.5)
 			{
@@ -141,7 +141,7 @@ pbBunnyDemo.prototype.update = function()
 	}
 
 	if (this.list.length > 0)
-		this.renderer.graphics.blitListDirect( this.list, this.list.length, this.surface, this.textureNumber );
+		pbPhaserRender.renderer.graphics.blitListDirect( this.list, this.list.length, this.surface, this.textureNumber );
 
 	if (fps >= 60)
 	{

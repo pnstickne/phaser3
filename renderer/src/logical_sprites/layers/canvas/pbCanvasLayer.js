@@ -9,7 +9,7 @@ function pbCanvasLayer()
 {
 	this.super(pbCanvasLayer, 'constructor');
 	// this.parent = null;
-	// this.renderer = null;
+	// this.phaserRender = null;
 	// this.clip = null;
 	this.drawList = null;
 }
@@ -34,12 +34,12 @@ pbCanvasLayer.prototype.update = function()
 	if (this.clip)
 	{
 		// apply clipping for this layer
-		this.renderer.graphics.scissor(Math.floor(this.clip.x), Math.floor(this.clip.y), Math.ceil(this.clip.width), Math.ceil(this.clip.height));
+		pbPhaserRender.renderer.graphics.scissor(Math.floor(this.clip.x), Math.floor(this.clip.y), Math.ceil(this.clip.width), Math.ceil(this.clip.height));
 	}
 	else
 	{
 		// disable clipping for this layer
-		this.renderer.graphics.scissor();
+		pbPhaserRender.renderer.graphics.scissor();
 	}
 
 	// draw all of the queued objects

@@ -25,20 +25,20 @@ function pbPointLightDemo( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 
-	this.pointLightShaderJSON = this.loader.loadFile( "../JSON/pointLightSources.json" );
+	this.pointLightShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/pointLightSources.json" );
 
-	this.loader.loadImage( "player", "../img/invader/player.png" );
-	this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
-	//this.loader.loadImage( "stars", "../img/invader/starfield.png" );
-	this.loader.loadImage( "bullet", "../img/invader/bullet.png" );
-	this.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
-	this.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png", 32, 32, 8, 1 );
-	this.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
-	this.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
-	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
+	pbPhaserRender.loader.loadImage( "player", "../img/invader/player.png" );
+	pbPhaserRender.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
+	//pbPhaserRender.loader.loadImage( "stars", "../img/invader/starfield.png" );
+	pbPhaserRender.loader.loadImage( "bullet", "../img/invader/bullet.png" );
+	pbPhaserRender.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
+	pbPhaserRender.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png", 32, 32, 8, 1 );
+	pbPhaserRender.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
+	pbPhaserRender.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
+	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
 
 
-	this.loader.loadImage( "logo", "../img/phaser_128x32.png" );
+	pbPhaserRender.loader.loadImage( "logo", "../img/phaser_128x32.png" );
 
 	console.log( "pbPointLightDemo c'tor exit" );
 }
@@ -49,7 +49,7 @@ pbPointLightDemo.prototype.allLoaded = function()
 	console.log( "pbPointLightDemo.allLoaded" );
 
 	// callback to this.create when ready, callback to this.update once every frame
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
@@ -58,15 +58,15 @@ pbPointLightDemo.prototype.create = function()
 	console.log("pbPointLightDemo.create");
 
 	// add the shader
-	var jsonString = this.loader.getFile( this.pointLightShaderJSON ).responseText;
-	this.pointLightShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
+	var jsonString = pbPhaserRender.loader.getFile( this.pointLightShaderJSON ).responseText;
+	this.pointLightShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
 	//
 	// draw a big logo shadow-caster
 	//
 
 	this.logo = new pbSprite();
-	this.logo.createWithKey(pbRenderer.width * 0.5, pbRenderer.height * 0.75, "logo");
+	this.logo.createWithKey(pbPhaserRender.width * 0.5, pbPhaserRender.height * 0.75, "logo");
 	// TODO: this is pretty horrible... because the logo isn't attached to a layer (it is drawn separately in the update function),
 	// changes to its transform variables never get recalculated into the transform matrix.  Here I'm calling the transform.create
 	// function a second time (first time is in pbSprite) to force it to change scale and to set the z depth to zero.
@@ -78,7 +78,7 @@ pbPointLightDemo.prototype.create = function()
 	//
 
 	this.gameLayer = new layerClass();
-	this.gameLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
+	this.gameLayer.create(rootLayer, this.phaserRender, 0, 0, 1.0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.gameLayer);
 
 	// add the game instance to a layer which is attached to the rootLayer
@@ -89,21 +89,21 @@ pbPointLightDemo.prototype.create = function()
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTextureNumber = 0;
-	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update (drawing the invaders)
-   	this.renderer.useFramebuffer = this.rttFramebuffer;
-   	this.renderer.useRenderbuffer = this.rttRenderbuffer;
+   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
+   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
 
 	// create the filter destination texture and framebuffer
 	this.filterTextureNumber = 1;
-	this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
-    this.renderer.postUpdate = this.postUpdate;
+    this.phaserRender.postUpdate = this.postUpdate;
 };
 
 
@@ -114,8 +114,8 @@ pbPointLightDemo.prototype.destroy = function()
 	this.gameLayer.destroy();
 	this.gameLayer = null;
 
-	this.renderer.destroy();
-	this.renderer = null;
+	this.phaserRender.destroy();
+	this.phaserRender = null;
 
 	this.game.destroy();
 	this.game = null;
@@ -138,7 +138,7 @@ pbPointLightDemo.prototype.update = function()
 
 	// draw logo using the render-to-texture framebuffer
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
-	this.renderer.graphics.drawImageWithTransform(this.rttTextureNumber, this.logo.image, this.logo.transform.transform, 1.0);
+	pbPhaserRender.renderer.graphics.drawImageWithTransform(this.rttTextureNumber, this.logo.image, this.logo.transform.transform, 1.0);
 };
 
 
@@ -152,11 +152,11 @@ pbPointLightDemo.prototype.postUpdate = function()
 
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
 };
 
 

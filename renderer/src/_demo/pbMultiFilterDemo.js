@@ -38,9 +38,9 @@ function pbMultiFilterDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.tintShaderJSON = this.loader.loadFile( "../JSON/tintShaderSources.json" );
-	this.waveShaderJSON = this.loader.loadFile( "../JSON/waveShaderSources.json" );
-	this.spriteImg = this.loader.loadImage( "image", "../img/screen1.jpg" );
+	this.tintShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/tintShaderSources.json" );
+	this.waveShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/waveShaderSources.json" );
+	this.spriteImg = pbPhaserRender.loader.loadImage( "image", "../img/screen1.jpg" );
 
 	console.log( "pbMultiFilterDemo c'tor exit" );
 }
@@ -50,7 +50,7 @@ pbMultiFilterDemo.prototype.allLoaded = function()
 {
 	console.log( "pbMultiFilterDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
@@ -59,12 +59,12 @@ pbMultiFilterDemo.prototype.create = function()
 	console.log("pbMultiFilterDemo.create");
 
 	// add the shaders
-	var jsonString = this.loader.getFile( this.tintShaderJSON ).responseText;
-	this.tintShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
-	jsonString = this.loader.getFile( this.waveShaderJSON ).responseText;
-	this.waveShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
+	var jsonString = pbPhaserRender.loader.getFile( this.tintShaderJSON ).responseText;
+	this.tintShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
+	jsonString = pbPhaserRender.loader.getFile( this.waveShaderJSON ).responseText;
+	this.waveShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
-	var imageData = this.loader.getFile( this.spriteImg );
+	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
 	// _wide, _high, _numWide, _numHigh, _image
 	this.surface.create(0, 0, 1, 1, imageData);
@@ -76,18 +76,18 @@ pbMultiFilterDemo.prototype.create = function()
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTextureNumber = 2;
-	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 	// create the filter texture
 	this.filterTextureNumber = 0;
-	this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// create the 2nd filter texture
 	this.filter2TextureNumber = 1;
-	this.filter2Texture = pbWebGlTextures.initTexture(this.filter2TextureNumber, pbRenderer.width, pbRenderer.height);
+	this.filter2Texture = pbWebGlTextures.initTexture(this.filter2TextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.filter2Framebuffer = pbWebGlTextures.initFramebuffer(this.filter2Texture, null);
 
 	// set the transformation for rendering to the render-to-texture
@@ -113,9 +113,9 @@ pbMultiFilterDemo.prototype.destroy = function()
 		this.surface.destroy();
 	this.surface = null;
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 
 	this.rttTexture = null;
 	this.rttRenderbuffer = null;
@@ -141,19 +141,19 @@ pbMultiFilterDemo.prototype.update = function()
 {
 	// draw srcImage using the render-to-texture framebuffer
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
-	this.renderer.graphics.drawImageWithTransform(this.rttTextureNumber, this.srcImage, this.srcTransform, 1.0);
+	pbPhaserRender.renderer.graphics.drawImageWithTransform(this.rttTextureNumber, this.srcImage, this.srcTransform, 1.0);
 
 	// draw rttTexture to the filterTexture, applying a tint shader (from TEXTURE0, filterTexture is on TEXTURE1)
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setTint, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setTint, this);
 
 	// draw filterTexture to the rttTexture, applying a wave shader (from TEXTURE1, rttTexture is still on TEXTURE0)
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter2Framebuffer);
-	this.renderer.graphics.applyShaderToTexture(this.filterTextureNumber, this.filterTexture, this.setWave, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.filterTextureNumber, this.filterTexture, this.setWave, this);
 
 	// draw the final texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(this.rttTextureNumber, this.filter2Texture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay(this.rttTextureNumber, this.filter2Texture);
 };
 
 

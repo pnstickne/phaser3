@@ -19,7 +19,7 @@ function pbRoadDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "road", "../img/roadSand.png" );
+	this.spriteImg = pbPhaserRender.loader.loadImage( "road", "../img/roadSand.png" );
 
 	console.log( "pbRoadDemo c'tor exit" );
 }
@@ -29,7 +29,7 @@ pbRoadDemo.prototype.allLoaded = function()
 {
 	console.log( "pbRoadDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
@@ -53,9 +53,9 @@ pbRoadDemo.prototype.destroy = function()
 		this.layer.destroy();
 	this.layer = null;
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 
@@ -73,14 +73,14 @@ pbRoadDemo.prototype.addSprites = function()
 	console.log("pbRoadDemo.addSprites");
 
 	// create animation data and set destination for movement
-	var imageData = this.loader.getFile( this.spriteImg );
+	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
 	this.surface.create(0, 0, 1, 1, imageData);
 
 	// create a layer to draw using mode z
 	this.layer = new pbWebGlLayer();
 	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-	this.layer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
+	this.layer.create(rootLayer, this.phaserRender, 0, 0, 1, 0, 1, 1);
 	// set the pbSimpleLayer to call the mode z sprite drawing function, and a data preparation function for XY and UV coordinates
 	rootLayer.addChild(this.layer);
 
@@ -93,7 +93,7 @@ pbRoadDemo.prototype.addSprites = function()
 	// create a sprite to draw using mode z
 	this.spr = new pbTransformObject();
 	// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-	this.spr.create(img, pbRenderer.width * 0.5, 100.0, 1.0, 0, pbRenderer.width / this.surface.cellWide, 4.0);
+	this.spr.create(img, pbPhaserRender.width * 0.5, 100.0, 1.0, 0, pbPhaserRender.width / this.surface.cellWide, 4.0);
 	this.layer.addChild(this.spr);
 };
 

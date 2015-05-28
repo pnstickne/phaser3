@@ -10,37 +10,24 @@ function pbMultiInstanceDemo( docId )
 {
 	console.log( "pbMultiInstanceDemo c'tor entry" );
 
-	var _this = this;
-	this.docId = docId;
-	
 	this.layer = null;
 	this.cameras = null;
 	this.fps60 = 0;
 
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
-
-	this.loader.loadImage( "player", "../img/invader/player.png" );
-	this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
-	this.loader.loadImage( "stars", "../img/invader/starfield.png" );
-	this.loader.loadImage( "bullet", "../img/invader/bullet.png" );
-	this.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
-	this.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png", 32, 32, 8, 1 );
-	this.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
-	this.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
-	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( useRenderer, this.create, this.update, this );
+	pbPhaserRender.loader.loadImage( "player", "../img/invader/player.png" );
+	pbPhaserRender.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
+	pbPhaserRender.loader.loadImage( "stars", "../img/invader/starfield.png" );
+	pbPhaserRender.loader.loadImage( "bullet", "../img/invader/bullet.png" );
+	pbPhaserRender.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
+	pbPhaserRender.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png", 32, 32, 8, 1 );
+	pbPhaserRender.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
+	pbPhaserRender.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
+	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
 
 	console.log( "pbMultiInstanceDemo c'tor exit" );
 }
-
-
-pbMultiInstanceDemo.prototype.allLoaded = function()
-{
-	console.log( "pbMultiInstanceDemo.allLoaded" );
-
-	// callback to this.create when ready, callback to this.update once every frame
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
-};
 
 
 pbMultiInstanceDemo.prototype.create = function()
@@ -55,8 +42,8 @@ pbMultiInstanceDemo.prototype.addCameras = function()
 {
 	var cx = 0;
 	var cy = 0;
-	var tx = pbRenderer.width / this.numWide;
-	var ty = pbRenderer.height / this.numHigh;
+	var tx = pbPhaserRender.width / this.numWide;
+	var ty = pbPhaserRender.height / this.numHigh;
 
 	this.cameras = [];
 	for(var y = 0; y < this.numHigh; y++)
@@ -68,7 +55,7 @@ pbMultiInstanceDemo.prototype.addCameras = function()
 		{
 			// add a new camera
 			var layer = new layerClass();
-			layer.create(rootLayer, this.renderer, cx, cy, 0, 0, 1 / this.numWide, 1 / this.numHigh);
+			layer.create(rootLayer, this.phaserRender, cx, cy, 0, 0, 1 / this.numWide, 1 / this.numHigh);
 			layer.setClipping(cx, cy, tx, ty);
 			this.cameras[y][x] = new pbInvaderDemoCore();
 			this.cameras[y][x].create(this, layer);
@@ -101,8 +88,8 @@ pbMultiInstanceDemo.prototype.destroy = function()
 {
 	this.removeCameras();
 
-	this.renderer.destroy();
-	this.renderer = null;
+	this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 

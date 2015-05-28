@@ -86,8 +86,8 @@ pbSpriteRTTDemo.prototype.renderToTexture = function()
 	// TODO: setting the viewport to the texture size means everything has to be scaled up to compensate... try to find another way
 	gl.viewport(0, 0, this.rttTexture.width, this.rttTexture.height);
 	// offset to the middle of the texture and scale it up
-	// TODO: despite the viewport scaling, we have to use pbRenderer.width and height for the offset... why??
-	var transform = pbMatrix3.makeTransform(pbRenderer.width/2 , pbRenderer.height/2, 0, pbRenderer.width/this.rttTexture.width, pbRenderer.height/this.rttTexture.height);
+	// TODO: despite the viewport scaling, we have to use pbPhaserRender.width and height for the offset... why??
+	var transform = pbMatrix3.makeTransform(pbPhaserRender.width/2 , pbPhaserRender.height/2, 0, pbPhaserRender.width/this.rttTexture.width, pbPhaserRender.height/this.rttTexture.height);
 	pbPhaserRender.renderer.graphics.drawImageWithTransform( srcTextureRegister, img, transform, 1.0 );
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
@@ -146,6 +146,6 @@ pbSpriteRTTDemo.prototype.update = function()
 	// bounce the top sprite across the renderer view
 	this.spr.x += this.dirx;
 	if (this.spr.x < 150) this.dirx = -this.dirx;
-	if (this.spr.x > pbRenderer.width - 150) this.dirx = -this.dirx;
+	if (this.spr.x > pbPhaserRender.width - 150) this.dirx = -this.dirx;
 };
 

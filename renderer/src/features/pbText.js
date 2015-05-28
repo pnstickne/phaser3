@@ -32,7 +32,7 @@ pbText.prototype.create = function(_key, _layer, _firstAscii, _offset)
 	}
 	else
 	{
-		alert("ERROR: (pbText) no texture is available for " + _key)
+		alert("ERROR: (pbText) no texture is available for " + _key);
 	}
 };
 

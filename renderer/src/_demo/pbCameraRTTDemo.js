@@ -26,15 +26,15 @@ function pbCameraRTTDemo( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 
-	this.loader.loadImage( "player", "../img/invader/player.png" );
-	this.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
-	this.loader.loadImage( "stars", "../img/invader/starfield.png" );
-	this.loader.loadImage( "bullet", "../img/invader/bullet.png" );
-	this.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
-	this.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png", 32, 32, 8, 1 );
-	this.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
-	this.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
-	this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
+	pbPhaserRender.loader.loadImage( "player", "../img/invader/player.png" );
+	pbPhaserRender.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
+	pbPhaserRender.loader.loadImage( "stars", "../img/invader/starfield.png" );
+	pbPhaserRender.loader.loadImage( "bullet", "../img/invader/bullet.png" );
+	pbPhaserRender.loader.loadImage( "bomb", "../img/invader/enemy-bullet.png" );
+	pbPhaserRender.loader.loadImage( "rocket", "../img/invader/rockets32x32x8.png", 32, 32, 8, 1 );
+	pbPhaserRender.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
+	pbPhaserRender.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
+	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
 
 
 	console.log( "pbCameraRTTDemo c'tor exit" );
@@ -46,7 +46,7 @@ pbCameraRTTDemo.prototype.allLoaded = function()
 	console.log( "pbCameraRTTDemo.allLoaded" );
 
 	// callback to this.create when ready, callback to this.update once every frame
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
@@ -55,7 +55,7 @@ pbCameraRTTDemo.prototype.create = function()
 	console.log("pbCameraRTTDemo.create");
 
 	this.gameLayer = new layerClass();
-	this.gameLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
+	this.gameLayer.create(rootLayer, this.phaserRender, 0, 0, 1.0, 0, 1.0, 1.0);
 	rootLayer.addChild(this.gameLayer);
 
 	// add the game instance to a layer which is attached to the rootLayer
@@ -66,7 +66,7 @@ pbCameraRTTDemo.prototype.create = function()
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.textureNumber = 4;
-	this.rttTexture = pbWebGlTextures.initTexture(this.textureNumber, pbRenderer.width, pbRenderer.height);
+	this.rttTexture = pbWebGlTextures.initTexture(this.textureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
@@ -83,11 +83,11 @@ pbCameraRTTDemo.prototype.create = function()
 	this.transform = pbMatrix3.makeTransform(this.tx, this.ty, this.tr, this.ts, this.ts);
 
 	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
-    this.renderer.postUpdate = this.postUpdate;
+    this.phaserRender.postUpdate = this.postUpdate;
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update
-   	this.renderer.useFramebuffer = this.rttFramebuffer;
-   	this.renderer.useRenderbuffer = this.rttRenderbuffer;
+   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
+   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
 };
 
 
@@ -98,8 +98,8 @@ pbCameraRTTDemo.prototype.destroy = function()
 	this.gameLayer.destroy();
 	this.gameLayer = null;
 
-	this.renderer.destroy();
-	this.renderer = null;
+	this.phaserRender.destroy();
+	this.phaserRender = null;
 
 	this.game.destroy();
 	this.game = null;
@@ -128,9 +128,9 @@ pbCameraRTTDemo.prototype.postUpdate = function()
 
 	// move the draw image around
 	this.tx += this.tdx;
-	if (this.tx <= 0 || this.tx >= pbRenderer.width) this.tdx = -this.tdx;
+	if (this.tx <= 0 || this.tx >= pbPhaserRender.width) this.tdx = -this.tdx;
 	this.ty += this.tdy;
-	if (this.ty <= 0 || this.ty >= pbRenderer.height) this.tdy = -this.tdy;
+	if (this.ty <= 0 || this.ty >= pbPhaserRender.height) this.tdy = -this.tdy;
 	this.tr += this.tdr;
 	if (this.tr >= Math.PI * 2.0) this.tr -= Math.PI * 2.0;
 	this.ts += this.tds;
@@ -142,6 +142,6 @@ pbCameraRTTDemo.prototype.postUpdate = function()
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
 	// _image, _transform, _z
-	this.renderer.graphics.drawTextureWithTransform( this.textureNumber, this.rttTexture, this.transform, 1.0 );
+	pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.textureNumber, this.rttTexture, this.transform, 1.0 );
 };
 

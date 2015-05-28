@@ -17,7 +17,7 @@ function pbBlankDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.loader.loadImage( "ball", "../img/sphere3.png" );
+	pbPhaserRender.loader.loadImage( "ball", "../img/sphere3.png" );
 
 	console.log( "pbBlankDemo c'tor exit" );
 }
@@ -27,7 +27,7 @@ pbBlankDemo.prototype.allLoaded = function()
 {
 	console.log( "pbBlankDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -43,9 +43,9 @@ pbBlankDemo.prototype.destroy = function()
 {
 	console.log("pbBlankDemo.destroy");
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 

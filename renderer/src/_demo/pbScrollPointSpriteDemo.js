@@ -35,10 +35,10 @@ function pbScrollPointSpriteDemo( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 
-	this.levelData = this.loader.loadFile( "../img/tiles/level1.json" );
-	this.bgImg = this.loader.loadImage( "background", "../img/tiles/background_128x512.png" );
-	this.dudeImg = this.loader.loadImage( "dude", "../img/tiles/dude.png" );
-	this.tileImg = this.loader.loadImage( "tiles", "../img/tiles/tiles-1.png" );
+	this.levelData = pbPhaserRender.loader.loadFile( "../img/tiles/level1.json" );
+	this.bgImg = pbPhaserRender.loader.loadImage( "background", "../img/tiles/background_128x512.png" );
+	this.dudeImg = pbPhaserRender.loader.loadImage( "dude", "../img/tiles/dude.png" );
+	this.tileImg = pbPhaserRender.loader.loadImage( "tiles", "../img/tiles/tiles-1.png" );
 	
 	console.log( "pbScrollPointSpriteDemo c'tor exit" );
 }
@@ -48,7 +48,7 @@ pbScrollPointSpriteDemo.prototype.allLoaded = function()
 {
 	console.log( "pbScrollPointSpriteDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -56,7 +56,7 @@ pbScrollPointSpriteDemo.prototype.create = function()
 {
 	console.log("pbScrollPointSpriteDemo.create");
 
-	var tileMapJSON = this.loader.getFile(this.levelData).responseText;
+	var tileMapJSON = pbPhaserRender.loader.getFile(this.levelData).responseText;
 
 	// Tile Map data format:
 	//
@@ -102,8 +102,8 @@ pbScrollPointSpriteDemo.prototype.destroy = function()
 
 	gui.remove(this.numCtrl);
 
-	this.renderer.destroy();
-	this.renderer = null;
+	this.phaserRender.destroy();
+	this.phaserRender = null;
 
 	this.tileMap = null;
 	this.bgSpr.destroy();
@@ -139,21 +139,21 @@ pbScrollPointSpriteDemo.prototype.createSurfaces = function()
 	console.log("pbScrollPointSpriteDemo.createSurfaces");
 
 	// the background image (tiled and stretched to fill the whole viewport)
-	var imageData = this.loader.getFile( this.bgImg );
+	var imageData = pbPhaserRender.loader.getFile( this.bgImg );
 	var surface = new pbSurface();
 	surface.create(0, 0, 1, 1, imageData);
-	surface.cellTextureBounds[0][0].width = pbRenderer.width / surface.cellWide;
+	surface.cellTextureBounds[0][0].width = pbPhaserRender.width / surface.cellWide;
 	var img = new imageClass();
 	img.create(surface, 0, 0, 0, true, false);
 	this.bgSpr = new pbTransformObject();
 
 	// scale the tiled background to compensate for the extra drawn width from tiling
 	// TODO: create a simple API to fix surface and sprite scaling, or add a separate variable to handle tiling properly
-	this.bgSpr.create(img, 0, 0, 1.0, 0, pbRenderer.width / surface.cellWide, pbRenderer.height / surface.cellHigh);
+	this.bgSpr.create(img, 0, 0, 1.0, 0, pbPhaserRender.width / surface.cellWide, pbPhaserRender.height / surface.cellHigh);
 	rootLayer.addChild(this.bgSpr);
 
 	// set up the tiles in a pbTransformObject
-	imageData = this.loader.getFile( this.tileImg );
+	imageData = pbPhaserRender.loader.getFile( this.tileImg );
 	this.tileSurface = new pbSurface();
 	this.tileSurface.create(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, imageData);
 	this.tileSurface.isNPOT = true;
@@ -175,7 +175,7 @@ pbScrollPointSpriteDemo.prototype.createLayers = function(_surface)
 pbScrollPointSpriteDemo.prototype.addLayer = function(_surface)
 {
 	var layer = new pbSimpleLayer();
-	layer.create(rootLayer, this.renderer, 0, 0, _surface);
+	layer.create(rootLayer, this.phaserRender, 0, 0, _surface);
 	layer.setDrawingFunctions( layer.prepareXYUV, layer.drawPointAnim );
 	rootLayer.addChild(layer);
 	var i = this.scrollLayers.length;
@@ -236,9 +236,9 @@ pbScrollPointSpriteDemo.prototype.update = function()
 			this.scrollLayers[i].dirX = -this.scrollLayers[i].dirX;
 		}
 
-		if (sx >= this.mapWidth - pbRenderer.width)
+		if (sx >= this.mapWidth - pbPhaserRender.width)
 		{
-			sx = this.mapWidth - pbRenderer.width - 1;
+			sx = this.mapWidth - pbPhaserRender.width - 1;
 			this.scrollLayers[i].dirX = -this.scrollLayers[i].dirX;
 		}
 
@@ -248,9 +248,9 @@ pbScrollPointSpriteDemo.prototype.update = function()
 			this.scrollLayers[i].dirY = -this.scrollLayers[i].dirY;
 		}
 
-		if (sy >= this.mapHeight - pbRenderer.height)
+		if (sy >= this.mapHeight - pbPhaserRender.height)
 		{
-			sy = this.mapHeight - pbRenderer.height - 1;
+			sy = this.mapHeight - pbPhaserRender.height - 1;
 			this.scrollLayers[i].dirY = -this.scrollLayers[i].dirY;
 		}
 

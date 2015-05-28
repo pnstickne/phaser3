@@ -18,8 +18,8 @@ function pbBlankShaderDemo( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 
-	this.shaderJSON = this.loader.loadFile( "../JSON/tintShaderSources.json" );
-	this.loader.loadImage( "ball", "../img/sphere3.png" );
+	this.shaderJSON = pbPhaserRender.loader.loadFile( "../JSON/tintShaderSources.json" );
+	pbPhaserRender.loader.loadImage( "ball", "../img/sphere3.png" );
 
 	console.log( "pbBlankShaderDemo c'tor exit" );
 }
@@ -29,7 +29,7 @@ pbBlankShaderDemo.prototype.allLoaded = function()
 {
 	console.log( "pbBlankShaderDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -38,26 +38,26 @@ pbBlankShaderDemo.prototype.create = function()
 	console.log("pbBlankShaderDemo.create");
 
 	// add the shader
-	var jsonString = this.loader.getFile( this.shaderJSON ).responseText;
-	this.shaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
+	var jsonString = pbPhaserRender.loader.getFile( this.shaderJSON ).responseText;
+	this.shaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
 	// create a render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTextureNumber = 0;
-	this.rttTexture = pbWebGlTextures.initTexture(rttTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.rttTexture = pbWebGlTextures.initTexture(rttTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 	// create the filter destination texture
 	this.filterTextureNumber = 1;
-	this.filterTexture = pbWebGlTextures.initTexture(filterTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.filterTexture = pbWebGlTextures.initTexture(filterTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update (drawing the invaders)
-   	this.renderer.useFramebuffer = this.rttFramebuffer;
-   	this.renderer.useRenderbuffer = this.rttRenderbuffer;
+   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
+   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
-    this.renderer.postUpdate = this.postUpdate;
+    this.phaserRender.postUpdate = this.postUpdate;
 
     // add sprites
 	this.addSprites();
@@ -68,9 +68,9 @@ pbBlankShaderDemo.prototype.destroy = function()
 {
 	console.log("pbBlankShaderDemo.destroy");
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 
@@ -95,7 +95,7 @@ pbBlankShaderDemo.prototype.addSprites = function()
 
 pbBlankShaderDemo.prototype.update = function()
 {
-	// all normal sprites will be drawn to the rttTexture because of this.renderer.useFramebuffer in this.create
+	// all normal sprites will be drawn to the rttTexture because of this.phaserRender.useFramebuffer in this.create
 	// see pbPointLightsDemo for example how to draw directly to the display (the 'player' ship and 'rockets')
 	// alternatively look at pbFilterDemo which draws to the rttTexture manually instead of redirecting renderer.update
 };
@@ -111,11 +111,11 @@ pbBlankShaderDemo.prototype.postUpdate = function()
 
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a shader as it draws
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
 };
 
 

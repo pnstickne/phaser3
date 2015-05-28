@@ -21,11 +21,11 @@ function pbDungeonLightDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.multiLightBgShaderJSON = this.loader.loadFile( "../JSON/multiLightBgSources.json" );
-	this.levelData = this.loader.loadFile( "../img/tiles/dungeon.json" );
-	this.tileImg = this.loader.loadImage( "tiles", "../img/tiles/gridtiles.png" );
-	this.loader.loadImage( "wizard", "../img/wiz.png", 32, 32, 30, 4 );
-	this.floorImg = this.loader.loadImage( "floor", "../img/dungeon__floor_2.jpg" );
+	this.multiLightBgShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/multiLightBgSources.json" );
+	this.levelData = pbPhaserRender.loader.loadFile( "../img/tiles/dungeon.json" );
+	this.tileImg = pbPhaserRender.loader.loadImage( "tiles", "../img/tiles/gridtiles.png" );
+	pbPhaserRender.loader.loadImage( "wizard", "../img/wiz.png", 32, 32, 30, 4 );
+	this.floorImg = pbPhaserRender.loader.loadImage( "floor", "../img/dungeon__floor_2.jpg" );
 
 	console.log( "pbDungeonLightDemo c'tor exit" );
 }
@@ -35,7 +35,7 @@ pbDungeonLightDemo.prototype.allLoaded = function()
 {
 	console.log( "pbDungeonLightDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
@@ -44,10 +44,10 @@ pbDungeonLightDemo.prototype.create = function()
 	console.log("pbDungeonLightDemo.create");
 
 	// add the shader
-	var jsonString = this.loader.getFile( this.multiLightBgShaderJSON ).responseText;
-	this.multiLightBgShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
+	var jsonString = pbPhaserRender.loader.getFile( this.multiLightBgShaderJSON ).responseText;
+	this.multiLightBgShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
-	var tileMapJSON = this.loader.getFile(this.levelData).responseText;
+	var tileMapJSON = pbPhaserRender.loader.getFile(this.levelData).responseText;
 
 	// Tile Map data format:
 	//
@@ -86,25 +86,25 @@ pbDungeonLightDemo.prototype.create = function()
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTextureNumber = 1;
-	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update (drawing the invaders)
-   	this.renderer.useFramebuffer = this.rttFramebuffer;
-   	this.renderer.useRenderbuffer = this.rttRenderbuffer;
+   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
+   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
 
 	// create the filter destination texture and framebuffer
 	this.filterTextureNumber = 2;
-	this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbRenderer.width, pbRenderer.height);
+	this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
-    this.renderer.postUpdate = this.postUpdate;
+    this.phaserRender.postUpdate = this.postUpdate;
 
     // create a top layer that doesn't cast shadows
 	this.topLayer = new layerClass();
-	this.topLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
+	this.topLayer.create(rootLayer, this.phaserRender, 0, 0, 1.0, 0, 1.0, 1.0);
 
     this.wiz = new pbSprite();
     this.wiz.createWithKey(32, 32, "wizard", this.topLayer);
@@ -120,10 +120,10 @@ pbDungeonLightDemo.prototype.create = function()
     }
 
     // get the ImageData for the floor
-	var imageData = this.loader.getFile( this.floorImg );
+	var imageData = pbPhaserRender.loader.getFile( this.floorImg );
 	// upload the floor image directly to the correct texture register on the GPU
 	this.floorTextureNumber = 3;
-	this.renderer.graphics.textures.prepare(imageData, false, true, this.floorTextureNumber );
+	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, this.floorTextureNumber );
 };
 
 
@@ -145,9 +145,9 @@ pbDungeonLightDemo.prototype.destroy = function()
 {
 	console.log("pbDungeonLightDemo.destroy");
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 
 	this.rttTexture = null;
 	this.rttRenderbuffer = null;
@@ -163,7 +163,7 @@ pbDungeonLightDemo.prototype.createSurfaces = function()
 	console.log("pbScrollDemo.createSurfaces");
 
 	// set up the tiles in a pbTransformObject
-	imageData = this.loader.getFile( this.tileImg );
+	imageData = pbPhaserRender.loader.getFile( this.tileImg );
 	this.tileSurface = new pbSurface();
 	this.tileSurface.create(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, imageData);
 	this.tileSurface.isNPOT = true;
@@ -184,7 +184,7 @@ pbDungeonLightDemo.prototype.createLayers = function(_surface)
 pbDungeonLightDemo.prototype.addLayer = function(_surface)
 {
 	var layer = new layerClass();
-	layer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
+	layer.create(rootLayer, this.phaserRender, 0, 0, 1, 0, 1, 1);
 	rootLayer.addChild(layer);
 
 	var i = this.tileLayers.length;
@@ -450,7 +450,7 @@ pbDungeonLightDemo.prototype.postUpdate = function()
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a shader as it draws
 	gl.activeTexture(gl.TEXTURE0 + this.rttTextureNumber);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
 
 	// update transforms and draw sprites that are not shadow casters
 	this.topLayer.update();
@@ -458,7 +458,7 @@ pbDungeonLightDemo.prototype.postUpdate = function()
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.activeTexture(gl.TEXTURE0 + this.filterTextureNumber);
-	this.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
 };
 
 
@@ -495,16 +495,16 @@ pbDungeonLightDemo.prototype.setLightData = function()
 	// first light is attached to the player ship
 	var w = this.tileMap.tilesets[0].tilewidth;
 	var h = this.tileMap.tilesets[0].tileheight;
-	lightData[0 * 4 + 0] = (this.wiz.move.x / 1000 * w + w * 0.5 + this.wiz.light.x) / pbRenderer.width;
-	lightData[0 * 4 + 1] = 1.0 - (this.wiz.move.y / 1000 * h + h * 0.5 + this.wiz.light.y) / pbRenderer.height;
+	lightData[0 * 4 + 0] = (this.wiz.move.x / 1000 * w + w * 0.5 + this.wiz.light.x) / pbPhaserRender.width;
+	lightData[0 * 4 + 1] = 1.0 - (this.wiz.move.y / 1000 * h + h * 0.5 + this.wiz.light.y) / pbPhaserRender.height;
 	lightData[0 * 4 + 2] = pack(this.wiz.light.r, this.wiz.light.g, this.wiz.light.b);
 	lightData[0 * 4 + 3] = this.wiz.light.range;
 
 	var i = 1;
 	for(var e = 0, l = this.enemy.length; e < l; e++)
 	{
-		lightData[i * 4 + 0] = (this.enemy[e].x / 1000 * w + w * 0.5) / pbRenderer.width;
-		lightData[i * 4 + 1] = 1.0 - (this.enemy[e].y / 1000 * h + h * 0.5) / pbRenderer.height;
+		lightData[i * 4 + 0] = (this.enemy[e].x / 1000 * w + w * 0.5) / pbPhaserRender.width;
+		lightData[i * 4 + 1] = 1.0 - (this.enemy[e].y / 1000 * h + h * 0.5) / pbPhaserRender.height;
 		lightData[i * 4 + 2] = pack(this.enemy[e].r, this.enemy[e].g, this.enemy[e].b);
 		lightData[i * 4 + 3] = 0.25;
 		if (++i >= 16) break;

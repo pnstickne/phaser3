@@ -24,7 +24,7 @@ function pbBunnyPointAnimDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "bunny", "../img/bunny_8x32x32.png", 32, 32, 8, 1 );
+	this.spriteImg = pbPhaserRender.loader.loadImage( "bunny", "../img/bunny_8x32x32.png", 32, 32, 8, 1 );
 
 	console.log( "pbBunnyPointAnimDemo c'tor exit" );
 }
@@ -34,7 +34,7 @@ pbBunnyPointAnimDemo.prototype.allLoaded = function()
 {
 	console.log( "pbBunnyPointAnimDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -46,7 +46,7 @@ pbBunnyPointAnimDemo.prototype.create = function()
 
 	// create a pbSimpleLayer to display the bunnies rapidly with minimum overhead
 	this.layer = new pbSimpleLayer();
-	this.layer.create(null, this.renderer, 0, 0, null);
+	this.layer.create(null, this.phaserRender, 0, 0, null);
 
 	// set the pbSimpleLayer to call the GL_POINT style sprite drawing function with animation, and a data preparation function for XY and UV coordinates
 	this.layer.setDrawingFunctions( this.layer.prepareXYUV, this.layer.drawPointAnim );
@@ -69,9 +69,9 @@ pbBunnyPointAnimDemo.prototype.destroy = function()
 		this.surface.destroy();
 	this.surface = null;
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 
@@ -89,7 +89,7 @@ pbBunnyPointAnimDemo.prototype.addSprites = function(num)
 	// create animation data and set destination for movement
 	if (!this.surface)
 	{
-		var imageData = this.loader.getFile( this.spriteImg );
+		var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 		this.surface = new pbSurface();
 		this.surface.create(32, 32, 4, 2, imageData);
 		this.surface.isNPOT = true;
@@ -147,14 +147,14 @@ pbBunnyPointAnimDemo.prototype.update = function()
 			spr.x = 13;
 			obj.vx = -obj.vx;
 		}
-		else if (spr.x > pbRenderer.width - 13)
+		else if (spr.x > pbPhaserRender.width - 13)
 		{
-			spr.x = pbRenderer.width - 13;
+			spr.x = pbPhaserRender.width - 13;
 			obj.vx = -obj.vx;
 		}
-		if (spr.y >= pbRenderer.height)
+		if (spr.y >= pbPhaserRender.height)
 		{
-			spr.y = pbRenderer.height;
+			spr.y = pbPhaserRender.height;
 			obj.vy *= - 0.85;
 			if (Math.random() > 0.5)
 			{

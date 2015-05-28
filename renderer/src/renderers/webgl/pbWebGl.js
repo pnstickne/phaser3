@@ -159,8 +159,8 @@ pbWebGl.prototype.fillStyle = function(_fillColor, _lineColor)
 pbWebGl.prototype.fillRect = function( x, y, wide, high, color, targetWidth, targetHeight )
 {
 	// console.log( "pbWebGl.fillRect" );
-	if (targetWidth === undefined) targetWidth = pbRenderer.width;
-	if (targetHeight === undefined) targetHeight = pbRenderer.height;
+	if (targetWidth === undefined) targetWidth = pbPhaserRender.width;
+	if (targetHeight === undefined) targetHeight = pbPhaserRender.height;
 
 	this.shaders.setProgram(this.shaders.graphicsShaderProgram);
 
@@ -213,8 +213,8 @@ pbWebGl.prototype.fillRect = function( x, y, wide, high, color, targetWidth, tar
 pbWebGl.prototype.drawRect = function( x, y, wide, high, color, targetWidth, targetHeight )
 {
 	// console.log( "pbWebGl.drawRect" );
-	if (targetWidth === undefined) targetWidth = pbRenderer.width;
-	if (targetHeight === undefined) targetHeight = pbRenderer.height;
+	if (targetWidth === undefined) targetWidth = pbPhaserRender.width;
+	if (targetHeight === undefined) targetHeight = pbPhaserRender.height;
 
 	// TODO: this is the only line that differs from fillRect... merge them
 	this.shaders.setProgram(this.shaders.lineShaderProgram);

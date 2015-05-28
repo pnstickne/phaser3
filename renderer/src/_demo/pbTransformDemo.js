@@ -102,6 +102,6 @@ pbTransformDemo.prototype.update = function()
 	// bounce the top sprite across the renderer view
 	this.spr.x += this.dirx;
 	if (this.spr.x < 150) this.dirx = -this.dirx;
-	if (this.spr.x > pbRenderer.width - 150) this.dirx = -this.dirx;
+	if (this.spr.x > pbPhaserRender.width - 150) this.dirx = -this.dirx;
 };
 

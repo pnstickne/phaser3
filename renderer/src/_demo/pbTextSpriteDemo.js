@@ -11,24 +11,12 @@ function pbTextSpriteDemo( docId )
 {
 	console.log( "pbTextSpriteDemo c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png" );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( useRenderer, this.create, this.update, this );
+	this.spriteImg = pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png" );
 
 	console.log( "pbTextSpriteDemo c'tor exit" );
 }
-
-
-pbTextSpriteDemo.prototype.allLoaded = function()
-{
-	console.log( "pbTextSpriteDemo.allLoaded" );
-
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
-};
 
 
 pbTextSpriteDemo.prototype.create = function()
@@ -46,8 +34,8 @@ pbTextSpriteDemo.prototype.destroy = function()
 	this.surface.destroy();
 	this.surface = null;
 
-	this.renderer.destroy();
-	this.renderer = null;
+	this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 
@@ -69,24 +57,24 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	console.log("pbTextSpriteDemo.addSprites");
 
 	// get the source image, it's NPOT so duplicate it into a larger canvas which is power of two in both dimensions (webgl requirement)
-	var imageData = this.loader.getFile( this.spriteImg );
+	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	imageData = imageToPowerOfTwo(imageData);
 	this.surface = new pbSurface();
 	this.surface.create(16, 16, 95, 7, imageData);		// there are 7 rows of 95 characters which are 16x16 pixels each
 
 	this.greenLayer = new layerClass();
-	this.greenLayer.create(rootLayer, this.renderer, 0, 0, 0, 0, 1, 1);
+	this.greenLayer.create(rootLayer, this.phaserRender, 0, 0, 0, 0, 1, 1);
 	rootLayer.addChild(this.greenLayer);
 
 	this.redLayer = new layerClass();
-	this.redLayer.create(this.greenLayer, this.renderer, 0, 0, 0, 0, 1, 1);
+	this.redLayer.create(this.greenLayer, this.phaserRender, 0, 0, 0, 0, 1, 1);
 	this.greenLayer.addChild(this.redLayer);
 
 	this.yellowLayer = new layerClass();
-	this.yellowLayer.create(this.redLayer, this.renderer, 0, 0, 0, 0, 1, 1);
+	this.yellowLayer.create(this.redLayer, this.phaserRender, 0, 0, 0, 0, 1, 1);
 	this.redLayer.addChild(this.yellowLayer);
 
-	var fillScreen = Math.floor(pbRenderer.width / 16) * Math.floor(pbRenderer.height / 16);
+	var fillScreen = Math.floor(pbPhaserRender.width / 16) * Math.floor(pbPhaserRender.height / 16);
 
 	var i, r, img, spr, x, y;
 
@@ -99,8 +87,8 @@ pbTextSpriteDemo.prototype.addSprites = function()
 		img.create(this.surface, r, 0.5, 0.5);
 
 		spr = new pbTransformObject();
-		x = 8 + (i * 16) % pbRenderer.width;
-		y = 8 + Math.floor(((i * 16) / pbRenderer.width)) * 16;
+		x = 8 + (i * 16) % pbPhaserRender.width;
+		y = 8 + Math.floor(((i * 16) / pbPhaserRender.width)) * 16;
 		spr.create(img, x, y, 1.0, 0, 1.0, 1.0);
 
 		this.greenLayer.addChild(spr);
@@ -116,8 +104,8 @@ pbTextSpriteDemo.prototype.addSprites = function()
 		img.create(this.surface, r + 95, 0.5, 0.5);
 
 		spr = new pbTransformObject();
-		x = 8 + (i * 16) % pbRenderer.width;
-		y = 8 + Math.floor(((i * 16) / pbRenderer.width)) * 16;
+		x = 8 + (i * 16) % pbPhaserRender.width;
+		y = 8 + Math.floor(((i * 16) / pbPhaserRender.width)) * 16;
 		spr.create(img, x, y, 1.0, 0, 1.0, 1.0);
 
 		this.redLayer.addChild(spr);
@@ -133,8 +121,8 @@ pbTextSpriteDemo.prototype.addSprites = function()
 		img.create(this.surface, r + 95 * 2, 0.5, 0.5);
 
 		spr = new pbTransformObject();
-		x = 8 + (i * 16) % pbRenderer.width;
-		y = 8 + Math.floor(((i * 16) / pbRenderer.width)) * 16;
+		x = 8 + (i * 16) % pbPhaserRender.width;
+		y = 8 + Math.floor(((i * 16) / pbPhaserRender.width)) * 16;
 		spr.create(img, x, y, 1.0, 0, 1.0, 1.0);
 
 		this.yellowLayer.addChild(spr);
@@ -151,7 +139,7 @@ pbTextSpriteDemo.prototype.update = function()
 	{
 		spr = this.greenLetters[i];
 		spr.y += (spr.x + 100) * 0.01;
-		if (spr.y > pbRenderer.height + 8)
+		if (spr.y > pbPhaserRender.height + 8)
 			spr.y = -8;
 	}
 	for(i = 0, l = this.redLetters.length; i < l; i++)
@@ -159,14 +147,14 @@ pbTextSpriteDemo.prototype.update = function()
 		spr = this.redLetters[i];
 		spr.y -= (spr.x + 100) * 0.01;
 		if (spr.y < -8)
-			spr.y = pbRenderer.height + 8;
+			spr.y = pbPhaserRender.height + 8;
 	}
 	for(i = 0, l = this.yellowLetters.length; i < l; i++)
 	{
 		spr = this.yellowLetters[i];
 		spr.x -= (spr.y + 100) * 0.01;
 		if (spr.x < -8)
-			spr.x = pbRenderer.width + 8;
+			spr.x = pbPhaserRender.width + 8;
 	}
 };
 

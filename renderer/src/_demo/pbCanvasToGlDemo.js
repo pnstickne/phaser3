@@ -20,7 +20,7 @@ function pbCanvasToGlDemo( docId )
 	this.canvasSrc = null;
 
 	// force to 'webgl' renderer, this demo makes no sense in canvas mode
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 
 	console.log( "pbCanvasToGlDemo c'tor exit" );
 }
@@ -43,8 +43,8 @@ pbCanvasToGlDemo.prototype.create = function()
 	{
 		var obj =
 		{
-			x : Math.random() * pbRenderer.width,
-			y : Math.random() * pbRenderer.height,
+			x : Math.random() * pbPhaserRender.width,
+			y : Math.random() * pbPhaserRender.height,
 			vx : (Math.random() > 0.5 ? 1 : -1),
 			vy : (Math.random() > 0.5 ? 1 : -1),
 			angleInRadians : Math.random() * Math.PI * 2.0,
@@ -94,9 +94,9 @@ pbCanvasToGlDemo.prototype.destroy = function()
 	
 	this.list = null;
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 
@@ -130,9 +130,9 @@ pbCanvasToGlDemo.prototype.update = function()
 		// move the webGl texture around
 		obj.angleInRadians += 0.01;
 		obj.x += obj.vx;
-		if (obj.x <= 0 || obj.x >= pbRenderer.width) obj.vx = -obj.vx;
+		if (obj.x <= 0 || obj.x >= pbPhaserRender.width) obj.vx = -obj.vx;
 		obj.y += obj.vy;
-		if (obj.y <= 0 || obj.y >= pbRenderer.height) obj.vy= -obj.vy;
+		if (obj.y <= 0 || obj.y >= pbPhaserRender.height) obj.vy= -obj.vy;
 		obj.scale += obj.scaleDir;
 		if (obj.scale < 0.1 || obj.scale >= 2.0) obj.scaleDir = -obj.scaleDir;
 
@@ -141,7 +141,7 @@ pbCanvasToGlDemo.prototype.update = function()
 
 		// draw the canvas texture into this transformed webGl texture every frame
 		this.textureNumber = 0;
-		this.renderer.graphics.drawCanvasWithTransform(this.canvasSrc, true, obj.transform, 1.0);
+		pbPhaserRender.renderer.graphics.drawCanvasWithTransform(this.canvasSrc, true, obj.transform, 1.0);
 	}
 };
 

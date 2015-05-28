@@ -46,8 +46,8 @@ function pbFilterDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.tintShaderJSON = this.loader.loadFile( "../JSON/tintShaderSources.json" );
-	this.spriteImg = this.loader.loadImage( "image", "../img/screen1.jpg" );
+	this.tintShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/tintShaderSources.json" );
+	this.spriteImg = pbPhaserRender.loader.loadImage( "image", "../img/screen1.jpg" );
 
 	console.log( "pbFilterDemo c'tor exit" );
 }
@@ -57,7 +57,7 @@ pbFilterDemo.prototype.allLoaded = function()
 {
 	console.log( "pbFilterDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
@@ -66,10 +66,10 @@ pbFilterDemo.prototype.create = function()
 	console.log("pbFilterDemo.create");
 
 	// add the shader
-	var jsonString = this.loader.getFile( this.tintShaderJSON ).responseText;
-	this.tintShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
+	var jsonString = pbPhaserRender.loader.getFile( this.tintShaderJSON ).responseText;
+	this.tintShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
-	var imageData = this.loader.getFile( this.spriteImg );
+	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
 	// _wide, _high, _numWide, _numHigh, _image
 	this.surface.create(0, 0, 1, 1, imageData);
@@ -92,9 +92,9 @@ pbFilterDemo.prototype.destroy = function()
 		this.surface.destroy();
 	this.surface = null;
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 
 	this.rttTexture = null;
 	this.rttRenderbuffer = null;
@@ -127,13 +127,13 @@ pbFilterDemo.prototype.update = function()
 	{
 		// create the render-to-texture, depth buffer, and a frame buffer to hold them
 		this.rttTextureNumber = 3;
-		this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbRenderer.width, pbRenderer.height);
+		this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 		this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 		this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 		// create the filter texture
 		this.filterTextureNumber = 1;
-		this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbRenderer.width, pbRenderer.height);
+		this.filterTexture = pbWebGlTextures.initTexture(this.filterTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 		this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 		// set the transformation for rendering to the render-to-texture
@@ -152,15 +152,15 @@ pbFilterDemo.prototype.update = function()
 	// bind the framebuffer so drawing will go to the associated texture and depth buffer
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
 	// draw this.srcImage into the render-to-texture
-	this.renderer.graphics.drawImageWithTransform(this.rttTextureNumber, this.srcImage, this.srcTransform, 1.0);
+	pbPhaserRender.renderer.graphics.drawImageWithTransform(this.rttTextureNumber, this.srcImage, this.srcTransform, 1.0);
 
 	// copy rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setTint, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setTint, this);
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	this.renderer.graphics.drawTextureToDisplay(this.rttTextureNumber, this.filterTexture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay(this.rttTextureNumber, this.filterTexture);
 };
 
 

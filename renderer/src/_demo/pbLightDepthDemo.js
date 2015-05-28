@@ -21,14 +21,14 @@ function pbLightDepthDemo( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.multiLightBgShaderJSON = this.loader.loadFile( "../JSON/multiLightDepthBgSources.json" );
-	this.levelData = this.loader.loadFile( "../img/tiles/dungeon.json" );
-	this.tileImg = this.loader.loadImage( "tiles", "../img/tiles/gridtiles.png" );
-	this.loader.loadImage( "wizard", "../img/spritesheets/wizard.png", 32, 32, 30, 4 );
-	this.loader.loadImage( "minotaur", "../img/spritesheets/minotaur.png", 32, 32, 30, 4 );
-	this.loader.loadImage( "bullet", "../img/bullet_glow.png" );
-	this.floorImg = this.loader.loadImage( "floor", "../img/bumpy_floor.png" );
-	this.depthImg = this.loader.loadImage( "depthmap", "../img/tiles/bumpy_floor_tile.png" );
+	this.multiLightBgShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/multiLightDepthBgSources.json" );
+	this.levelData = pbPhaserRender.loader.loadFile( "../img/tiles/dungeon.json" );
+	this.tileImg = pbPhaserRender.loader.loadImage( "tiles", "../img/tiles/gridtiles.png" );
+	pbPhaserRender.loader.loadImage( "wizard", "../img/spritesheets/wizard.png", 32, 32, 30, 4 );
+	pbPhaserRender.loader.loadImage( "minotaur", "../img/spritesheets/minotaur.png", 32, 32, 30, 4 );
+	pbPhaserRender.loader.loadImage( "bullet", "../img/bullet_glow.png" );
+	this.floorImg = pbPhaserRender.loader.loadImage( "floor", "../img/bumpy_floor.png" );
+	this.depthImg = pbPhaserRender.loader.loadImage( "depthmap", "../img/tiles/bumpy_floor_tile.png" );
 
 	console.log( "pbLightDepthDemo c'tor exit" );
 }
@@ -38,7 +38,7 @@ pbLightDepthDemo.prototype.allLoaded = function()
 {
 	console.log( "pbLightDepthDemo.allLoaded" );
 
-	this.renderer = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
 };
 
 
@@ -47,10 +47,10 @@ pbLightDepthDemo.prototype.create = function()
 	console.log("pbLightDepthDemo.create");
 
 	// add the shader
-	var jsonString = this.loader.getFile( this.multiLightBgShaderJSON ).responseText;
-	this.multiLightBgShaderProgram = this.renderer.graphics.shaders.addJSON( jsonString );
+	var jsonString = pbPhaserRender.loader.getFile( this.multiLightBgShaderJSON ).responseText;
+	this.multiLightBgShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
-	var tileMapJSON = this.loader.getFile(this.levelData).responseText;
+	var tileMapJSON = pbPhaserRender.loader.getFile(this.levelData).responseText;
 
 	// Tile Map data format:
 	//
@@ -88,24 +88,24 @@ pbLightDepthDemo.prototype.create = function()
 	this.createSurfaces();
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTexture = pbWebGlTextures.initTexture(1, pbRenderer.width, pbRenderer.height);
+	this.rttTexture = pbWebGlTextures.initTexture(1, pbPhaserRender.width, pbPhaserRender.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update (drawing the invaders)
-   	this.renderer.useFramebuffer = this.rttFramebuffer;
-   	this.renderer.useRenderbuffer = this.rttRenderbuffer;
+   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
+   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
 
 	// create the filter destination texture and framebuffer
-	this.filterTexture = pbWebGlTextures.initTexture(2, pbRenderer.width, pbRenderer.height);
+	this.filterTexture = pbWebGlTextures.initTexture(2, pbPhaserRender.width, pbPhaserRender.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
-    this.renderer.postUpdate = this.postUpdate;
+    this.phaserRender.postUpdate = this.postUpdate;
 
     // create a top layer that doesn't cast shadows
 	this.topLayer = new layerClass();
-	this.topLayer.create(rootLayer, this.renderer, 0, 0, 1.0, 0, 1.0, 1.0);
+	this.topLayer.create(rootLayer, this.phaserRender, 0, 0, 1.0, 0, 1.0, 1.0);
 
 	// create the wizard
 	// NOTE: 'move' uses fixed point integers with three decimal places of precision (* 1000)
@@ -132,14 +132,14 @@ pbLightDepthDemo.prototype.create = function()
     this.bullets = [];
 
     // get the ImageData for the floor
-	var imageData = this.loader.getFile( this.floorImg );
+	var imageData = pbPhaserRender.loader.getFile( this.floorImg );
 	// upload the floor image directly to the correct texture register on the GPU (it's hardwired in the shader to texture number 3)
-	this.renderer.graphics.textures.prepare(imageData, false, true, 3 );
+	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, 3 );
 
     // get the ImageData for the depthmap
-	imageData = this.loader.getFile( this.depthImg );
+	imageData = pbPhaserRender.loader.getFile( this.depthImg );
 	// upload the depthmap image directly to the correct texture register on the GPU (it's hardwired in the shader to texture number 4)
-	this.renderer.graphics.textures.prepare(imageData, false, true, 4 );
+	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, 4 );
 };
 
 
@@ -172,9 +172,9 @@ pbLightDepthDemo.prototype.destroy = function()
 	
 
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 
 	this.rttTexture = null;
 	this.rttRenderbuffer = null;
@@ -190,7 +190,7 @@ pbLightDepthDemo.prototype.createSurfaces = function()
 	console.log("pbScrollDemo.createSurfaces");
 
 	// set up the tiles in a pbTransformObject
-	imageData = this.loader.getFile( this.tileImg );
+	imageData = pbPhaserRender.loader.getFile( this.tileImg );
 	this.tileSurface = new pbSurface();
 	this.tileSurface.create(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, imageData);
 	this.tileSurface.isNPOT = true;
@@ -211,7 +211,7 @@ pbLightDepthDemo.prototype.createLayers = function(_surface)
 pbLightDepthDemo.prototype.addLayer = function(_surface)
 {
 	var layer = new layerClass();
-	layer.create(rootLayer, this.renderer, 0, 0, 1, 0, 1, 1);
+	layer.create(rootLayer, this.phaserRender, 0, 0, 1, 0, 1, 1);
 	rootLayer.addChild(layer);
 
 	var i = this.tileLayers.length;
@@ -505,7 +505,7 @@ pbLightDepthDemo.prototype.postUpdate = function()
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a shader as it draws
 	gl.activeTexture(gl.TEXTURE1);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	this.renderer.graphics.applyShaderToTexture(1, this.rttTexture, this.setShader, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture(1, this.rttTexture, this.setShader, this);
 
 	// update transforms and draw sprites that are not shadow casters
 	this.topLayer.update();
@@ -513,7 +513,7 @@ pbLightDepthDemo.prototype.postUpdate = function()
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.activeTexture(gl.TEXTURE2);
-	this.renderer.graphics.drawTextureToDisplay(2, this.filterTexture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay(2, this.filterTexture);
 };
 
 
@@ -549,8 +549,8 @@ pbLightDepthDemo.prototype.setLight = function(index, who)
 {
 	var w = this.tileMap.tilesets[0].tilewidth;
 	var h = this.tileMap.tilesets[0].tileheight;
-	lightData[index * 4 + 0] = (who.move.x / 1000 * w + who.light.x) / pbRenderer.width;
-	lightData[index * 4 + 1] = 1.0 - (who.move.y / 1000 * h + who.light.y) / pbRenderer.height;
+	lightData[index * 4 + 0] = (who.move.x / 1000 * w + who.light.x) / pbPhaserRender.width;
+	lightData[index * 4 + 1] = 1.0 - (who.move.y / 1000 * h + who.light.y) / pbPhaserRender.height;
 	lightData[index * 4 + 2] = pack(who.light.r, who.light.g, who.light.b);
 	lightData[index * 4 + 3] = who.light.range;
 };

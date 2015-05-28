@@ -24,7 +24,7 @@ function pbBunnyDemoNPOT( docId )
 
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
-	this.spriteImg = this.loader.loadImage( "bunny", "../img/bunny.png" );
+	this.spriteImg = pbPhaserRender.loader.loadImage( "bunny", "../img/bunny.png" );
 
 	console.log( "pbBunnyDemoNPOT c'tor exit" );
 }
@@ -34,7 +34,7 @@ pbBunnyDemoNPOT.prototype.allLoaded = function()
 {
 	console.log( "pbBunnyDemoNPOT.allLoaded" );
 
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
+	this.phaserRender = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
 };
 
 
@@ -45,7 +45,7 @@ pbBunnyDemoNPOT.prototype.create = function()
 	this.list = [];
 
 	this.layer = new pbSimpleLayer();
-	this.layer.create(null, this.renderer, 0, 0, null);
+	this.layer.create(null, this.phaserRender, 0, 0, null);
 	rootLayer.addChild(this.layer);
 };
 
@@ -61,9 +61,9 @@ pbBunnyDemoNPOT.prototype.destroy = function()
 		this.surface.destroy();
 	this.surface = null;
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 
@@ -81,7 +81,7 @@ pbBunnyDemoNPOT.prototype.addSprites = function(num)
 	// create animation data and set destination for movement
 	if (!this.surface)
 	{
-		var imageData = this.loader.getFile( this.spriteImg );
+		var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 		this.surface = new pbSurface();
 		this.surface.create(0, 0, 1, 1, imageData);
 		this.surface.isNPOT = true;
@@ -138,14 +138,14 @@ pbBunnyDemoNPOT.prototype.update = function()
 			spr.x = 13;
 			obj.vx = -obj.vx;
 		}
-		else if (spr.x > pbRenderer.width - 13)
+		else if (spr.x > pbPhaserRender.width - 13)
 		{
-			spr.x = pbRenderer.width - 13;
+			spr.x = pbPhaserRender.width - 13;
 			obj.vx = -obj.vx;
 		}
-		if (spr.y >= pbRenderer.height)
+		if (spr.y >= pbPhaserRender.height)
 		{
-			spr.y = pbRenderer.height;
+			spr.y = pbPhaserRender.height;
 			obj.vy *= - 0.85;
 			if (Math.random() > 0.5)
 			{
