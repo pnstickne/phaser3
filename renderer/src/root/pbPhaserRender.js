@@ -137,13 +137,16 @@ pbPhaserRender.prototype.destroy = function()
 		rootLayer.destroy();
 	rootLayer = null;
 
-	pbPhaserRender.renderer.destroy();
+	if (pbPhaserRender.renderer)
+		pbPhaserRender.renderer.destroy();
 	pbPhaserRender.renderer = null;
 
-	pbPhaserRender.loader.destroy();
+	if (pbPhaserRender.loader)
+		pbPhaserRender.loader.destroy();
 	pbPhaserRender.loader = null;
 
-	pbPhaserRender.rootTimer.destroy();
+	if (pbPhaserRender.rootTimer)
+		pbPhaserRender.rootTimer.destroy();
 	pbPhaserRender.rootTimer = null;
 
 	this.renderMode = null;
@@ -151,8 +154,8 @@ pbPhaserRender.prototype.destroy = function()
 	this.updateCallback = null;
 	this.gameContext = null;
 
-	canvas.parentNode.removeChild( canvas );
-	canvas = null;
+	pbPhaserRender.canvas.parentNode.removeChild( pbPhaserRender.canvas );
+	pbPhaserRender.canvas = null;
 };
 
 

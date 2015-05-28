@@ -29,6 +29,16 @@ function pbLoader(callback, context)
 }
 
 
+pbLoader.prototype.destroy = function()
+{
+	this.queue = null;
+	this.callback = null;
+	this.context = null;
+	if (this.textures)
+		this.textures.destroy();
+	this.textures = null;
+};
+
 pbLoader.prototype.loadFile = function(filename, responseType)
 {
 	console.log("pbLoader.loadFile ", filename);

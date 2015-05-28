@@ -14,8 +14,6 @@ function pbSpriteRTTDemo( docId )
 {
 	console.log( "pbSpriteRTTDemo c'tor entry" );
 
-	var _this = this;
-
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( useRenderer, this.create, this.update, this );
 	this.spriteImg = pbPhaserRender.loader.loadImage( "ball", "../img/sphere3.png" );
