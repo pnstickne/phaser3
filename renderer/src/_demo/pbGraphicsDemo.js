@@ -11,11 +11,8 @@ function pbGraphicsDemo( docId )
 {
 	console.log( "pbGraphicsDemo c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( useRenderer, this.create, this.update, this );
 
 	console.log( "pbGraphicsDemo c'tor exit" );
 }
@@ -32,9 +29,9 @@ pbGraphicsDemo.prototype.destroy = function()
 {
 	console.log("pbGraphicsDemo.destroy");
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 
@@ -50,7 +47,7 @@ pbGraphicsDemo.prototype.restart = function()
 pbGraphicsDemo.prototype.update = function()
 {
    	// debug box
-   	this.renderer.graphics.drawRect(pbRenderer.width / 2, pbRenderer.height / 4, 100, 75, {r:0xff, g:0xff, b:0xff, a:0xff});
-   	this.renderer.graphics.fillRect(pbRenderer.width / 2, pbRenderer.height / 4 * 3, 100, 75, {r:0xff, g:0xff, b:0xff, a:0xff});
+   	this.phaserRender.graphics.drawRect(pbRenderer.width / 2, pbRenderer.height / 4, 100, 75, {r:0xff, g:0xff, b:0xff, a:0xff});
+   	this.phaserRender.graphics.fillRect(pbRenderer.width / 2, pbRenderer.height / 4 * 3, 100, 75, {r:0xff, g:0xff, b:0xff, a:0xff});
 };
 
