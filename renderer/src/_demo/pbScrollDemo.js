@@ -22,7 +22,6 @@ function pbScrollDemo( docId )
 	this.numCtrl = gui.add(this, "numLayers").min(0).max(MAX_SPRITES).step(250).listen();
 	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numLayers = 2; _this.restart(); });
 
-	this.docId = docId;
 	this.tileMap = null;
 	this.bgSpr = null;
 	this.tileSurface = null;
@@ -32,9 +31,8 @@ function pbScrollDemo( docId )
 	this.mapHeight = 0;
 	this.fps60 = 0;
 
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
-
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( useRenderer, this.create, this.update, this );
 	this.levelData = pbPhaserRender.loader.loadFile( "../img/tiles/level1.json" );
 	this.bgImg = pbPhaserRender.loader.loadImage( "background", "../img/tiles/background_128x512.png" );
 	this.dudeImg = pbPhaserRender.loader.loadImage( "dude", "../img/tiles/dude.png" );
@@ -42,14 +40,6 @@ function pbScrollDemo( docId )
 
 	console.log( "pbScrollDemo c'tor exit" );
 }
-
-
-pbScrollDemo.prototype.allLoaded = function()
-{
-	console.log( "pbScrollDemo.allLoaded" );
-
-	this.phaserRender = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
-};
 
 
 pbScrollDemo.prototype.create = function()

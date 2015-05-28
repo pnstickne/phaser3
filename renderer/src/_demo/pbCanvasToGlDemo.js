@@ -12,7 +12,6 @@ function pbCanvasToGlDemo( docId )
 	console.log( "pbCanvasToGlDemo c'tor entry" );
 
 	var _this = this;
-	this.docId = docId;
 	this.count = 0;
 	this.value = undefined;
 	this.list = null;
@@ -20,7 +19,8 @@ function pbCanvasToGlDemo( docId )
 	this.canvasSrc = null;
 
 	// force to 'webgl' renderer, this demo makes no sense in canvas mode
-	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( 'webgl', this.create, this.update, this );
 
 	console.log( "pbCanvasToGlDemo c'tor exit" );
 }
