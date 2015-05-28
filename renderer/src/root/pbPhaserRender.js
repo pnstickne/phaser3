@@ -152,7 +152,9 @@ pbPhaserRender.prototype.destroy = function()
 
 pbPhaserRender.prototype.update = function()
 {
-	if (this.state === "create" || this.state === "loaded")
+	// if there was nothing to load, or the loading has completed...
+	if ((this.state === "create" && !pbPhaserRender.loader.stillLoading())
+			|| this.state === "loaded")
 	{
 		// create the renderer sub-system
 		pbPhaserRender.renderer = new pbRenderer( this );

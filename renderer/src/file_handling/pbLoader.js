@@ -135,3 +135,10 @@ pbLoader.prototype.getFile = function(_index)
 };
 
 
+pbLoader.prototype.stillLoading = function()
+{
+	if (!this.queue) return false;
+	if (this.queue.length === 0) return false;
+	return true;
+};
+
