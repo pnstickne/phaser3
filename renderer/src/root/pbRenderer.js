@@ -61,12 +61,32 @@ pbRenderer.prototype.create = function( _preferredRenderer, _canvas, _gameContex
 	
 	//
 	// try to get the renderer set up
-	// TODO: all drawing modes should be tried in a predetermined order with optional preference respected
-	// currently: 'webgl', 'canvas'
+	// all drawing modes should be tried in a predetermined order with optional preference respected
+	// order is: 'webgl', 'canvas'
 	//
+	var rendererTypes = [ 'webgl', 'canvas' ];
 
 	useRenderer = 'none';
-	if (_preferredRenderer === undefined || _preferredRenderer == 'webgl')
+	// try the preferred renderer if there is one
+	if (!_preferredRenderer || !this.tryRenderer(_preferredRenderer))
+	{
+		// it failed, try all the other renderers
+		for(var i = 0, l = rendererTypes; i < l; i++)
+		{
+			// (don't try the failed preferred choice again)
+			if (rendererTypes[i] != _preferredRenderer)
+				// how about this one?
+				if (this.tryRenderer(rendererTypes[i]))
+					// yay! success
+					break;
+		}
+	}
+};
+
+
+pbRenderer.prototype.tryRenderer = function(_which)
+{
+	if (_which == 'webgl')
 	{
 		// try to get a webGL context
 		this.graphics = new pbWebGl();
@@ -77,13 +97,14 @@ pbRenderer.prototype.create = function( _preferredRenderer, _canvas, _gameContex
 			layerClass = pbWebGlLayer;
 			imageClass = pbWebGlImage;
 			pbMatrix3.rotationDirection = 1;
-			return;
+			return true;
 		}
 		this.graphics.destroy();
 		this.graphics = null;
+		return false;
 	}
 
-	if (!this.graphics)
+	if (_which == 'canvas')
 	{
 		// final case fallback, try canvas '2d'
 		this.graphics = new pbCanvas();
@@ -94,11 +115,14 @@ pbRenderer.prototype.create = function( _preferredRenderer, _canvas, _gameContex
 			layerClass = pbCanvasLayer;
 			imageClass = pbCanvasImage;
 			pbMatrix3.rotationDirection = -1;
-			return;
+			return true;
 		}
 		this.graphics.destroy();
 		this.graphics = null;
+		return false;
 	}
+
+	return false;
 };
 
 
