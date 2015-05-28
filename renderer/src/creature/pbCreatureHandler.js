@@ -188,6 +188,9 @@ pbCreatureHandler.prototype.updateType = function(creatures)
 
 	// draw the creature into the bound webgl destination texture
 	creatureData.renderer.DrawCreature(creatureData.transform, this.renderer.graphics, this.shaderProgram, creatureData.srcTextureRegister);
+
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 };
 
 

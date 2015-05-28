@@ -99,28 +99,3 @@ pbWebGlLayer.prototype.update = function(_dictionary)
 	return true;
 };
 
-
-pbWebGlLayer.prototype.draw = function(_list)
-{
-	var obj = _list[0];
-
-	if (obj.image)
-	{
-		var srf = obj.image.surface;
-		if (srf)
-		{
-			if (obj.image.surface.frameBuffer)
-				gl.bindFramebuffer(gl.FRAMEBUFFER, obj.image.surface.frameBuffer);
-			else
-				gl.bindFramebuffer(gl.FRAMEBUFFER, this.renderer.useFramebuffer);
-			if (obj.image.surface.renderBuffer)
-				gl.bindRenderbuffer(gl.RENDERBUFFER, obj.image.surface.renderBuffer);	
-			else
-				gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderer.useRenderbuffer);
-		}
-
-	}
-
-	this.super(pbWebGlLayer, 'draw', _list);
-};
-
