@@ -276,7 +276,7 @@ pbScrollPointSpriteDemo.prototype.update = function()
 		// fps dropped a little, reset counter
 		this.fps60 = 0;
 
-		// if (fps > 0 && fps <= 57 && (pbRenderer.frameCount & 15) === 0)
+		// if (fps > 0 && fps <= 57 && (pbPhaserRender.frameCount & 15) === 0)
 		// {
 		//  	// fps is too low, remove sprites... more when the fps is lower
 		//   	this.removeSprites((58 - fps) * 16);

@@ -107,7 +107,7 @@ pbRenderTextureDemo.prototype.drawSceneToTexture = function(_fb, _image, _transf
 	// bind the framebuffer so drawing will go to the associated texture and depth buffer
 	gl.bindFramebuffer(gl.FRAMEBUFFER, _fb);
 	// clear the render-to-texture using a varying green shade to make it stand out
-	gl.clearColor(0, (pbRenderer.frameCount % 100 / 100), 0, 1); // green shades
+	gl.clearColor(0, (pbPhaserRender.frameCount % 100 / 100), 0, 1); // green shades
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	// draw this.srcImage into the render-to-texture
 	this.renderer.graphics.drawImageWithTransform(this.rttTextureNumber, _image, _transform, 1.0);

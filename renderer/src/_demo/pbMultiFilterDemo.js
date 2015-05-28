@@ -175,7 +175,7 @@ pbMultiFilterDemo.prototype.setWave = function(_shaders, _textureNumber)
    	// set the shader program
 	_shaders.setProgram(this.waveShaderProgram, _textureNumber);
 	// set the wave offset values in the shader program
-	gl.uniform1f( _shaders.getUniform( "uOffsetX" ), (pbRenderer.frameCount % 1000) / 1000.0 );
-	gl.uniform1f( _shaders.getUniform( "uOffsetY" ), (pbRenderer.frameCount % 1000) / 1000.0 );
+	gl.uniform1f( _shaders.getUniform( "uOffsetX" ), (pbPhaserRender.frameCount % 1000) / 1000.0 );
+	gl.uniform1f( _shaders.getUniform( "uOffsetY" ), (pbPhaserRender.frameCount % 1000) / 1000.0 );
 };
 

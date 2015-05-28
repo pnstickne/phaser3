@@ -157,7 +157,7 @@ pbBunnyDemo.prototype.update = function()
 	}
 
 	// don't remove bunnies, we need to see if the GC is hitting
-	// if (fps > 0 && fps <= 57 && (pbRenderer.frameCount & 15) === 0)
+	// if (fps > 0 && fps <= 57 && (pbPhaserRender.frameCount & 15) === 0)
 	// {
 	// 	// fps is too low, remove sprites... go faster if the fps is lower
 	//  	this.removeSprites((58 - fps) * 16);

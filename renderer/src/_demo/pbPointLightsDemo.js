@@ -176,7 +176,7 @@ pbPointLightsDemo.prototype.setLightData = function()
 	lightData[0 * 4 + 0] = this.game.player.x / pbRenderer.width;
 	lightData[0 * 4 + 1] = 1.0 - this.game.player.y / pbRenderer.height;
 	lightData[0 * 4 + 2] = pack(0.0, 0.75, 0.0);
-	lightData[0 * 4 + 3] = 0.05 + Math.abs((pbRenderer.frameCount % 64) - 32.0) / 32.0 * 0.05;
+	lightData[0 * 4 + 3] = 0.05 + Math.abs((pbPhaserRender.frameCount % 64) - 32.0) / 32.0 * 0.05;
 
 	var i, j;
 	// next 7 lights are attached to explosions

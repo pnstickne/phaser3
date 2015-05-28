@@ -57,9 +57,9 @@ pbSoldierDemo.prototype.destroy = function()
 		this.surface_smash.destroy();
 	this.surface_smash = null;
 
-	if (this.renderer)
-		this.renderer.destroy();
-	this.renderer = null;
+	if (this.phaserRender)
+		this.phaserRender.destroy();
+	this.phaserRender = null;
 };
 
 

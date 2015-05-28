@@ -167,11 +167,11 @@ pbPointLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 	_shaders.setProgram(this.pointLightShaderProgram, _textureNumber);
 
 	// set the parameters for the filter shader program
-	var x = ((pbRenderer.frameCount % 2000) / 1000.0);
+	var x = ((pbPhaserRender.frameCount % 2000) / 1000.0);
 	if (x > 1.0) x = 2.0 - x;
 	gl.uniform1f( _shaders.getUniform( "uLightPosX" ), x );
 
-	var y = ((pbRenderer.frameCount % 3400) / 1700.0);
+	var y = ((pbPhaserRender.frameCount % 3400) / 1700.0);
 	if (y > 1.0) y = 2.0 - y;
 	gl.uniform1f( _shaders.getUniform( "uLightPosY" ), y );
 };

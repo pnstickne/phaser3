@@ -102,10 +102,6 @@ pbRenderer.prototype.create = function( _preferredRenderer, _canvas )
 
 pbRenderer.prototype.update = function( _callback, _context )
 {
-	stats.begin();
-
-	pbRenderer.frameCount++;
-
 	// prepare to draw (erase screen)
 	this.graphics.preRender( pbRenderer.width, pbRenderer.height, this.useFramebuffer, this.useRenderbuffer );
 	
@@ -124,8 +120,6 @@ pbRenderer.prototype.update = function( _callback, _context )
 	{
 		this.postUpdate.call(this.gameContext);
 	}
-
-	stats.end();
 };
 
 

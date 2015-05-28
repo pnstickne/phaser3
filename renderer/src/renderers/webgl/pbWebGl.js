@@ -588,7 +588,7 @@ pbWebGl.prototype.drawModeZ = function( _textureNumber, _image, _transform, _z )
     gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 
     var ut = this.shaders.getUniform( "uTime" );
-	if (ut) gl.uniform1f( ut, (pbRenderer.frameCount % 100) / 100.0 );
+	if (ut) gl.uniform1f( ut, (pbPhaserRender.frameCount % 100) / 100.0 );
 
     // four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

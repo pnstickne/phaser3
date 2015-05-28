@@ -443,7 +443,7 @@ pbLightDepthDemo.prototype.update = function()
 {
 	// wizard walk and shoot
 	this.randomWalk(this.wiz);
-	if ((pbRenderer.frameCount & 0x0f) === 0 && Math.random() < 0.30)
+	if ((pbPhaserRender.frameCount & 0x0f) === 0 && Math.random() < 0.30)
 	{
 		this.shoot(this.wiz);
 	}
