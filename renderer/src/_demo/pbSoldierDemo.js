@@ -13,7 +13,10 @@ function pbSoldierDemo( docId )
 
 	var _this = this;
 
-	this.docId = docId;
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( useRenderer, this.create, this.update, this );
+	this.sprite_run = pbPhaserRender.loader.loadImage( "soldier_run", "../img/soldier_a_run.png" );
+	this.sprite_smash = pbPhaserRender.loader.loadImage( "soldier_smash", "../img/soldier_a_smash.png" );
 
 	this.surface_run = null;
 	this.surface_smash = null;
@@ -26,26 +29,7 @@ function pbSoldierDemo( docId )
 	// this.gui = new dat.GUI();
 	this.numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
 	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
-
-	// this.useBatch = false;
-	// var btcCtrl = this.gui.add(this, "useBatch");
-	// btcCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
-
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
-	this.sprite_run = this.loader.loadImage( "soldier_run", "../img/soldier_a_run.png" );
-	this.sprite_smash = this.loader.loadImage( "soldier_smash", "../img/soldier_a_smash.png" );
-
-	console.log( "pbSoldierDemo c'tor exit" );
 }
-
-
-pbSoldierDemo.prototype.allLoaded = function()
-{
-	console.log( "pbSoldierDemo.allLoaded" );
-
-	this.renderer = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
-};
 
 
 pbSoldierDemo.prototype.create = function()
@@ -94,12 +78,12 @@ pbSoldierDemo.prototype.addSprites = function(num)
 	if (!this.surface_run)
 	{
 		this.surface_run = new pbSurface();
-		this.surface_run.create(32, 64, 8, 5, this.loader.getFile( this.sprite_run ));
+		this.surface_run.create(32, 64, 8, 5, pbPhaserRender.loader.getFile( this.sprite_run ));
 	}
 	if (!this.surface_smash)
 	{
 		this.surface_smash = new pbSurface();
-		this.surface_smash.create(32, 64, 8, 5, this.loader.getFile( this.sprite_smash ));
+		this.surface_smash.create(32, 64, 8, 5, pbPhaserRender.loader.getFile( this.sprite_smash ));
 	}
 
 	// create animation data and set destination for movement
