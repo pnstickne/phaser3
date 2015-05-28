@@ -21,10 +21,6 @@ function pbCreatureDemo( docId )
 {
 	console.log( "pbCreatureDemo c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
 	this.jsonData = null;
 	this.new_manager = null;
 	this.new_creature_renderer = null;
@@ -33,22 +29,14 @@ function pbCreatureDemo( docId )
 	this.rttFramebuffer = null;
 	this.rttRenderbuffer = null;
 
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( 'webgl', this.create, this.update, this );
 	this.stripShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/stripShaderSources.json" );
 	this.dinoZip = pbPhaserRender.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
 	pbPhaserRender.loader.loadImage( "dino", "../img/creatures/utah.CreaExport/character_img.png" );
 
 	console.log( "pbCreatureDemo c'tor exit" );
 }
-
-
-pbCreatureDemo.prototype.allLoaded = function()
-{
-	console.log( "pbCreatureDemo.allLoaded" );
-
-	this.phaserRender = new pbRenderer( "webgl", this.docId, this.create, this.update, this );
-};
 
 
 pbCreatureDemo.prototype.create = function()

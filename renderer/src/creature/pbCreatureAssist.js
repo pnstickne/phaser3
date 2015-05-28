@@ -11,12 +11,8 @@ function pbCreatureAssist( docId )
 {
 	console.log( "pbCreatureAssist c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( 'webgl', this.create, this.update, this );
 	// font for User Interface
 	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/8x8/Battle Bakraid (Eighting).png", 8, 8, 95, 5 );
 
@@ -37,14 +33,6 @@ function pbCreatureAssist( docId )
 //    this.dstHeight = 128;
     this.dstHeight = 256;
 }
-
-
-pbCreatureAssist.prototype.allLoaded = function()
-{
-	console.log( "pbCreatureAssist.allLoaded" );
-
-	this.phaserRender = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
-};
 
 
 pbCreatureAssist.prototype.create = function()
