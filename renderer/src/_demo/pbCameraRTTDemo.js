@@ -12,10 +12,6 @@ function pbCameraRTTDemo( docId )
 {
 	console.log( "pbCameraRTTDemo c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
 	this.gameLayer = null;
 	this.game = null;
 
@@ -23,9 +19,8 @@ function pbCameraRTTDemo( docId )
 	this.rttFramebuffer = null;
 	this.rttRenderbuffer = null;
 
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
-
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( 'webgl', this.create, this.update, this );
 	pbPhaserRender.loader.loadImage( "player", "../img/invader/player.png" );
 	pbPhaserRender.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
 	pbPhaserRender.loader.loadImage( "stars", "../img/invader/starfield.png" );
@@ -39,15 +34,6 @@ function pbCameraRTTDemo( docId )
 
 	console.log( "pbCameraRTTDemo c'tor exit" );
 }
-
-
-pbCameraRTTDemo.prototype.allLoaded = function()
-{
-	console.log( "pbCameraRTTDemo.allLoaded" );
-
-	// callback to this.create when ready, callback to this.update once every frame
-	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
-};
 
 
 pbCameraRTTDemo.prototype.create = function()
@@ -83,11 +69,11 @@ pbCameraRTTDemo.prototype.create = function()
 	this.transform = pbMatrix3.makeTransform(this.tx, this.ty, this.tr, this.ts, this.ts);
 
 	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
-    this.phaserRender.postUpdate = this.postUpdate;
+    pbPhaserRender.renderer.postUpdate = this.postUpdate;
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update
-   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
-   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
+   	pbPhaserRender.renderer.useFramebuffer = this.rttFramebuffer;
+   	pbPhaserRender.renderer.useRenderbuffer = this.rttRenderbuffer;
 };
 
 
@@ -123,9 +109,6 @@ pbCameraRTTDemo.prototype.update = function()
  */
 pbCameraRTTDemo.prototype.postUpdate = function()
 {
-	// TODO: why isn't the background dark green from the pbWebGl.prerender clear?  Something is filling it with black and that probably means some wasted cycles.
-	// TODO: look into multiple bouncing, spinning, scaling cameras for a new demo
-
 	// move the draw image around
 	this.tx += this.tdx;
 	if (this.tx <= 0 || this.tx >= pbPhaserRender.width) this.tdx = -this.tdx;

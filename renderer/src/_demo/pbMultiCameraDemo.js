@@ -13,10 +13,6 @@ function pbMultiCameraDemo( docId )
 {
 	console.log( "pbMultiCameraDemo c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
 	this.gameLayer = null;
 	this.game = null;
 
@@ -24,9 +20,8 @@ function pbMultiCameraDemo( docId )
 	this.rttFramebuffer = null;
 	this.rttRenderbuffer = null;
 
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
-
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( 'webgl', this.create, this.update, this );
 	pbPhaserRender.loader.loadImage( "player", "../img/invader/player.png" );
 	pbPhaserRender.loader.loadImage( "invader", "../img/invader/invader32x32x4.png", 32, 32, 4, 1);
 	pbPhaserRender.loader.loadImage( "stars", "../img/invader/starfield.png" );
@@ -36,7 +31,7 @@ function pbMultiCameraDemo( docId )
 	pbPhaserRender.loader.loadImage( "smoke", "../img/invader/smoke64x64x8.png", 64, 64, 8, 1 );
 	pbPhaserRender.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
 	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
-
+	// put a frame around each invaders instance to make them stand out better
 	this.frame_l = pbPhaserRender.loader.loadImage( "frame_l", "../img/frame_l.png" );
 	this.frame_r = pbPhaserRender.loader.loadImage( "frame_r", "../img/frame_r.png" );
 	this.frame_t = pbPhaserRender.loader.loadImage( "frame_t", "../img/frame_t.png" );
@@ -44,15 +39,6 @@ function pbMultiCameraDemo( docId )
 
 	console.log( "pbMultiCameraDemo c'tor exit" );
 }
-
-
-pbMultiCameraDemo.prototype.allLoaded = function()
-{
-	console.log( "pbMultiCameraDemo.allLoaded" );
-
-	// callback to this.create when ready, callback to this.update once every frame
-	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
-};
 
 
 pbMultiCameraDemo.prototype.create = function()
@@ -100,11 +86,11 @@ pbMultiCameraDemo.prototype.create = function()
 	}
 
 	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
-    this.phaserRender.postUpdate = this.postUpdate;
+    pbPhaserRender.renderer.postUpdate = this.postUpdate;
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update
-   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
-   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
+   	pbPhaserRender.renderer.useFramebuffer = this.rttFramebuffer;
+   	pbPhaserRender.renderer.useRenderbuffer = this.rttRenderbuffer;
 };
 
 
