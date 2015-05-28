@@ -94,8 +94,8 @@ pbPointLightDemo.prototype.create = function()
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update (drawing the invaders)
-   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
-   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
+   	pbPhaserRender.renderer.useFramebuffer = this.rttFramebuffer;
+   	pbPhaserRender.renderer.useRenderbuffer = this.rttRenderbuffer;
 
 	// create the filter destination texture and framebuffer
 	this.filterTextureNumber = 1;

@@ -83,8 +83,8 @@ pbCreatureDemo.prototype.create = function()
     pbPhaserRender.renderer.postUpdate = this.postUpdate;
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update
-   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
-   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
+   	pbPhaserRender.renderer.useFramebuffer = this.rttFramebuffer;
+   	pbPhaserRender.renderer.useRenderbuffer = this.rttRenderbuffer;
 };
 
 
@@ -144,7 +144,7 @@ pbCreatureDemo.prototype.update = function()
 	// recalculate this creature's point data
 	this.new_creature_renderer.UpdateData();
 
-	// draw the creature with webgl, the draw destination will be this.phaserRender.useFramebuffer (rttTexture)
+	// draw the creature with webgl, the draw destination will be pbPhaserRender.renderer.useFramebuffer (rttTexture)
     var transform = pbMatrix3.makeTransform(-0.15, 0.0, 0.0, 0.04, 0.04);
 	this.new_creature_renderer.DrawCreature(transform, pbPhaserRender.renderer.graphics, this.stripShaderProgram, this.creatureTextureNumber);
 };

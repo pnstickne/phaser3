@@ -53,8 +53,8 @@ pbBlankShaderDemo.prototype.create = function()
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update (drawing the invaders)
-   	this.phaserRender.useFramebuffer = this.rttFramebuffer;
-   	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
+   	pbPhaserRender.renderer.useFramebuffer = this.rttFramebuffer;
+   	pbPhaserRender.renderer.useRenderbuffer = this.rttRenderbuffer;
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     pbPhaserRender.renderer.postUpdate = this.postUpdate;
@@ -95,7 +95,7 @@ pbBlankShaderDemo.prototype.addSprites = function()
 
 pbBlankShaderDemo.prototype.update = function()
 {
-	// all normal sprites will be drawn to the rttTexture because of this.phaserRender.useFramebuffer in this.create
+	// all normal sprites will be drawn to the rttTexture because of pbPhaserRender.renderer.useFramebuffer in this.create
 	// see pbPointLightsDemo for example how to draw directly to the display (the 'player' ship and 'rockets')
 	// alternatively look at pbFilterDemo which draws to the rttTexture manually instead of redirecting renderer.update
 };
