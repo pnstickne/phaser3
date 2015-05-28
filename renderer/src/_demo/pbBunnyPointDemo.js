@@ -13,8 +13,6 @@ function pbBunnyPointDemo( docId )
 
 	var _this = this;
 
-	this.docId = docId;
-
 	this.fps60 = 0;
 	this.numSprites = 0;
 
@@ -22,20 +20,12 @@ function pbBunnyPointDemo( docId )
 	this.numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
 	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
 
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( useRenderer, this.create, this.update, this );
 	this.spriteImg = pbPhaserRender.loader.loadImage( "bunny", "../img/bunny_32x32.png" );
 
 	console.log( "pbBunnyPointDemo c'tor exit" );
 }
-
-
-pbBunnyPointDemo.prototype.allLoaded = function()
-{
-	console.log( "pbBunnyPointDemo.allLoaded" );
-
-	this.phaserRender = new pbRenderer( useRenderer, this.docId, this.create, this.update, this );
-};
 
 
 pbBunnyPointDemo.prototype.create = function()
