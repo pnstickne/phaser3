@@ -57,7 +57,7 @@ pbBlankShaderDemo.prototype.create = function()
    	this.phaserRender.useRenderbuffer = this.rttRenderbuffer;
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
-    this.phaserRender.postUpdate = this.postUpdate;
+    pbPhaserRender.renderer.postUpdate = this.postUpdate;
 
     // add sprites
 	this.addSprites();

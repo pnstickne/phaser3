@@ -80,7 +80,7 @@ pbCreatureDemo.prototype.create = function()
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
 
 	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
-    this.phaserRender.postUpdate = this.postUpdate;
+    pbPhaserRender.renderer.postUpdate = this.postUpdate;
 
 	// set the frame buffer to be used as the destination during the draw phase of renderer.update
    	this.phaserRender.useFramebuffer = this.rttFramebuffer;

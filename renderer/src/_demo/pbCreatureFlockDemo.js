@@ -116,7 +116,7 @@ pbCreatureFlockDemo.prototype.create = function()
 	this.makeFlock(30);
 
 	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
-    this.phaserRender.postUpdate = this.postUpdate;
+    pbPhaserRender.renderer.postUpdate = this.postUpdate;
 
 	// add a top layer for ui text messages
 	this.uiLayer = new layerClass();

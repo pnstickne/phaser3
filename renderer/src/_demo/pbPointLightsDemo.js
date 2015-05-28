@@ -86,7 +86,7 @@ pbPointLightsDemo.prototype.create = function()
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
-    this.phaserRender.postUpdate = this.postUpdate;
+    pbPhaserRender.renderer.postUpdate = this.postUpdate;
 };
 
 
