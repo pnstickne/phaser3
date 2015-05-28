@@ -11,10 +11,6 @@ function pbMultiFilterDemo( docId )
 {
 	console.log( "pbMultiFilterDemo c'tor entry" );
 
-	var _this = this;
-
-	this.docId = docId;
-
 	this.firstTime = true;
 	this.surface = null;
 	this.srcImage = null;
@@ -36,22 +32,14 @@ function pbMultiFilterDemo( docId )
 	this.bluCtrl = gui.add(this, "blueScale").min(0.0).max(2.0).step(0.1).listen();
 	this.bluCtrl.onFinishChange(function(value) { if (!value) _this.blueScale = 0; });
 
-	// create loader with callback when all items have finished loading
-	this.loader = new pbLoader( this.allLoaded, this );
+	this.phaserRender = new pbPhaserRender( docId );
+	this.phaserRender.create( 'webgl', this.create, this.update, this );
 	this.tintShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/tintShaderSources.json" );
 	this.waveShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/waveShaderSources.json" );
 	this.spriteImg = pbPhaserRender.loader.loadImage( "image", "../img/screen1.jpg" );
 
 	console.log( "pbMultiFilterDemo c'tor exit" );
 }
-
-
-pbMultiFilterDemo.prototype.allLoaded = function()
-{
-	console.log( "pbMultiFilterDemo.allLoaded" );
-
-	this.phaserRender = new pbRenderer( 'webgl', this.docId, this.create, this.update, this );
-};
 
 
 pbMultiFilterDemo.prototype.create = function()
