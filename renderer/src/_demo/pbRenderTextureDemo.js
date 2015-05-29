@@ -44,9 +44,8 @@ pbRenderTextureDemo.prototype.create = function()
 	this.srcTransform = pbMatrix3.makeTransform(10, 10, 0, 1, 1);
 
     // clear the gl bindings
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	pbWebGlTextures.cancelFramebuffer();
 };
 
 

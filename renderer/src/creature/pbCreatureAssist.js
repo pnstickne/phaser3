@@ -229,8 +229,7 @@ pbCreatureAssist.prototype.update = function()
 	// render to the display from now on (pbRenderer.update: rootLayer.update)
 	// without this all other sprites in the scene will render to the last bound texture
 	// TODO: this should be parameterised in pbRenderer and set before the rootLayer.update call
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	pbWebGlTextures.cancelFramebuffer();
 };
 
 

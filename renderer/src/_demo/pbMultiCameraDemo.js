@@ -122,8 +122,7 @@ pbMultiCameraDemo.prototype.update = function()
 pbMultiCameraDemo.prototype.postUpdate = function()
 {
 	// don't render to texture any more, render to the display instead
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	pbWebGlTextures.cancelFramebuffer();
 
 	for(var i = 0; i < this.transform.length; i++)
 	{

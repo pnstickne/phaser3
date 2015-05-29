@@ -125,8 +125,7 @@ pbCameraRTTDemo.prototype.postUpdate = function()
 	this.transform = pbMatrix3.makeTransform(this.tx, this.ty, this.tr, this.ts, this.ts);
 
 	// don't render to texture any more, render to the display instead
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	pbWebGlTextures.cancelFramebuffer();
 
 	// draw the texture containing the game image to the display
 	// _texture, _transform, _z

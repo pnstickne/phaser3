@@ -492,8 +492,7 @@ pbWebGlTextures.prototype.drawSurfaceToTexture = function(_surface, _textureWide
 	// offset to the middle of the texture and scale it up
 	var transform = pbMatrix3.makeTransform(pbPhaserRender.width/2 , pbPhaserRender.height/2, 0, pbPhaserRender.width/_textureWide, pbPhaserRender.height/_textureHigh);
 	pbPhaserRender.renderer.graphics.drawImageWithTransform( srcTextureRegister, img, transform, 1.0 );
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	pbWebGlTextures.cancelFramebuffer();
 
 	return rttTexture;
 };
@@ -563,5 +562,13 @@ pbWebGlTextures.useFramebufferRenderbuffer = function( _texture )
    	pbPhaserRender.renderer.useRenderbuffer = rttRenderbuffer;
 
 	return rttFramebuffer;
+};
+
+
+pbWebGlTextures.cancelFramebuffer = function()
+{
+	// don't render to texture any more, render to the display instead
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 };
 

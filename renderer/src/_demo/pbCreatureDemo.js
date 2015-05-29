@@ -136,8 +136,7 @@ pbCreatureDemo.prototype.update = function()
 pbCreatureDemo.prototype.postUpdate = function()
 {
 	// don't render to texture any more, render to the display instead
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	pbWebGlTextures.cancelFramebuffer();
 
 	// draw the creature texture from rttTexture to the display
 	this.transform = pbMatrix3.makeTransform(pbPhaserRender.width * 0.5, pbPhaserRender.height * 0.5, 0.0, 1.0, 1.0);
