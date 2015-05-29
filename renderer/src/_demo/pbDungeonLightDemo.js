@@ -75,12 +75,7 @@ pbDungeonLightDemo.prototype.create = function()
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTextureNumber = 1;
 	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
-	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
-	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
-
-	// set the frame buffer to be used as the destination during the draw phase of renderer.update (drawing the invaders)
-   	pbPhaserRender.renderer.useFramebuffer = this.rttFramebuffer;
-   	pbPhaserRender.renderer.useRenderbuffer = this.rttRenderbuffer;
+	this.rttFramebuffer = pbWebGlTextures.useFramebufferRenderbuffer( this.rttTexture );
 
 	// create the filter destination texture and framebuffer
 	this.filterTextureNumber = 2;

@@ -548,3 +548,20 @@ pbWebGlTextures.initFramebuffer = function(_texture, _depth)
 
     return fb;
 };
+
+
+// create both a framebuffer and a renderbuffer for this texture
+// then plug them in as the render targets for the drawing system
+pbWebGlTextures.useFramebufferRenderbuffer = function( _texture )
+{
+	// create buffers
+	var rttRenderbuffer = pbWebGlTextures.initDepth( _texture );
+	var rttFramebuffer = pbWebGlTextures.initFramebuffer( _texture, rttRenderbuffer );
+
+	// use buffers as the destination for the renderer drawing
+   	pbPhaserRender.renderer.useFramebuffer = rttFramebuffer;
+   	pbPhaserRender.renderer.useRenderbuffer = rttRenderbuffer;
+
+	return rttFramebuffer;
+};
+

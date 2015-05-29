@@ -41,20 +41,16 @@ pbBlankShaderDemo.prototype.create = function()
 	var jsonString = pbPhaserRender.loader.getFile( this.shaderJSON ).responseText;
 	this.shaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
-	// create a render-to-texture, depth buffer, and a frame buffer to hold them
+	// create a render-to-texture
 	this.rttTextureNumber = 0;
-	this.rttTexture = pbWebGlTextures.initTexture(rttTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
-	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
-	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
+	this.rttTexture = pbWebGlTextures.initTexture(textureNumber, pbPhaserRender.width, pbPhaserRender.height);
+	// create a frame buffer to be used as the destination during the draw phase of renderer.update
+	this.rttFramebuffer = pbWebGlTextures.useFramebufferRenderbuffer(this.rttTexture);
 
 	// create the filter destination texture
 	this.filterTextureNumber = 1;
 	this.filterTexture = pbWebGlTextures.initTexture(filterTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.filterFramebuffer = pbWebGlTextures.initFramebuffer(this.filterTexture, null);
-
-	// set the frame buffer to be used as the destination during the draw phase of renderer.update (drawing the invaders)
-   	pbPhaserRender.renderer.useFramebuffer = this.rttFramebuffer;
-   	pbPhaserRender.renderer.useRenderbuffer = this.rttRenderbuffer;
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     pbPhaserRender.renderer.postUpdate = this.postUpdate;
