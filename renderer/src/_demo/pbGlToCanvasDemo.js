@@ -139,6 +139,6 @@ pbGlToCanvasDemo.prototype.update = function()
 	var c = this.list.length;
 	while(c--)
 		// grab the webGl.currentSrcTexture and draw it into the destination canvas as ImageData
-		pbPhaserRender.renderer.graphics.textures.getTextureToCanvas(this.list[c].ctxDst);
+		pbPhaserRender.renderer.graphics.textures.getCanvasFromTexture(this.list[c].ctxDst);
 };
 

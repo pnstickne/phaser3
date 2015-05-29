@@ -38,9 +38,6 @@ pbSpriteRTTDemo.prototype.destroy = function()
 {
 	console.log("pbSpriteRTTDemo.destroy");
 
-	this.surface.destroy();
-	this.surface = null;
-
 	this.rttSurface.destroy();
 	this.rttSurface = null;
 
@@ -62,38 +59,19 @@ pbSpriteRTTDemo.prototype.renderToTexture = function()
 {
 	console.log("pbSpriteRTTDemo.renderToTexture");
 
-	// get the loaded image into a surface and create an image to hold it
+	// get the loaded image into a surface
 	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
-	this.surface = new pbSurface();
-	this.surface.create(0, 0, 1, 1, imageData);
-	var img = new imageClass();
-	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
-	img.create(this.surface, 0, 0.5, 0.5, false, false);
+	var surface = new pbSurface();
+	surface.create(0, 0, 1, 1, imageData);
 
-	// use GPU texture register 0 to hold the source image for this draw
-	var srcTextureRegister = 0;
-	// use GPU texture register 1 to hold the destination texture for this draw
+	// draw the surface to a render-to-texture on the GPU
+	// _surface, _textureWide, _textureHigh, _dstTextureRegister
 	this.rttTextureRegister = 1;
+	this.rttTexture = pbPhaserRender.renderer.graphics.textures.drawSurfaceToTexture(surface, 64, 64, this.rttTextureRegister);
 
-	// create the render-to-texture
-	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureRegister, 64, 64);
-	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
-	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
-
-	// draw the loaded image into the render-to-texture
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.rttFramebuffer);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, this.rttRenderbuffer);
-	// TODO: setting the viewport to the texture size means everything has to be scaled up to compensate... try to find another way
-	gl.viewport(0, 0, this.rttTexture.width, this.rttTexture.height);
-	// offset to the middle of the texture and scale it up
-	// TODO: despite the viewport scaling, we have to use pbPhaserRender.width and height for the offset... why??
-	var transform = pbMatrix3.makeTransform(pbPhaserRender.width/2 , pbPhaserRender.height/2, 0, pbPhaserRender.width/this.rttTexture.width, pbPhaserRender.height/this.rttTexture.height);
-	pbPhaserRender.renderer.graphics.drawImageWithTransform( srcTextureRegister, img, transform, 1.0 );
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-
-	// create a surface using the render-to-texture texture as the source
+	// create a new surface using the render-to-texture texture as the source
 	this.rttSurface = new pbSurface();
+	// _wide, _high, _numWide, _numHigh, _imageData, _rttTexture, _rttTextureRegister
 	this.rttSurface.create(0, 0, 1, 1, null, this.rttTexture, this.rttTextureRegister);
 };
 

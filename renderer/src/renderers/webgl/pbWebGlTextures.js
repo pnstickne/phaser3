@@ -313,13 +313,13 @@ pbWebGlTextures.prototype.prepareTextureForAccess = function(_texture)
 
 
 /**
- * getTextureToCanvas - transfer a webGl texture to the Canvas associated with the context provided
+ * getCanvasFromTexture - transfer a webGl texture to the Canvas associated with the context provided
  * 
  */
 // from http://www.html5rocks.com/en/tutorials/webgl/webgl_fundamentals/
 // and https://html.spec.whatwg.org/multipage/scripting.html#pixel-manipulation
 // and https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas
-pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
+pbWebGlTextures.prototype.getCanvasFromTexture = function(_ctx)
 {
 	if (this.canReadTexture && this.fb)
 	{
@@ -336,16 +336,16 @@ pbWebGlTextures.prototype.getTextureToCanvas = function(_ctx)
 
 
 /**
- * getTextureToSurface - grab the currentSrcTexture from the GPU into a pbSurface
+ * getSurfaceFromTexture - grab the currentSrcTexture from the GPU into a pbSurface
  * 
  */
-pbWebGlTextures.prototype.getTextureToSurface = function(_surface)
+pbWebGlTextures.prototype.getSurfaceFromTexture = function(_surface)
 {
 	if (this.canReadTexture && this.fb)
 	{
 		var wide = this.currentSrcTexture.width;
 		var high = this.currentSrcTexture.height;
-		// console.log("pbWebGlTextures.getTextureToSurface", wide, "x", high);
+		// console.log("pbWebGlTextures.getSurfaceFromTexture", wide, "x", high);
 
 		var imageData = _surface.imageData;
 		if (!imageData || imageData.width != wide || imageData.height != high)
@@ -460,6 +460,45 @@ pbWebGlTextures.prototype.createTextureFromCanvas = function(_textureNumber, _ca
 };
 
 
+/**
+ * drawSurfaceToTexture - create a GPU texture and draw the provided surface on it (centred and scaled)
+ *
+ * @param  {[type]} _surface            [description]
+ * @param  {[type]} _textureWide        [description]
+ * @param  {[type]} _textureHigh        [description]
+ * @param  {[type]} _dstTextureRegister [description]
+ *
+ * @return {[type]}                     [description]
+ */
+pbWebGlTextures.prototype.drawSurfaceToTexture = function(_surface, _textureWide, _textureHigh, _dstTextureRegister)
+{
+	var img = new imageClass();
+	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
+	img.create(_surface, 0, 0.5, 0.5, false, false);
+
+	// use GPU texture register 0 to hold the source image for this draw
+	var srcTextureRegister = 0;
+
+	// create the render-to-texture
+	var rttTexture = pbWebGlTextures.initTexture(_dstTextureRegister, _textureWide, _textureHigh);
+	var rttRenderbuffer = pbWebGlTextures.initDepth(rttTexture);
+	var rttFramebuffer = pbWebGlTextures.initFramebuffer(rttTexture, rttRenderbuffer);
+
+	// draw the loaded image into the render-to-texture
+	gl.bindFramebuffer(gl.FRAMEBUFFER, rttFramebuffer);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, rttRenderbuffer);
+	// TODO: setting the viewport to the texture size means everything has to be scaled up to compensate... try to find another way
+	gl.viewport(0, 0, _textureWide, _textureHigh);
+	// offset to the middle of the texture and scale it up
+	var transform = pbMatrix3.makeTransform(pbPhaserRender.width/2 , pbPhaserRender.height/2, 0, pbPhaserRender.width/_textureWide, pbPhaserRender.height/_textureHigh);
+	pbPhaserRender.renderer.graphics.drawImageWithTransform( srcTextureRegister, img, transform, 1.0 );
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+
+	return rttTexture;
+};
+
+
 
 
 /**
@@ -508,5 +547,3 @@ pbWebGlTextures.initFramebuffer = function(_texture, _depth)
 
     return fb;
 };
-
-
