@@ -7,6 +7,9 @@
  * it is exactly the same as the pbTransforms demo... proving that the render-to-texture now fits
  * seamlessly into the rendering engine.
  * 
+ * It differs from pbCameraRTTDemo in that it creates the texture from a surface once at the start,
+ * rather than continually updating it every frame.
+ * 
  */
 
 

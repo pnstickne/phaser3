@@ -3,7 +3,9 @@
  * A camera demo using render-to-texture for the new Phaser 3 renderer.
  * This demo draws an instance of the Invaders Core demo to texture, then it directly accesses that texture
  * using pbWebGl.drawTextureWithTransform as the source surface for a bouncing, rotating, scaling camera sprite.
- *
+ * 
+ * It differs from pbSpriteRTTDemo in that it renders to texture every frame rather than creating the texture from
+ * a surface once at the start.
  *
  */
 
