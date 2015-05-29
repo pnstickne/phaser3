@@ -493,7 +493,7 @@ pbLightDepthDemo.prototype.postUpdate = function()
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a shader as it draws
 	gl.activeTexture(gl.TEXTURE1);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	pbPhaserRender.renderer.graphics.applyShaderToTexture(1, this.rttTexture, this.setShader, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setShader, this );
 
 	// update transforms and draw sprites that are not shadow casters
 	this.topLayer.update();
@@ -501,7 +501,7 @@ pbLightDepthDemo.prototype.postUpdate = function()
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.activeTexture(gl.TEXTURE2);
-	pbPhaserRender.renderer.graphics.drawTextureToDisplay(2, this.filterTexture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay( this.filterTexture );
 };
 
 

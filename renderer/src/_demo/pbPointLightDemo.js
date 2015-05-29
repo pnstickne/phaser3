@@ -138,11 +138,11 @@ pbPointLightDemo.prototype.postUpdate = function()
 
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setShader, this );
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	pbPhaserRender.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay( this.filterTexture );
 };
 
 

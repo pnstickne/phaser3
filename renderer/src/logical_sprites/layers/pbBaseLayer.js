@@ -83,7 +83,7 @@ pbBaseLayer.prototype.draw = function(_list)
 	{
 		if (srf.rttTexture)
 		{
-			pbPhaserRender.renderer.graphics.drawTextureWithTransform( srf.rttTextureRegister, srf.rttTexture, obj.transform, obj.z_order, { x:0.5, y:1.0 } );
+			pbPhaserRender.renderer.graphics.drawTextureWithTransform( srf.rttTexture, obj.transform, obj.z_order, { x:0.5, y:1.0 } );
 		}
 		else if (obj.image.isModeZ)
 		{

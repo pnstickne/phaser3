@@ -116,7 +116,7 @@ pbPointLightsDemo.prototype.postUpdate = function()
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setShader, this );
 
 	// update transforms and draw sprites that are not shadow casters
 	this.game.layer.update();
@@ -124,7 +124,7 @@ pbPointLightsDemo.prototype.postUpdate = function()
 	// draw the filter texture to the display
 	gl.activeTexture(gl.TEXTURE1);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	pbPhaserRender.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay( this.filterTexture );
 };
 
 

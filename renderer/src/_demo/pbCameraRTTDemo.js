@@ -42,21 +42,21 @@ pbCameraRTTDemo.prototype.create = function()
 {
 	console.log("pbCameraRTTDemo.create");
 
-	this.gameLayer = new layerClass();
-	this.gameLayer.create(rootLayer, this.phaserRender, 0, 0, 1.0, 0, 1.0, 1.0);
-	rootLayer.addChild(this.gameLayer);
-
-	// add the game instance to a layer which is attached to the rootLayer
-	// because otherwise the renderer.update won't update the game's sprite
-	// transforms or draw them to the render-to-texture
-	this.game = new pbInvaderDemoCore();
-	this.game.create(this, this.gameLayer);
+	// create an instance of the game engine and add it to a layer
+	this.createGame();
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.textureNumber = 4;
 	this.rttTexture = pbWebGlTextures.initTexture(this.textureNumber, pbPhaserRender.width, pbPhaserRender.height);
 	this.rttRenderbuffer = pbWebGlTextures.initDepth(this.rttTexture);
 	this.rttFramebuffer = pbWebGlTextures.initFramebuffer(this.rttTexture, this.rttRenderbuffer);
+
+	// set the frame buffer to be used as the destination for the game drawing
+   	pbPhaserRender.renderer.useFramebuffer = this.rttFramebuffer;
+   	pbPhaserRender.renderer.useRenderbuffer = this.rttRenderbuffer;
+
+	// set the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
+    pbPhaserRender.renderer.postUpdate = this.postUpdate;
 
 	// bouncing, scaling, spinning variables
 	this.tx = 0;
@@ -67,15 +67,22 @@ pbCameraRTTDemo.prototype.create = function()
 	this.tdr = 0.01;
 	this.ts = 0.7;
 	this.tds = 0.001;
-	// create a transform matrix to draw this image with
+	// create a transform matrix to draw the camera
 	this.transform = pbMatrix3.makeTransform(this.tx, this.ty, this.tr, this.ts, this.ts);
+};
 
-	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
-    pbPhaserRender.renderer.postUpdate = this.postUpdate;
 
-	// set the frame buffer to be used as the destination during the draw phase of renderer.update
-   	pbPhaserRender.renderer.useFramebuffer = this.rttFramebuffer;
-   	pbPhaserRender.renderer.useRenderbuffer = this.rttRenderbuffer;
+pbCameraRTTDemo.prototype.createGame = function()
+{
+	this.gameLayer = new layerClass();
+	this.gameLayer.create(rootLayer, this.phaserRender, 0, 0, 1.0, 0, 1.0, 1.0);
+	rootLayer.addChild(this.gameLayer);
+
+	// add the game instance to a layer which is attached to the rootLayer
+	// because otherwise the renderer.update won't update the game's sprite
+	// transforms or draw them to the render-to-texture
+	this.game = new pbInvaderDemoCore();
+	this.game.create(this, this.gameLayer);
 };
 
 
@@ -100,7 +107,7 @@ pbCameraRTTDemo.prototype.destroy = function()
 
 pbCameraRTTDemo.prototype.update = function()
 {
-	// update the invaders demo core
+	// update the invaders demo core and draw it to the texture
 	this.game.update();
 };
 
@@ -111,7 +118,7 @@ pbCameraRTTDemo.prototype.update = function()
  */
 pbCameraRTTDemo.prototype.postUpdate = function()
 {
-	// move the draw image around
+	// move the camera around
 	this.tx += this.tdx;
 	if (this.tx <= 0 || this.tx >= pbPhaserRender.width) this.tdx = -this.tdx;
 	this.ty += this.tdy;
@@ -126,7 +133,8 @@ pbCameraRTTDemo.prototype.postUpdate = function()
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
-	// _image, _transform, _z
-	pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.textureNumber, this.rttTexture, this.transform, 1.0 );
+	// draw the texture containing the game image to the display
+	// _texture, _transform, _z
+	pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.rttTexture, this.transform, 1.0 );
 };
 

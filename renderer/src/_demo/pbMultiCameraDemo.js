@@ -144,7 +144,7 @@ pbMultiCameraDemo.prototype.postUpdate = function()
 		this.transform[i] = pbMatrix3.makeTransform(this.tx[i], this.ty[i], this.tr[i], this.ts[i], this.ts[i]);
 
 		// _image, _transform, _z
-		pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.rttTextureNumber, this.rttTexture, this.transform[i], 1.0 );
+		pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.rttTexture, this.transform[i], 1.0 );
 	}
 };
 

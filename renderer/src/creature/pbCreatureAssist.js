@@ -250,7 +250,7 @@ pbCreatureAssist.prototype.postUpdate = function()
 
 	// draw the creature sprite
 	var transform = pbMatrix3.makeTransform(o.x, o.y, o.r, o.scale, o.scale);
-	pbPhaserRender.renderer.graphics.drawTextureWithTransform( o.type.dstTextureRegister, o.type.dstTexture, transform, 1.0 );
+	pbPhaserRender.renderer.graphics.drawTextureWithTransform( o.type.dstTexture, transform, 1.0 );
 
    	// debug box
 //   	var wide = o.type.renderer.width * this.dstWidth * this.scale;

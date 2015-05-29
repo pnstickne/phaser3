@@ -508,12 +508,13 @@ pbWebGlTextures.prototype.drawSurfaceToTexture = function(_surface, _textureWide
  */
 
 // create an empty webgl texture to draw to
-pbWebGlTextures.initTexture = function(_textureNumber, _width, _height)
+pbWebGlTextures.initTexture = function(_textureRegister, _width, _height)
 {
 	var texture = gl.createTexture();
     texture.width = _width;
     texture.height = _height;
-    gl.activeTexture(gl.TEXTURE0 + _textureNumber);
+    texture.register = _textureRegister;
+    gl.activeTexture(gl.TEXTURE0 + _textureRegister);
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);

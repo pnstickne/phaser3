@@ -133,15 +133,15 @@ pbMultiFilterDemo.prototype.update = function()
 
 	// draw rttTexture to the filterTexture, applying a tint shader (from TEXTURE0, filterTexture is on TEXTURE1)
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setTint, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setTint, this );
 
 	// draw filterTexture to the rttTexture, applying a wave shader (from TEXTURE1, rttTexture is still on TEXTURE0)
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter2Framebuffer);
-	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.filterTextureNumber, this.filterTexture, this.setWave, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture( this.filterTexture, this.setWave, this );
 
 	// draw the final texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	pbPhaserRender.renderer.graphics.drawTextureToDisplay(this.rttTextureNumber, this.filter2Texture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay( this.filter2Texture );
 };
 
 

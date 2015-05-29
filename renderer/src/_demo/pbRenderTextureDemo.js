@@ -109,6 +109,6 @@ pbRenderTextureDemo.prototype.update = function()
 
 	// draw the render-to-texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	pbPhaserRender.renderer.graphics.drawTextureToDisplay(this.rttTextureNumber, this.rttTexture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay( this.rttTexture );
 };
 

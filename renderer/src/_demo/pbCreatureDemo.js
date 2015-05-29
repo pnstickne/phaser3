@@ -146,6 +146,6 @@ pbCreatureDemo.prototype.postUpdate = function()
 
 	// draw the creature texture from rttTexture to the display
 	this.transform = pbMatrix3.makeTransform(pbPhaserRender.width * 0.5, pbPhaserRender.height * 0.5, 0.0, 1.0, 1.0);
-	pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.rttTextureNumber, this.rttTexture, this.transform, 1.0 );
+	pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.rttTexture, this.transform, 1.0 );
 };
 

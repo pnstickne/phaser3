@@ -202,7 +202,7 @@ pbCreatureFlockDemo.prototype.postUpdate = function()
 		var o = list[i];
 		// draw the creature sprite
 		var transform = pbMatrix3.makeTransform(o.x, o.y, o.r, o.scale, o.scale);
-		pbPhaserRender.renderer.graphics.drawTextureWithTransform( o.type.dstTextureRegister, o.type.dstTexture, transform, 1.0, { x:0.5, y:1.0 } );
+		pbPhaserRender.renderer.graphics.drawTextureWithTransform( o.type.dstTexture, transform, 1.0, { x:0.5, y:1.0 } );
 
 	   	// debug texture area boxes
 	   	// var wide = o.type.dstTexture.width * o.scale;

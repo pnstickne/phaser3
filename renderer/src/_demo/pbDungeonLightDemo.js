@@ -438,7 +438,7 @@ pbDungeonLightDemo.prototype.postUpdate = function()
 	// copy the rttTexture to the filterFramebuffer attached texture, applying a shader as it draws
 	gl.activeTexture(gl.TEXTURE0 + this.rttTextureNumber);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setShader, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setShader, this );
 
 	// update transforms and draw sprites that are not shadow casters
 	this.topLayer.update();
@@ -446,7 +446,7 @@ pbDungeonLightDemo.prototype.postUpdate = function()
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.activeTexture(gl.TEXTURE0 + this.filterTextureNumber);
-	pbPhaserRender.renderer.graphics.drawTextureToDisplay(this.filterTextureNumber, this.filterTexture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay( this.filterTexture );
 };
 
 

@@ -144,11 +144,11 @@ pbFilterDemo.prototype.update = function()
 
 	// copy rttTexture to the filterFramebuffer attached texture, applying a filter as it draws
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filterFramebuffer);
-	pbPhaserRender.renderer.graphics.applyShaderToTexture(this.rttTextureNumber, this.rttTexture, this.setTint, this);
+	pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setTint, this );
 
 	// draw the filter texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	pbPhaserRender.renderer.graphics.drawTextureToDisplay(this.rttTextureNumber, this.filterTexture);
+	pbPhaserRender.renderer.graphics.drawTextureToDisplay( this.filterTexture );
 };
 
 
