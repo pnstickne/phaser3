@@ -53,13 +53,18 @@ pbMultiCameraDemo.prototype.create = function()
 	// because otherwise the renderer.update won't update the game's sprite
 	// transforms or draw them to the render-to-texture
 	this.game = new pbInvaderDemoCore();
-	this.game.create(this, this.gameLayer, true);
+	this.game.create( this, this.gameLayer, true );
 
-	// create the render-to-texture, depth buffer, and a frame buffer to hold them
-	this.rttTextureNumber = 1;
-	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, pbPhaserRender.width, pbPhaserRender.height);
+	// create the render-to-texture
+	var rttTextureNumber = 1;
+	this.rttTexture = pbWebGlTextures.initTexture( rttTextureNumber, pbPhaserRender.width, pbPhaserRender.height );
+	// create a frame & depth buffer and set them as the target for the 'update' drawing callback
 	this.rttFramebuffer = pbWebGlTextures.useFramebufferRenderbuffer( this.rttTexture );
 
+	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
+    pbPhaserRender.renderer.postUpdate = this.postUpdate;
+
+    // parameters to control all of the camera views
 	this.tx = [];
 	this.tdx = [];
 	this.ty = [];
@@ -83,9 +88,6 @@ pbMultiCameraDemo.prototype.create = function()
 		// create a transform matrix to draw this image with
 		this.transform[i] = pbMatrix3.makeTransform(this.tx[i], this.ty[i], this.tr[i], this.ts[i], this.ts[i]);
 	}
-
-	// set up the renderer postUpdate callback to draw the camera sprite using the render-to-texture surface on the GPU
-    pbPhaserRender.renderer.postUpdate = this.postUpdate;
 };
 
 
@@ -110,13 +112,13 @@ pbMultiCameraDemo.prototype.destroy = function()
 
 pbMultiCameraDemo.prototype.update = function()
 {
-	// update the invaders demo core
+	// update the invaders demo core, draws to the framebuffer defined in create
 	this.game.update();
 };
 
 
 /**
- * postUpdate - draw the camera sprite using the render-to-texture surface on the GPU
+ * postUpdate - draw the camera sprites using the render-to-texture surface on the GPU
  *
  */
 pbMultiCameraDemo.prototype.postUpdate = function()
