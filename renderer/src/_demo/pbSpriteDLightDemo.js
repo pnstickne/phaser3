@@ -34,7 +34,7 @@ pbSpriteDLightDemo.prototype.create = function()
 
 	// prepare the light circle and a sprite to show where it is
 	this.lightPos = { x:0.0, y:0.0, z:-1.0 };
-	this.lightRadius = 200.0;
+	this.lightRadius = 100.0;
 	this.lightAngle = 90.0;
 	// this.lightSprite = new pbSprite();
 	// this.lightSprite.createWithKey(0, 0, "ball", rootLayer);
@@ -65,6 +65,14 @@ pbSpriteDLightDemo.prototype.create = function()
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     pbPhaserRender.renderer.postUpdate = this.postUpdate;
+
+    // detect mouse move over canvas and set the light position there
+    var _this = this;
+	document.body.onmousemove = function(e) {
+		_this.lightPos.x = e.clientX;
+		_this.lightPos.y = e.clientY;
+		_this.move = pbPhaserRender.frameCount;
+	};
 };
 
 
@@ -88,10 +96,14 @@ pbSpriteDLightDemo.prototype.update = function()
 {
 	// pbPhaserRender automatically draws the sprite to the render-to-texture
 
-	// move the light source around in a circle
-	this.lightPos.x = 300 + this.lightRadius * Math.cos(this.lightAngle * Math.PI / 180.0);
-	this.lightPos.y = 300 + this.lightRadius * Math.sin(this.lightAngle * Math.PI / 180.0);
-	this.lightAngle += 1.0;
+	// only rotate the light if it's been a while since the last mouse move
+	if (pbPhaserRender.frameCount - this.move > 90)
+	{
+		// move the light source around in a circle
+		this.lightPos.x = 300 + this.lightRadius * Math.cos(this.lightAngle * Math.PI / 180.0);
+		this.lightPos.y = 300 + this.lightRadius * Math.sin(this.lightAngle * Math.PI / 180.0);
+		this.lightAngle += 1.0;
+	}
 };
 
 
@@ -103,7 +115,7 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 {
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
-	
+
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.destFramebuffer);
 	// clear the destTexture ready to receive a texture with alpha
 	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
@@ -114,7 +126,7 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 	// draw the dest texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.activeTexture(gl.TEXTURE3);
-	this.destTransform = pbMatrix3.makeTranslation(pbPhaserRender.width / 2, pbPhaserRender.height / 2);
+	this.destTransform = pbMatrix3.makeTransform(pbPhaserRender.width / 2, pbPhaserRender.height / 2, 0.1, 1.0, 1.0);
 	pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.destTexture, this.destTransform, 1.0 );
 };
 
@@ -130,7 +142,7 @@ pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 
 	// set the parameters for the shader program
 	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightPos.x, this.lightPos.y, 0 );
-	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.25, 0.25, 0.75 );
-	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 2.0, 2.0, 2.0 );
+	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.30, 0.30, 0.30 );
+	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 3.0, 3.0, 3.0 );
 };
 

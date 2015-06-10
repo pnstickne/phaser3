@@ -8,23 +8,19 @@
     "uniform sampler2D uImageSampler;",
     "uniform sampler2D uNormalSampler;",
     "uniform vec3 uLightCol;",
-    "varying vec3 vLightDir;",
-    "varying vec2 v_texcoord;",
+    "uniform vec3 uAmbientCol;",
+    "varying vec3 vLightPos;",
 
     "void main()",
     "{",
-	"  if (vLightDir.xy == vec2(0,0))",
-	"  {",
-	"    gl_FragColor = vec4(1, 1, 0, 1);",
-	"    return;",
-	"  }",
-    "  vec4 col = texture2D(uImageSampler, v_texcoord);",
+	"  vec3 lightDir = normalize(vLightPos - gl_FragCoord.xyz);",
+    "  vec4 col = texture2D(uImageSampler, gl_FragCoord.xy / vec2(600, 600));",
     "  // convert normal map colour into a normalized vector (stretch to double, and centre on zero)",
-    "  vec3 norm = normalize(texture2D(uNormalSampler, vec2(v_texcoord.x, 1.0 - v_texcoord.y)).rgb * 2.0 - 1.0);",
+    "  vec3 norm = normalize(texture2D(uNormalSampler, vec2(gl_FragCoord.x / 600.0, 1.0 - gl_FragCoord.y / 600.0)).rgb * 2.0 - 1.0);",
 	"  // calculate brightness (dot product of normal and lighting direction, no negatives)",
-	"  float b = max(dot(norm, vLightDir), 0.0);",
+	"  float b = max(dot(norm, lightDir), 0.0);",
 	"  // calculate output colour (brightness * light colour * pixel colour)",
-    "  vec3 c = b * uLightCol * col.rgb;",
+    "  vec3 c = min(b * uLightCol * col.rgb + uAmbientCol * col.rgb, vec3(1,1,1));",
     "  gl_FragColor = vec4(c, col.a);",
     "}"
     ],
@@ -33,20 +29,18 @@
     "precision mediump float;",
     "attribute vec4 aPosition;",
     "uniform vec3 uLightPos;",
-	"varying vec3 vLightDir;",
-    "varying vec2 v_texcoord;",
+	"varying vec3 vLightPos;",
     "void main(void)",
     "{",
-	"  vLightDir = normalize(aPosition.xyz - uLightPos);",
+	"  vLightPos = uLightPos;",
 	"  gl_Position = aPosition;",
-	"  v_texcoord = aPosition.xy * 0.5 + 0.5;",
     "}"
     ],
 
 "attributes":
 	[ "aPosition" ],
   "uniforms":
-    [ "uLightPos", "uLightCol" ],
+    [ "uLightPos", "uLightCol", "uAmbientCol" ],
   "samplers":
     [ "uImageSampler", "uNormalSampler" ]
 }
