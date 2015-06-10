@@ -1,0 +1,49 @@
+{
+  "comment": [
+    "// lighting shader to use SpriteDLight generated normal maps for pseudo-3d effect lighting of 2D sprites"
+    ],
+
+  "fragment": [
+    "precision mediump float;",
+    "uniform sampler2D uImageSampler;",
+    "uniform sampler2D uNormalSampler;",
+    "uniform vec3 uLightCol;",
+    "varying vec3 vLightDir;",
+    "varying vec2 v_texcoord;",
+
+    "void main()",
+    "{",
+    "  vec4 col = texture2D(uImageSampler, v_texcoord);",
+    "  // convert normal map colour into a normal vector (stretch to double, and centre on zero)",
+    "  vec3 norm = normalize(texture2D(uNormalSampler, vec2(v_texcoord.x, 1.0 - v_texcoord.y)).rgb * 2.0 - 1.0);",
+	"  // calculate brightness (dot product of normal and lighting direction, no negatives)",
+	"  float b = max(dot(norm, vLightDir), 0.0);",
+	"  // calculate output colour (brightness * light colour * pixel colour)",
+    "  vec3 c = b * uLightCol * col.rgb;",
+    "  gl_FragColor = vec4(c, col.a);",
+    "}"
+    ],
+
+  "vertex": [
+    "precision mediump float;",
+    "attribute vec4 aPosition;",
+    "uniform vec3 uLightPos;",
+	"varying vec3 vLightDir;",
+    "varying vec2 v_texcoord;",
+    "void main(void)",
+    "{",
+	"  vLightDir = uLightPos - aPosition.xyz;",
+	"  gl_Position = aPosition;",
+	"  v_texcoord = aPosition.xy * 0.5 + 0.5;",
+    "}"
+    ],
+
+"attributes":
+	[ "aPosition" ],
+  "uniforms":
+    [ "uLightPos", "uLightCol" ],
+  "samplers":
+    [ "uImageSampler", "uNormalSampler" ]
+}
+
+
