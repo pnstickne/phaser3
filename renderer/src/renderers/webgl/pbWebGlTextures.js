@@ -90,7 +90,7 @@ pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _tiling, _npot, _tex
  *
  * @return {Boolean} true if successfully prepared a new texture, false if failed or it was already prepared
  */
-pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textureNumber )
+pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textureNumber, _flipy )
 {
 	// this _imageData is already the selected texture
 	if (this.currentSrcTexture && this.currentSrcTexture.imageData === _imageData)
@@ -134,8 +134,12 @@ pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textu
 		// bind the texture to the currently active texture register
 	    gl.bindTexture(gl.TEXTURE_2D, texture);
    
+   		// optionally flip the texture vertically
+	    if (_flipy === undefined) _flipy = false;
+	    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, _flipy);
+
    		// upload the texture to the GPU
-	    // target, level, internalformat, width, height, border, format, type, pixels
+	    // target, level, internalformat, format, type, pixels
 	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _imageData);
 
 	    if (_npot)
