@@ -34,8 +34,9 @@ pbSpriteDLightDemo.prototype.create = function()
 
 	// prepare the light circle and a sprite to show where it is
 	this.lightPos = { x:0.0, y:0.0, z:-1.0 };
-	this.lightRadius = 100.0;
+	this.lightRadius = 0.5;
 	this.lightAngle = 90.0;
+	this.move = 0;
 	// this.lightSprite = new pbSprite();
 	// this.lightSprite.createWithKey(0, 0, "ball", rootLayer);
 
@@ -61,7 +62,7 @@ pbSpriteDLightDemo.prototype.create = function()
     this.normalsTextureNumber = 3;
 	var imageData = pbPhaserRender.loader.getFile( this.normalsImg );
 	// upload the normals image directly to the GPU
-	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, this.normalsTextureNumber);
+	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, this.normalsTextureNumber, true);
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     pbPhaserRender.renderer.postUpdate = this.postUpdate;
@@ -69,9 +70,10 @@ pbSpriteDLightDemo.prototype.create = function()
     // detect mouse move over canvas and set the light position there
     var _this = this;
 	document.body.onmousemove = function(e) {
-		_this.lightPos.x = e.clientX;
-		_this.lightPos.y = e.clientY;
+		_this.lightPos.x = (e.clientX / pbPhaserRender.width);
+		_this.lightPos.y = (e.clientY / pbPhaserRender.height);
 		_this.move = pbPhaserRender.frameCount;
+		//console.log(_this.lightPos.x, _this.lightPos.y);
 	};
 };
 
@@ -100,9 +102,9 @@ pbSpriteDLightDemo.prototype.update = function()
 	if (pbPhaserRender.frameCount - this.move > 90)
 	{
 		// move the light source around in a circle
-		this.lightPos.x = 300 + this.lightRadius * Math.cos(this.lightAngle * Math.PI / 180.0);
-		this.lightPos.y = 300 + this.lightRadius * Math.sin(this.lightAngle * Math.PI / 180.0);
-		this.lightAngle += 1.0;
+		this.lightPos.x = 0.5 + this.lightRadius * Math.cos(this.lightAngle * Math.PI / 180.0);
+		this.lightPos.y = 0.5 + this.lightRadius * Math.sin(this.lightAngle * Math.PI / 180.0);
+		this.lightAngle += 0.5;
 	}
 };
 
@@ -141,8 +143,9 @@ pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 	gl.uniform1i( _shaders.getSampler( "uNormalSampler" ), this.normalsTextureNumber );
 
 	// set the parameters for the shader program
-	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightPos.x, this.lightPos.y, 0 );
+	gl.uniform2f( _shaders.getUniform( "uLightPos" ), this.lightPos.x, 1.0 - this.lightPos.y );
 	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.30, 0.30, 0.30 );
 	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 3.0, 3.0, 3.0 );
+	gl.uniform2f( _shaders.getUniform( "uSrcSize" ), this.destTexture.width, this.destTexture.height );
 };
 

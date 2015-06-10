@@ -1,25 +1,30 @@
 {
   "comment": [
-    "// lighting shader to use SpriteDLight generated normal maps for pseudo-3d effect lighting of 2D sprites"
+    "// lighting shader to use SpriteDLight generated normal maps for pseudo-3d effect lighting of 2D sprites",
+	"// TODO: currently using 2D only for lighting direction, might be better to use 3D with light a given offset from the drawing plane",
+	"// this would avoid odd shadowing when the light source is directly above a sloping surface (the side that slopes away is currently in full shadow)"
     ],
 
   "fragment": [
     "precision mediump float;",
+	
     "uniform sampler2D uImageSampler;",
     "uniform sampler2D uNormalSampler;",
-    "uniform vec3 uLightCol;",
+	
     "uniform vec3 uAmbientCol;",
-    "varying vec3 vLightPos;",
+    "uniform vec3 uLightCol;",
+    "uniform vec2 uLightPos;",
+	
+	"uniform vec2 uSrcSize;",
 
+	
     "void main()",
     "{",
-	"  vec3 lightDir = normalize(vLightPos - gl_FragCoord.xyz);",
-    "  vec4 col = texture2D(uImageSampler, gl_FragCoord.xy / vec2(600, 600));",
-    "  // convert normal map colour into a normalized vector (stretch to double, and centre on zero)",
-    "  vec3 norm = normalize(texture2D(uNormalSampler, vec2(gl_FragCoord.x / 600.0, 1.0 - gl_FragCoord.y / 600.0)).rgb * 2.0 - 1.0);",
-	"  // calculate brightness (dot product of normal and lighting direction, no negatives)",
-	"  float b = max(dot(norm, lightDir), 0.0);",
-	"  // calculate output colour (brightness * light colour * pixel colour)",
+	"  vec2 texCoord = gl_FragCoord.xy / uSrcSize;",
+    "  vec4 col = texture2D(uImageSampler, texCoord);",
+    "  vec3 nrm = texture2D(uNormalSampler, texCoord).rgb * 2.0 - 1.0;",
+	"  vec2 off = normalize(uLightPos - texCoord);",
+	"  float b = max(dot(normalize(nrm.xy), off), 0.0);",
     "  vec3 c = min(b * uLightCol * col.rgb + uAmbientCol * col.rgb, vec3(1,1,1));",
     "  gl_FragColor = vec4(c, col.a);",
     "}"
@@ -27,12 +32,11 @@
 
   "vertex": [
     "precision mediump float;",
+	
     "attribute vec4 aPosition;",
-    "uniform vec3 uLightPos;",
-	"varying vec3 vLightPos;",
+	
     "void main(void)",
     "{",
-	"  vLightPos = uLightPos;",
 	"  gl_Position = aPosition;",
     "}"
     ],
@@ -40,7 +44,7 @@
 "attributes":
 	[ "aPosition" ],
   "uniforms":
-    [ "uLightPos", "uLightCol", "uAmbientCol" ],
+    [ "uLightPos", "uLightCol", "uAmbientCol", "uSrcSize" ],
   "samplers":
     [ "uImageSampler", "uNormalSampler" ]
 }
