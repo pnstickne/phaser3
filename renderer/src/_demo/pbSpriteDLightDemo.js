@@ -89,10 +89,8 @@ pbSpriteDLightDemo.prototype.update = function()
 	// pbPhaserRender automatically draws the sprite to the render-to-texture
 
 	// move the light source around in a circle
-	this.lightPos.x = pbPhaserRender.width / 2 + this.lightRadius * Math.cos(this.lightAngle * Math.PI / 180.0);
-	this.lightPos.y = pbPhaserRender.height / 2 + this.lightRadius * Math.sin(this.lightAngle * Math.PI / 180.0);
-	// this.lightSprite.x = this.lightPos.x;
-	// this.lightSprite.y = this.lightPos.y;
+	this.lightPos.x = 300 + this.lightRadius * Math.cos(this.lightAngle * Math.PI / 180.0);
+	this.lightPos.y = 300 + this.lightRadius * Math.sin(this.lightAngle * Math.PI / 180.0);
 	this.lightAngle += 1.0;
 };
 
@@ -105,15 +103,19 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 {
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
+	
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.destFramebuffer);
+	// clear the destTexture ready to receive a texture with alpha
+	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 	// copy the rttTexture to the destFramebuffer attached texture, applying a shader as it draws
 	gl.activeTexture(gl.TEXTURE1);
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.destFramebuffer);
 	pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setShader, this );
 
 	// draw the dest texture to the display
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.activeTexture(gl.TEXTURE3);
-	pbPhaserRender.renderer.graphics.drawTextureToDisplay( this.destTexture );
+	this.destTransform = pbMatrix3.makeTranslation(pbPhaserRender.width / 2, pbPhaserRender.height / 2);
+	pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.destTexture, this.destTransform, 1.0 );
 };
 
 
@@ -128,7 +130,7 @@ pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 
 	// set the parameters for the shader program
 	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightPos.x, this.lightPos.y, 0 );
-	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 1.0, 1.0, 1.0 );
+	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.25, 0.25, 0.75 );
+	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 2.0, 2.0, 2.0 );
 };
 
-   	

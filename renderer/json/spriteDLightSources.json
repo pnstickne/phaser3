@@ -13,8 +13,13 @@
 
     "void main()",
     "{",
+	"  if (vLightDir.xy == vec2(0,0))",
+	"  {",
+	"    gl_FragColor = vec4(1, 1, 0, 1);",
+	"    return;",
+	"  }",
     "  vec4 col = texture2D(uImageSampler, v_texcoord);",
-    "  // convert normal map colour into a normal vector (stretch to double, and centre on zero)",
+    "  // convert normal map colour into a normalized vector (stretch to double, and centre on zero)",
     "  vec3 norm = normalize(texture2D(uNormalSampler, vec2(v_texcoord.x, 1.0 - v_texcoord.y)).rgb * 2.0 - 1.0);",
 	"  // calculate brightness (dot product of normal and lighting direction, no negatives)",
 	"  float b = max(dot(norm, vLightDir), 0.0);",
@@ -32,7 +37,7 @@
     "varying vec2 v_texcoord;",
     "void main(void)",
     "{",
-	"  vLightDir = uLightPos - aPosition.xyz;",
+	"  vLightDir = normalize(aPosition.xyz - uLightPos);",
 	"  gl_Position = aPosition;",
 	"  v_texcoord = aPosition.xy * 0.5 + 0.5;",
     "}"
