@@ -132,7 +132,8 @@ pbRenderer.prototype.update = function( _callback, _context )
 	this.graphics.preRender( pbPhaserRender.width, pbPhaserRender.height, this.useFramebuffer, this.useRenderbuffer );
 	
 	// update game logic
-	_callback.call( _context );
+	if ( _callback )
+		_callback.call( _context );
 
 	// update all object transforms then draw everything
 	if ( rootLayer )
@@ -142,7 +143,7 @@ pbRenderer.prototype.update = function( _callback, _context )
 	}
 
 	// postUpdate if required
-	if ( this.postUpdate !== null )
+	if ( this.postUpdate )
 	{
 		this.postUpdate.call(this.gameContext);
 	}
