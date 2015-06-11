@@ -143,9 +143,9 @@ pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 	gl.uniform1i( _shaders.getSampler( "uNormalSampler" ), this.normalsTextureNumber );
 
 	// set the parameters for the shader program
-	gl.uniform2f( _shaders.getUniform( "uLightPos" ), this.lightPos.x, 1.0 - this.lightPos.y );
-	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.30, 0.30, 0.30 );
-	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 3.0, 3.0, 3.0 );
+	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightPos.x, 1.0 - this.lightPos.y, 0.1 );		// hardwire light to 0.1 above the scene
+	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.20, 0.20, 0.20 );
+	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 1.0, 1.0, 1.0 );
 	gl.uniform2f( _shaders.getUniform( "uSrcSize" ), this.destTexture.width, this.destTexture.height );
 };
 
