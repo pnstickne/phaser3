@@ -1,8 +1,6 @@
 {
   "comment": [
-    "// lighting shader to use SpriteDLight generated normal maps for pseudo-3d effect lighting of 2D sprites",
-	"// TODO: currently using 2D only for lighting direction, might be better to use 3D with light a given offset from the drawing plane",
-	"// this would avoid odd shadowing when the light source is directly above a sloping surface (the side that slopes away is currently in full shadow)"
+    "// lighting shader to use SpriteDLight generated normal maps for pseudo-3d effect lighting of 2D sprites"
     ],
 
   "fragment": [

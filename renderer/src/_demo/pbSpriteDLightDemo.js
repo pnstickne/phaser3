@@ -21,8 +21,9 @@ function pbSpriteDLightDemo( docId )
 	pbPhaserRender.loader.loadImage( "ball", "../img/sphere3.png" );
 	pbPhaserRender.loader.loadImage( "texture", "../img/spriteDLight/standing1_0001.png" );
 	this.normalsImg = pbPhaserRender.loader.loadImage( "normals", "../img/spriteDLight/standing1_0001_NORMALS.png" );
+	this.specularImg = pbPhaserRender.loader.loadImage( "specular", "../img/spriteDLight/standing1_0001_SPECULAR.png" );
 
-	this.multiLightShaderJSON = pbPhaserRender.loader.loadFile( "../json/spriteDLightSources.json" );
+	this.multiLightShaderJSON = pbPhaserRender.loader.loadFile( "../json/spriteDLightSpecular.json" );
 
 	console.log( "pbSpriteDLightDemo c'tor exit" );
 }
@@ -63,6 +64,12 @@ pbSpriteDLightDemo.prototype.create = function()
 	var imageData = pbPhaserRender.loader.getFile( this.normalsImg );
 	// upload the normals image directly to the GPU
 	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, this.normalsTextureNumber, true);
+
+    // get the ImageData for the specular information
+    this.specularTextureNumber = 4;
+	imageData = pbPhaserRender.loader.getFile( this.specularImg );
+	// upload the normals image directly to the GPU
+	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, this.specularTextureNumber, true);
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     pbPhaserRender.renderer.postUpdate = this.postUpdate;
@@ -139,13 +146,19 @@ pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
    	// set the shader program
 	_shaders.setProgram(this.spriteDLightShaderProgram, _textureNumber);
 
-	// set the normals sampler texture
+	// set the auxillary sampler textures
 	gl.uniform1i( _shaders.getSampler( "uNormalSampler" ), this.normalsTextureNumber );
+	gl.uniform1i( _shaders.getSampler( "uSpecularSampler" ), this.specularTextureNumber );
 
 	// set the parameters for the shader program
+	gl.uniform1f( _shaders.getUniform( "uSpecularMult" ), 24.0 );					// smaller numbers make the specular "hotspot" wider
+	gl.uniform3f( _shaders.getUniform( "uSpecularCol" ), 5.0, 5.0, 5.0 );		// larger numbers make the specular effect brighter
+
+	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.20, 0.20, 0.20 );			// ambient percentage for indirect lighting
+
+	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 1.0, 1.0, 1.0 );				// basic point light colour and brightness
 	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightPos.x, 1.0 - this.lightPos.y, 0.1 );		// hardwire light to 0.1 above the scene
-	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.20, 0.20, 0.20 );
-	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 1.0, 1.0, 1.0 );
+
 	gl.uniform2f( _shaders.getUniform( "uSrcSize" ), this.destTexture.width, this.destTexture.height );
 };
 
