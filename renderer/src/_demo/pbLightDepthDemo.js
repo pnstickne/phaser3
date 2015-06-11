@@ -34,6 +34,28 @@ pbLightDepthDemo.prototype.create = function()
 {
 	console.log("pbLightDepthDemo.create");
 
+	this.lightData = [
+		// x, y, power/color, range
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+	];
+
+
+
 	// add the shader
 	var jsonString = pbPhaserRender.loader.getFile( this.multiLightBgShaderJSON ).responseText;
 	this.multiLightBgShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
@@ -500,27 +522,6 @@ pbLightDepthDemo.prototype.postUpdate = function()
 };
 
 
-var lightData = [
-// x, y, power/color, range
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-];
-
-
 // pack bytes _r, _g and _b into a single float with four precision bits each
 function pack(_r, _g, _b)
 {
@@ -532,10 +533,10 @@ pbLightDepthDemo.prototype.setLight = function(index, who)
 {
 	var w = this.tileMap.tilesets[0].tilewidth;
 	var h = this.tileMap.tilesets[0].tileheight;
-	lightData[index * 4 + 0] = (who.move.x / 1000 * w + who.light.x) / pbPhaserRender.width;
-	lightData[index * 4 + 1] = 1.0 - (who.move.y / 1000 * h + who.light.y) / pbPhaserRender.height;
-	lightData[index * 4 + 2] = pack(who.light.r, who.light.g, who.light.b);
-	lightData[index * 4 + 3] = who.light.range;
+	this.lightData[index * 4 + 0] = (who.move.x / 1000 * w + who.light.x) / pbPhaserRender.width;
+	this.lightData[index * 4 + 1] = 1.0 - (who.move.y / 1000 * h + who.light.y) / pbPhaserRender.height;
+	this.lightData[index * 4 + 2] = pack(who.light.r, who.light.g, who.light.b);
+	this.lightData[index * 4 + 3] = who.light.range;
 };
 
 /**
@@ -564,7 +565,7 @@ pbLightDepthDemo.prototype.setLightData = function()
 	while(i < 16)
 	{
 	 	// a light with power/colour of zero is switched off
-	 	lightData[i * 4 + 2] = 0.0;
+	 	this.lightData[i * 4 + 2] = 0.0;
 	 	i++;
 	}
 };
@@ -586,5 +587,5 @@ pbLightDepthDemo.prototype.setShader = function(_shaders, _textureNumber)
 	this.setLightData();
 
 	// send them to the shader
-	gl.uniform4fv( _shaders.getUniform( "uLights" ), lightData );
+	gl.uniform4fv( _shaders.getUniform( "uLights" ), this.lightData );
 };

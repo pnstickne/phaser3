@@ -31,6 +31,18 @@ pbMultiDLightDemo.prototype.create = function()
 {
 	console.log("pbMultiDLightDemo.create");
 
+	this.lightData = [
+		// x, y, colour
+		0.0, 0.0, 0,
+		0.0, 0.0, 0,
+		0.0, 0.0, 0,
+		0.0, 0.0, 0,
+		0.0, 0.0, 0,
+		0.0, 0.0, 0,
+		0.0, 0.0, 0,
+		0.0, 0.0, 0
+	];
+
 	// prepare the light circle and a sprite to show where it is
 	this.light = [];
 	for(var i = 0; i < 2; i++)
@@ -106,19 +118,6 @@ pbMultiDLightDemo.prototype.update = function()
 };
 
 
-var lightData = [
-// x, y, colour
-0.0, 0.0, 0,
-0.0, 0.0, 0,
-0.0, 0.0, 0,
-0.0, 0.0, 0,
-0.0, 0.0, 0,
-0.0, 0.0, 0,
-0.0, 0.0, 0,
-0.0, 0.0, 0
-];
-
-
 
 pbMultiDLightDemo.prototype.moveLights = function()
 {
@@ -135,15 +134,15 @@ pbMultiDLightDemo.prototype.moveLights = function()
 		l.angle += l.rotate;
 		if (l.angle >= 360) l.angle -= 360;
 		if (l.angle < 0) l.angle += 360;
-		lightData[i * 3 + 0] = l.pos.x;
-		lightData[i * 3 + 1] = l.pos.y;
-		lightData[i * 3 + 2] = pack(l.colour.r, l.colour.g, l.colour.b);
+		this.lightData[i * 3 + 0] = l.pos.x;
+		this.lightData[i * 3 + 1] = l.pos.y;
+		this.lightData[i * 3 + 2] = pack(l.colour.r, l.colour.g, l.colour.b);
 	}
 	// switch off all unused lights
-	ll = lightData.length / 3;
+	ll = this.lightData.length / 3;
 	for(; i < ll; i++)
 	{
-		lightData[i * 3 + 2] = 0.0;
+		this.lightData[i * 3 + 2] = 0.0;
 	}
 };
 
@@ -180,7 +179,7 @@ pbMultiDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 	gl.uniform1i( _shaders.getSampler( "uNormalSampler" ), this.normalsTextureNumber );
 
 	// set the parameters for the shader program
-	gl.uniform3fv( _shaders.getUniform( "uLights" ), lightData );
+	gl.uniform3fv( _shaders.getUniform( "uLights" ), this.lightData );
 	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.10, 0.10, 0.10 );
 	gl.uniform2f( _shaders.getUniform( "uSrcSize" ), this.destTexture.width, this.destTexture.height );
 };

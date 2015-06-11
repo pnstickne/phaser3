@@ -40,6 +40,26 @@ pbPointLightsDemo.prototype.create = function()
 {
 	console.log("pbPointLightsDemo.create");
 
+	this.lightData = [
+		// x, y, power/color, range
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		];
+
 	// add the shader
 	var jsonString = pbPhaserRender.loader.getFile( this.multiLightShaderJSON ).responseText;
 	this.multiLightShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
@@ -123,26 +143,6 @@ pbPointLightsDemo.prototype.postUpdate = function()
 };
 
 
-var lightData = [
-// x, y, power/color, range
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-0.0, 0.0, 0.0, 0.0,
-];
-
 
 // pack bytes _r, _g and _b into a single float with four precision bits each
 function pack(_r, _g, _b)
@@ -154,10 +154,10 @@ function pack(_r, _g, _b)
 pbPointLightsDemo.prototype.setLightData = function()
 {
 	// first light is attached to the player ship
-	lightData[0 * 4 + 0] = this.game.player.x / pbPhaserRender.width;
-	lightData[0 * 4 + 1] = 1.0 - this.game.player.y / pbPhaserRender.height;
-	lightData[0 * 4 + 2] = pack(0.0, 0.75, 0.0);
-	lightData[0 * 4 + 3] = 0.05 + Math.abs((pbPhaserRender.frameCount % 64) - 32.0) / 32.0 * 0.05;
+	this.lightData[0 * 4 + 0] = this.game.player.x / pbPhaserRender.width;
+	this.lightData[0 * 4 + 1] = 1.0 - this.game.player.y / pbPhaserRender.height;
+	this.lightData[0 * 4 + 2] = pack(0.0, 0.75, 0.0);
+	this.lightData[0 * 4 + 3] = 0.05 + Math.abs((pbPhaserRender.frameCount % 64) - 32.0) / 32.0 * 0.05;
 
 	var i, j;
 	// next 7 lights are attached to explosions
@@ -167,18 +167,18 @@ pbPointLightsDemo.prototype.setLightData = function()
 		var life = explosion.image.cellFrame / 16.0;
 
 		j = (i + 1) * 4;
-		lightData[j + 0] = explosion.x / pbPhaserRender.width;
-		lightData[j + 1] = 1.0 - explosion.y / pbPhaserRender.height;
+		this.lightData[j + 0] = explosion.x / pbPhaserRender.width;
+		this.lightData[j + 1] = 1.0 - explosion.y / pbPhaserRender.height;
 		// fade from orange/yellow through to blue as the explosion ages
-		lightData[j + 2] = pack(5.0 * (1.0 - life), 3.0 * (1.0 - life), 1.0 * life);
+		this.lightData[j + 2] = pack(5.0 * (1.0 - life), 3.0 * (1.0 - life), 1.0 * life);
 		// grow as the explosion ages
-		lightData[j + 3] = 0.02 + life * 0.20;
+		this.lightData[j + 3] = 0.02 + life * 0.20;
 	}
 	for(;i < 7; i++)
 	{
 		j = (i + 1) * 4;
 		// a light with power/colour of zero is switched off
-		lightData[j + 2] = 0.0;
+		this.lightData[j + 2] = 0.0;
 	}
 	// the last 8 lights are attached to enemy bombs
 	for(i = 0; i < Math.min(this.game.bombs.length, 8); i++)
@@ -186,15 +186,15 @@ pbPointLightsDemo.prototype.setLightData = function()
 		var bomb = this.game.bombs[i];
 
 		j = (i + 8) * 4;
-		lightData[j + 0] = bomb.x / pbPhaserRender.width;
-		lightData[j + 1] = 1.0 - bomb.y / pbPhaserRender.height;
-		lightData[j + 2] = pack(1.0, 0, 0);
-		lightData[j + 3] = 0.1;
+		this.lightData[j + 0] = bomb.x / pbPhaserRender.width;
+		this.lightData[j + 1] = 1.0 - bomb.y / pbPhaserRender.height;
+		this.lightData[j + 2] = pack(1.0, 0, 0);
+		this.lightData[j + 3] = 0.1;
 	}
 	for(;i < 8; i++)
 	{
 		j = (i + 8) * 4;
-		lightData[j + 2] = 0.0;
+		this.lightData[j + 2] = 0.0;
 	}
 };
 
@@ -209,7 +209,7 @@ pbPointLightsDemo.prototype.setShader = function(_shaders, _textureNumber)
 	this.setLightData();
 
 	// send them to the shader
-	gl.uniform4fv( _shaders.getUniform( "uLights" ), lightData );
+	gl.uniform4fv( _shaders.getUniform( "uLights" ), this.lightData );
 };
 
    	
