@@ -30,7 +30,7 @@ function pbPointLightsDemo( docId )
 	pbPhaserRender.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
 	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
 
-	this.multiLightShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/multiLightSources.json" );
+	this.multiLightShaderJSON = pbPhaserRender.loader.loadFile( "../json/multiLightSources.json" );
 
 	console.log( "pbPointLightsDemo c'tor exit" );
 }

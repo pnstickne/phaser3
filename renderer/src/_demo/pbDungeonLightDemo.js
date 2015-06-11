@@ -17,7 +17,7 @@ function pbDungeonLightDemo( docId )
 
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( 'webgl', this.create, this.update, this );
-	this.multiLightBgShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/multiLightBgSources.json" );
+	this.multiLightBgShaderJSON = pbPhaserRender.loader.loadFile( "../json/multiLightBgSources.json" );
 	this.levelData = pbPhaserRender.loader.loadFile( "../img/tiles/dungeon.json" );
 	this.tileImg = pbPhaserRender.loader.loadImage( "tiles", "../img/tiles/gridtiles.png" );
 	pbPhaserRender.loader.loadImage( "wizard", "../img/wiz.png", 32, 32, 30, 4 );

@@ -34,8 +34,8 @@ function pbMultiFilterDemo( docId )
 
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( 'webgl', this.create, this.update, this );
-	this.tintShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/tintShaderSources.json" );
-	this.waveShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/waveShaderSources.json" );
+	this.tintShaderJSON = pbPhaserRender.loader.loadFile( "../json/tintShaderSources.json" );
+	this.waveShaderJSON = pbPhaserRender.loader.loadFile( "../json/waveShaderSources.json" );
 	this.spriteImg = pbPhaserRender.loader.loadImage( "image", "../img/screen1.jpg" );
 
 	console.log( "pbMultiFilterDemo c'tor exit" );

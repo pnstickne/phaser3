@@ -18,7 +18,7 @@ function pbBlankShaderDemo( docId )
 	// create loader with callback when all items have finished loading
 	this.loader = new pbLoader( this.allLoaded, this );
 
-	this.shaderJSON = pbPhaserRender.loader.loadFile( "../JSON/tintShaderSources.json" );
+	this.shaderJSON = pbPhaserRender.loader.loadFile( "../json/tintShaderSources.json" );
 	pbPhaserRender.loader.loadImage( "ball", "../img/sphere3.png" );
 
 	console.log( "pbBlankShaderDemo c'tor exit" );

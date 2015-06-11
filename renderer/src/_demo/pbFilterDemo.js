@@ -42,7 +42,7 @@ function pbFilterDemo( docId )
 
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( 'webgl', this.create, this.update, this );
-	this.tintShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/tintShaderSources.json" );
+	this.tintShaderJSON = pbPhaserRender.loader.loadFile( "../json/tintShaderSources.json" );
 	this.spriteImg = pbPhaserRender.loader.loadImage( "image", "../img/screen1.jpg" );
 
 	console.log( "pbFilterDemo c'tor exit" );

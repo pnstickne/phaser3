@@ -19,7 +19,7 @@ function pbCreatureAssist( docId )
 	// TODO: change these values for your Creature
 
 	// the shader we'll use to draw the Creature (usually "stripShaderSources.json")
-	this.creatureShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/stripShaderSources.json" );
+	this.creatureShaderJSON = pbPhaserRender.loader.loadFile( "../json/stripShaderSources.json" );
 	// the creature animation data in a .zip file (just zip the .json data output by the Creature editor)
 //	this.creatureDataZip = pbPhaserRender.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
 	this.creatureDataZip = pbPhaserRender.loader.loadFile( "../img/creatures/coel.CreaExport/character_data.zip", "arraybuffer" );

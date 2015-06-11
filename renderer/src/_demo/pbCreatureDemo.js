@@ -31,7 +31,7 @@ function pbCreatureDemo( docId )
 
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( 'webgl', this.create, this.update, this );
-	this.stripShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/stripShaderSources.json" );
+	this.stripShaderJSON = pbPhaserRender.loader.loadFile( "../json/stripShaderSources.json" );
 	this.dinoZip = pbPhaserRender.loader.loadFile( "../img/creatures/utah.CreaExport/character_data.zip", "arraybuffer" );
 	pbPhaserRender.loader.loadImage( "dino", "../img/creatures/utah.CreaExport/character_img.png" );
 

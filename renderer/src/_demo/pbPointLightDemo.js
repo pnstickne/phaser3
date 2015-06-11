@@ -30,7 +30,7 @@ function pbPointLightDemo( docId )
 	pbPhaserRender.loader.loadImage( "explosion", "../img/invader/explode.png", 128, 128, 16, 1 );
 	pbPhaserRender.loader.loadImage( "font", "../img/fonts/arcadeFonts/16x16/Bubble Memories (Taito).png", 16, 16, 95, 7 );
 
-	this.pointLightShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/pointLightSources.json" );
+	this.pointLightShaderJSON = pbPhaserRender.loader.loadFile( "../json/pointLightSources.json" );
 
 	pbPhaserRender.loader.loadImage( "logo", "../img/phaser_128x32.png" );
 

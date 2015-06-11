@@ -22,7 +22,7 @@ function pbSpriteDLightDemo( docId )
 	pbPhaserRender.loader.loadImage( "texture", "../img/spriteDLight/standing1_0001.png" );
 	this.normalsImg = pbPhaserRender.loader.loadImage( "normals", "../img/spriteDLight/standing1_0001_NORMALS.png" );
 
-	this.multiLightShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/spriteDLightSources.json" );
+	this.multiLightShaderJSON = pbPhaserRender.loader.loadFile( "../json/spriteDLightSources.json" );
 
 	console.log( "pbSpriteDLightDemo c'tor exit" );
 }

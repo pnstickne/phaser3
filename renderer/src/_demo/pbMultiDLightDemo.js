@@ -21,7 +21,7 @@ function pbMultiDLightDemo( docId )
 	pbPhaserRender.loader.loadImage( "texture", "../img/spriteDLight/Skeleton1 attack1_0006.png" );
 	this.normalsImg = pbPhaserRender.loader.loadImage( "normals", "../img/spriteDLight/Skeleton1 attack1_0006_NORMALS.png" );
 
-	this.multiLightShaderJSON = pbPhaserRender.loader.loadFile( "../JSON/multiDLightSources.json" );
+	this.multiLightShaderJSON = pbPhaserRender.loader.loadFile( "../json/multiDLightSources.json" );
 
 	console.log( "pbMultiDLightDemo c'tor exit" );
 }
