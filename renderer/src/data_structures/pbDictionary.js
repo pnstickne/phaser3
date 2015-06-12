@@ -15,6 +15,8 @@ function pbDictionary()
 	this.values = null;
 }
 
+pbDictionary.prototype.constructor = pbDictionary;
+
 
 pbDictionary.prototype.create = function()
 {
@@ -138,3 +140,13 @@ pbDictionary.prototype.iterateKeys = function(_func, _context)
 		_func.call(_context, this.values[i]);
 };
 
+
+// allow this class to be extended
+// permits multiple levels of inheritance 	http://jsfiddle.net/ZWZP6/2/  
+// improvement over original answer at 		http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
+pbDictionary.prototype.super = function(clazz, functionName)
+{
+	// console.log("pbDictionary.super", functionName);
+    var args = Array.prototype.slice.call(arguments, 2);
+    clazz.prototype.__super__.prototype[functionName].apply(this, args);
+};

@@ -158,8 +158,7 @@ pbPhaserRender.prototype.update = function()
 	// 	it could be handled with a latch variable, but that's almost as ugly as this is
 
 	// if there was nothing to load, or the loading has completed...
-	if ((this.state === "create" && !pbPhaserRender.loader.stillLoading())
-			|| this.state === "loaded")
+	if ((this.state === "create" && !pbPhaserRender.loader.stillLoading()) || this.state === "loaded")
 	{
 		// create the renderer sub-system
 		pbPhaserRender.renderer = new pbRenderer( this );

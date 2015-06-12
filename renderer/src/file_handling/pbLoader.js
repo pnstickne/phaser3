@@ -8,8 +8,13 @@
 
 
 // global
-// TODO: improve this, globals are nasty especially when they're embedded in a source file like this
+
+// NOTE: I wanted to remove this because "globals are bad" but after looking into the singleton pattern in JS
+// it's just another global variable! (http://www.dofactory.com/javascript/singleton-design-pattern)
+// If I have to use globals anyway, I'd rather keep it simple.
 var textures = null;
+
+
 
 
 function pbLoader(callback, context)
@@ -22,7 +27,7 @@ function pbLoader(callback, context)
 	this.callback = callback;
 	this.context = context;
 
-	textures = new pbDictionary();
+	textures = new pbTextures();
 	textures.create();
 
 	console.log("pbLoader c'tor exit");

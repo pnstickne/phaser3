@@ -59,6 +59,17 @@ pbSpriteDLightDemo.prototype.create = function()
 	this.destTexture = pbWebGlTextures.initTexture(this.destTextureNumber, 600, 600);
 	this.destFramebuffer = pbWebGlTextures.initFramebuffer(this.destTexture, null);
 
+	this.layer = new layerClass();
+	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
+	this.layer.create(rootLayer, this.phaserRender, 0, 0, 0, 0, 1, 1);
+
+	// put the final sprite on an independent layer that will be processed in postUpdate
+	this.sprite = new pbSprite();
+	this.sprite.createGPU(pbPhaserRender.width / 2, pbPhaserRender.height / 2, this.destTexture, this.layer);
+	this.sprite.anchorX = 0.5;
+	this.sprite.anchorY = 0.5;
+	this.sprite.transform.scaleX = this.sprite.transform.scaleY = 1.0;
+
     // get the ImageData for the normals
     this.normalsTextureNumber = 3;
 	var imageData = pbPhaserRender.loader.getFile( this.normalsImg );
@@ -124,7 +135,6 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 {
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
-
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.destFramebuffer);
 	// clear the destTexture ready to receive a texture with alpha
 	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
@@ -133,10 +143,13 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 	pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setShader, this );
 
 	// draw the dest texture to the display
+	// gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	// gl.activeTexture(gl.TEXTURE3);
+	// this.destTransform = pbMatrix3.makeTransform(pbPhaserRender.width / 2, pbPhaserRender.height / 2, 0.1, 1.0, 1.0);
+	// pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.destTexture, this.destTransform, 1.0 );
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.activeTexture(gl.TEXTURE3);
-	this.destTransform = pbMatrix3.makeTransform(pbPhaserRender.width / 2, pbPhaserRender.height / 2, 0.1, 1.0, 1.0);
-	pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.destTexture, this.destTransform, 1.0 );
+	this.layer.update();
 };
 
 

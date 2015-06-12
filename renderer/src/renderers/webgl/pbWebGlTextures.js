@@ -52,7 +52,7 @@ pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _tiling, _npot, _tex
    	gl.activeTexture( gl.TEXTURE0 + _textureNumber );
 	
 	// bind the texture to the currently active texture register
-    gl.bindTexture(gl.TEXTURE_2D, _texture);
+   	gl.bindTexture(gl.TEXTURE_2D, _texture);
 
     if (_npot)
     {

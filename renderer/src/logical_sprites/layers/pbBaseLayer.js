@@ -1,7 +1,8 @@
 /**
  *
  * pbBaseLayer - Base class for Layers, contains one layer of multiple pbTransformObject objects.
- *
+ * Extends pbTransformObject
+ * 
  */
 
 
@@ -81,8 +82,13 @@ pbBaseLayer.prototype.draw = function(_list)
 	
 	if (_list.length === 1)
 	{
-		if (srf.rttTexture)
+		if (obj.image.onGPU)
 		{
+			pbPhaserRender.renderer.graphics.drawTextureWithTransform( obj.image.onGPU, obj.transform, obj.z_order, { x:obj.image.anchorX, y:obj.image.anchorY } );
+		}
+		else if (srf.rttTexture)
+		{
+			// TODO: fix hard-wired anchorX, anchorY
 			pbPhaserRender.renderer.graphics.drawTextureWithTransform( srf.rttTexture, obj.transform, obj.z_order, { x:0.5, y:1.0 } );
 		}
 		else if (obj.image.isModeZ)

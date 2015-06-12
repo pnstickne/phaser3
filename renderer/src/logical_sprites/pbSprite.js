@@ -30,6 +30,27 @@ pbSprite.prototype.createWithKey = function(_x, _y, _key, _layer)
     // create an image holder and attach the surface
     this.image = new imageClass();
     this.image.create(this.surface);
+
+    // create a transform object for the image
+    this.transform = new pbTransformObject();
+    this.transform.create(this.image, _x, _y);
+
+    // if a layer is specified, add the new object as a child of it
+    if (this.layer !== null)
+        this.layer.addChild(this.transform);
+};
+
+
+pbSprite.prototype.createGPU = function(_x, _y, _texture, _layer)
+{
+    this.layer = _layer || null;
+
+    // create an image holder and attach the surface
+    this.image = new imageClass();
+    // _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
+    this.image.create(null);
+    this.image.onGPU = _texture;
+
     // create a transform object for the image
     this.transform = new pbTransformObject();
     this.transform.create(this.image, _x, _y);
