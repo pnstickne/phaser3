@@ -1,7 +1,8 @@
 /**
  *
  * pbWebGlLayer - Contains one layer of multiple pbTransformObject objects, uses a pbDictionary to present them to webGl in batches based on source surface.
- *
+ * Extends pbBaseLayer
+ * 
  * All sprites held in a webgl layer are z-sorted using the pbTransformObject.z coordinate which uses a shader hack for depth buffering.
  * Sprites held in a layer are therefore eligible for high-speed batch drawing when they share a source surface.
  * 
@@ -24,7 +25,7 @@ function pbWebGlLayer()
 	this.drawDictionary = null;
 }
 
-// pbCanvasLayer extends from the pbBaseLayer prototype chain
+// pbWebGlLayer extends from the pbBaseLayer prototype chain
 // permits multiple levels of inheritance 	http://jsfiddle.net/ZWZP6/2/  
 // improvement over original answer at 		http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
 pbWebGlLayer.prototype = new pbBaseLayer();
