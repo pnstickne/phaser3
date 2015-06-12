@@ -142,13 +142,8 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 	gl.activeTexture(gl.TEXTURE1);
 	pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setShader, this );
 
-	// draw the dest texture to the display
-	// gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	// gl.activeTexture(gl.TEXTURE3);
-	// this.destTransform = pbMatrix3.makeTransform(pbPhaserRender.width / 2, pbPhaserRender.height / 2, 0.1, 1.0, 1.0);
-	// pbPhaserRender.renderer.graphics.drawTextureWithTransform( this.destTexture, this.destTransform, 1.0 );
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	gl.activeTexture(gl.TEXTURE3);
+	// update the pbSprite layer to draw them all
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);		// clear previous binding
 	this.layer.update();
 };
 
