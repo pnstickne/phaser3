@@ -76,7 +76,7 @@ pbSpriteDLightDemo.prototype.create = function()
 	this.destHeight = 256;
 	this.destinationTextures = [];
 	this.sprites = [];
-	for(var i = 0; i < 5; i++)
+	for(var i = 0; i < 9; i++)
 	{
 		// create a texture
 		var tn = 4 + i;
@@ -89,7 +89,7 @@ pbSpriteDLightDemo.prototype.create = function()
 
 		// create a sprite which uses that texture
 		this.sprites[i] = new pbSprite();
-		this.sprites[i].createGPU(pbPhaserRender.width / 2 + (i - 2) * 128, 300, texture, this.layer);
+		this.sprites[i].createGPU(pbPhaserRender.width / 2 + (i % 3 - 1) * 128, pbPhaserRender.height / 2 - (Math.floor(i / 3) - 1) * 128, texture, this.layer);
 		this.sprites[i].anchorX = 0.5;
 		this.sprites[i].anchorY = 0.5;
 		this.sprites[i].transform.scaleX = this.sprites[i].transform.scaleY = 1.0;
