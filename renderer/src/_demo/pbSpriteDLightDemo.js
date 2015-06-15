@@ -76,7 +76,7 @@ pbSpriteDLightDemo.prototype.create = function()
 	this.destHeight = 256;
 	this.destinationTextures = [];
 	this.sprites = [];
-	for(var i = 0; i < 4; i++)
+	for(var i = 0; i < 5; i++)
 	{
 		// create a texture
 		var tn = 4 + i;
@@ -89,7 +89,7 @@ pbSpriteDLightDemo.prototype.create = function()
 
 		// create a sprite which uses that texture
 		this.sprites[i] = new pbSprite();
-		this.sprites[i].createGPU(64 + i * 128, 300, texture, this.layer);
+		this.sprites[i].createGPU(pbPhaserRender.width / 2 + (i - 2) * 128, 300, texture, this.layer);
 		this.sprites[i].anchorX = 0.5;
 		this.sprites[i].anchorY = 0.5;
 		this.sprites[i].transform.scaleX = this.sprites[i].transform.scaleY = 1.0;
@@ -132,7 +132,7 @@ pbSpriteDLightDemo.prototype.update = function()
 	// only rotate the light if it's been a while since the last mouse move
 	if (pbPhaserRender.frameCount - this.move > 90)
 	{
-		// move the light source around in a circle
+		// move the light source in a circle around the middle of the output texture
 		this.lightPos.x = 0.5 + this.lightRadius * Math.cos(this.lightAngle * Math.PI / 180.0);
 		this.lightPos.y = 0.5 + this.lightRadius * Math.sin(this.lightAngle * Math.PI / 180.0);
 		this.lightAngle += 0.5;
@@ -155,6 +155,8 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 		gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 		// copy the rttTexture to the framebuffer attached texture, applying a shader as it draws
 		gl.activeTexture(gl.TEXTURE1);
+		this.lightRelX = this.lightPos.x - this.sprites[i].x / this.destWidth;
+		this.lightRelY = this.sprites[i].y / this.destHeight - this.lightPos.y;
 		pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setShader, this );
 	}
 
@@ -181,7 +183,7 @@ pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.20, 0.20, 0.20 );			// ambient percentage for indirect lighting
 
 	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 1.0, 1.0, 1.0 );				// basic point light colour and brightness
-	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightPos.x, 1.0 - this.lightPos.y, 0.1 );		// hardwire light to 0.1 above the scene
+	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightRelX, this.lightRelY, 0.1 );		// hardwire light to 0.1 above the scene (z direction)
 
 	gl.uniform2f( _shaders.getUniform( "uSrcSize" ), this.destWidth, this.destHeight );
 };
