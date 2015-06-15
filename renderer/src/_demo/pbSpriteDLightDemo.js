@@ -41,46 +41,59 @@ pbSpriteDLightDemo.prototype.create = function()
 	// this.lightSprite = new pbSprite();
 	// this.lightSprite.createWithKey(0, 0, "ball", rootLayer);
 
-	// add the shader
-	var jsonString = pbPhaserRender.loader.getFile( this.multiLightShaderJSON ).responseText;
-	this.spriteDLightShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
-
 	// create a sprite to display
 	this.sprite = new pbSprite();
 	this.sprite.createWithKey(0, 0, "texture", rootLayer);
+
+	// add the shader
+	var jsonString = pbPhaserRender.loader.getFile( this.multiLightShaderJSON ).responseText;
+	this.spriteDLightShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
 	// create the render-to-texture, depth buffer, and a frame buffer to hold them
 	this.rttTextureNumber = 1;
 	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, 600, 600);
 	this.rttFramebuffer = pbWebGlTextures.useFramebufferRenderbuffer( this.rttTexture );
 
-	// create the destination texture and framebuffer
-	this.destTextureNumber = 2;
-	this.destTexture = pbWebGlTextures.initTexture(this.destTextureNumber, 600, 600);
-	this.destFramebuffer = pbWebGlTextures.initFramebuffer(this.destTexture, null);
-
-	this.layer = new layerClass();
-	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-	this.layer.create(rootLayer, this.phaserRender, 0, 0, 0, 0, 1, 1);
-
-	// put the final sprite on an independent layer that will be processed in postUpdate
-	this.sprite = new pbSprite();
-	this.sprite.createGPU(pbPhaserRender.width / 2, pbPhaserRender.height / 2, this.destTexture, this.layer);
-	this.sprite.anchorX = 0.5;
-	this.sprite.anchorY = 0.5;
-	this.sprite.transform.scaleX = this.sprite.transform.scaleY = 1.0;
-
     // get the ImageData for the normals
-    this.normalsTextureNumber = 3;
+    this.normalsTextureNumber = 2;
 	var imageData = pbPhaserRender.loader.getFile( this.normalsImg );
 	// upload the normals image directly to the GPU
 	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, this.normalsTextureNumber, true);
 
     // get the ImageData for the specular information
-    this.specularTextureNumber = 4;
+    this.specularTextureNumber = 3;
 	imageData = pbPhaserRender.loader.getFile( this.specularImg );
 	// upload the normals image directly to the GPU
 	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, this.specularTextureNumber, true);
+
+	// create an independent layer that will be processed in postUpdate to draw all the sprites
+	this.layer = new layerClass();
+	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
+	this.layer.create(rootLayer, this.phaserRender, 0, 0, 0, 0, 1, 1);
+
+	// create the destination texture and framebuffer
+	this.destWidth = 256;
+	this.destHeight = 256;
+	this.destinationTextures = [];
+	this.sprites = [];
+	for(var i = 0; i < 4; i++)
+	{
+		// create a texture
+		var tn = 4 + i;
+		var texture = pbWebGlTextures.initTexture(tn, this.destWidth, this.destHeight);
+		this.destinationTextures[i] = {
+			textureNumber : tn,
+			texture : texture,
+			framebuffer : pbWebGlTextures.initFramebuffer(texture, null)
+		};
+
+		// create a sprite which uses that texture
+		this.sprites[i] = new pbSprite();
+		this.sprites[i].createGPU(64 + i * 128, 300, texture, this.layer);
+		this.sprites[i].anchorX = 0.5;
+		this.sprites[i].anchorY = 0.5;
+		this.sprites[i].transform.scaleX = this.sprites[i].transform.scaleY = 1.0;
+	}
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     pbPhaserRender.renderer.postUpdate = this.postUpdate;
@@ -107,8 +120,8 @@ pbSpriteDLightDemo.prototype.destroy = function()
 	this.rttRenderbuffer = null;
 	this.rttFramebuffer = null;
 
-	this.destTexture = null;
-	this.destFramebuffer = null;
+	this.destinationTextures = null;
+	this.sprites = null;
 };
 
 
@@ -135,12 +148,15 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 {
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.destFramebuffer);
-	// clear the destTexture ready to receive a texture with alpha
-	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-	// copy the rttTexture to the destFramebuffer attached texture, applying a shader as it draws
-	gl.activeTexture(gl.TEXTURE1);
-	pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setShader, this );
+	for(var i = 0, l = this.destinationTextures.length; i < l; i++)
+	{
+		gl.bindFramebuffer(gl.FRAMEBUFFER, this.destinationTextures[i].framebuffer);
+		// clear the destTexture ready to receive a texture with alpha
+		gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+		// copy the rttTexture to the framebuffer attached texture, applying a shader as it draws
+		gl.activeTexture(gl.TEXTURE1);
+		pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setShader, this );
+	}
 
 	// update the pbSprite layer to draw them all
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);		// clear previous binding
@@ -167,6 +183,6 @@ pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 1.0, 1.0, 1.0 );				// basic point light colour and brightness
 	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightPos.x, 1.0 - this.lightPos.y, 0.1 );		// hardwire light to 0.1 above the scene
 
-	gl.uniform2f( _shaders.getUniform( "uSrcSize" ), this.destTexture.width, this.destTexture.height );
+	gl.uniform2f( _shaders.getUniform( "uSrcSize" ), this.destWidth, this.destHeight );
 };
 

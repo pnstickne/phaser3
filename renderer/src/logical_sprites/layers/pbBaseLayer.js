@@ -117,7 +117,17 @@ pbBaseLayer.prototype.draw = function(_list)
 	}
 	else
 	{
-		if (srf.rttTexture)
+		if (obj.image.onGPU)
+		{
+			// TODO: double check that this is necessary... might be possible to batch draw them with some minor cleverness
+			// can't batch draw when onGPU, so iterate the list to draw one at a time
+			for(var i = 0, l = _list.length; i < l; i++)
+			{
+				obj = _list[i];
+				pbPhaserRender.renderer.graphics.drawTextureWithTransform( obj.image.onGPU, obj.transform, obj.z_order, { x:obj.image.anchorX, y:obj.image.anchorY } );
+			}
+		}
+		else if (srf.rttTexture)
 		{
 			pbPhaserRender.renderer.graphics.rawBatchDrawTextures( _list );
 		}
