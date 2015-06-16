@@ -2,6 +2,11 @@
  *
  * SpriteDLight demo - uses a shader to show lighting with normal maps created by the SpriteDLight tool
  *
+ * - create a sprite with the source texture
+ * - create a bunch of litSprite objects which use a render-to-texture on the GPU as their source
+ * - postUpdate and the setShader callback draw each litSprite source texture from the original source, normal map, specular, and the light position
+ * - call the layer update to display the litSprite objects
+ * 
  */
 
 
@@ -91,7 +96,6 @@ pbSpriteDLightDemo.prototype.create = function()
 			framebuffer : pbWebGlTextures.initFramebuffer(texture, null),
 			sprite : sprite
 		};
-
 	}
 
 	// designate one sprite that moves around to test the position relative lighting calculations
@@ -103,13 +107,25 @@ pbSpriteDLightDemo.prototype.create = function()
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     pbPhaserRender.renderer.postUpdate = this.postUpdate;
 
+    this.lock = false;
+    this.move = pbPhaserRender.frameCount;
+
     // detect mouse move over canvas and set the light position there
     var _this = this;
 	document.body.onmousemove = function(e) {
+		if (!_this.lock)
+		{
+			_this.lightPos.x = (e.clientX / pbPhaserRender.width);
+			_this.lightPos.y = (e.clientY / pbPhaserRender.height);
+			_this.move = pbPhaserRender.frameCount;
+		}
+	};
+	document.body.onmousedown = function(e) {
 		_this.lightPos.x = (e.clientX / pbPhaserRender.width);
 		_this.lightPos.y = (e.clientY / pbPhaserRender.height);
-		_this.move = pbPhaserRender.frameCount;
-		//console.log(_this.lightPos.x, _this.lightPos.y);
+		_this.lock = !_this.lock;
+		if (_this.lock)
+			_this.move = pbPhaserRender.frameCount + 6000;
 	};
 };
 
@@ -167,9 +183,9 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 	{
 		var litSprite = this.litSprite[i];
 
-		// bind the framebuffer for this litSprite's source texture to be drawn to with lighting
+		// bind the framebuffer for this litSprite's source texture to be drawn to with the lighting shader
 		gl.bindFramebuffer(gl.FRAMEBUFFER, litSprite.framebuffer);
-		// clear the destTexture ready to receive a texture with alpha
+		// clear the texture ready to receive a texture with alpha
 		gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
 		// calculate the light position relative to the centre of this litSprite
@@ -180,13 +196,17 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 		this.lightRelX = (this.lightPos.x - litSprite.sprite.x / pbPhaserRender.width)  * (pbPhaserRender.width / this.destWidth);
 		this.lightRelY = (litSprite.sprite.y / pbPhaserRender.height - this.lightPos.y) * (pbPhaserRender.height / this.destHeight);
 
+		this.rotation = litSprite.sprite.angleInRadians;
+
 		// copy the rttTexture to the framebuffer attached texture, applying a shader as it draws
 		gl.activeTexture(gl.TEXTURE1);
 		pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setShader, this );
 	}
 
+	//
 	// update the pbSprite layer to draw them all
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);		// clear previous binding
+	//
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);		// clear framebuffer binding to ensure this draws to the screen and not another texture
 	this.layer.update();
 };
 
@@ -211,5 +231,9 @@ pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightRelX, this.lightRelY, 0.1 );		// hardwire light to 0.1 above the scene (z direction)
 
 	gl.uniform2f( _shaders.getUniform( "uDstSize" ), this.destWidth, this.destHeight );
+
+	var sin = Math.sin(-this.rotation);
+	var cos = Math.cos(-this.rotation);
+	gl.uniform2f( _shaders.getUniform( "uRotateFactors" ), sin, cos );
 };
 

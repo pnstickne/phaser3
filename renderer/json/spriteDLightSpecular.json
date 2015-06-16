@@ -20,6 +20,8 @@
 	
 	"uniform vec2 uDstSize;",
 	
+	"uniform vec2 uRotateFactors;",
+	
     "void main()",
     "{",
 	"  // gl_FragCoord is a pixel position into the texture, divide it down to get 0..1",
@@ -29,7 +31,8 @@
     "  vec3 nrm = normalize(texture2D(uNormalSampler, texCoord).rgb * 2.0 - 1.0);",
 	"  float spc = length(texture2D(uSpecularSampler, texCoord).rgb) * uSpecularMult;",
 	"  // calculate the offset from the light position to the centre of this texture",
-	"  vec3 off = normalize(uLightPos - vec3(texCoord - 0.5, 0.0));",
+	"  vec3 lightRot = vec3(uLightPos.x * uRotateFactors.y - uLightPos.y * uRotateFactors.x, uLightPos.x * uRotateFactors.x + uLightPos.y * uRotateFactors.y, uLightPos.z);",
+	"  vec3 off = normalize(lightRot - vec3(texCoord - 0.5, 0.0));",
 	"  // lighting calculations...",
 	"  // angle between light and surface normal dictates brightness",
 	"  float b = max(dot(nrm, off), 0.0);",
@@ -58,7 +61,7 @@
 "attributes":
 	[ "aPosition" ],
   "uniforms":
-    [ "uLightPos", "uLightCol", "uAmbientCol", "uSpecularCol", "uSpecularMult", "uDstSize" ],
+    [ "uLightPos", "uLightCol", "uAmbientCol", "uSpecularCol", "uSpecularMult", "uDstSize", "uRotateFactors" ],
   "samplers":
     [ "uImageSampler", "uNormalSampler", "uSpecularSampler" ]
 }
