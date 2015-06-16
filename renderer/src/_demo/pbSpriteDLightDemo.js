@@ -41,6 +41,7 @@ pbSpriteDLightDemo.prototype.create = function()
 	this.lightPos = { x:0.0, y:0.0, z:-1.0 };
 	this.lightRadius = 0.25;
 	this.lightAngle = 90.0;
+	this.lightHigh = 0.5;
 	this.move = 0;
 
 	// create a sprite to hold the source image
@@ -223,12 +224,12 @@ pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 
 	// set the parameters for the shader program
 	gl.uniform1f( _shaders.getUniform( "uSpecularMult" ), 24.0 );					// smaller numbers make the specular "hotspot" wider
-	gl.uniform3f( _shaders.getUniform( "uSpecularCol" ), 5.0, 5.0, 5.0 );			// larger numbers make the specular effect brighter
+	gl.uniform3f( _shaders.getUniform( "uSpecularCol" ), 15.0, 15.0, 15.0 );			// larger numbers make the specular effect brighter
 
 	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.20, 0.20, 0.20 );			// ambient percentage for indirect lighting
 
 	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 1.0, 1.0, 1.0 );				// basic point light colour and brightness
-	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightRelX, this.lightRelY, 0.1 );		// hardwire light to 0.1 above the scene (z direction)
+	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightRelX, this.lightRelY, this.lightHigh );
 
 	gl.uniform2f( _shaders.getUniform( "uDstSize" ), this.destWidth, this.destHeight );
 
