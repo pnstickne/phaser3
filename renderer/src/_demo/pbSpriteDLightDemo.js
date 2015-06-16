@@ -95,6 +95,11 @@ pbSpriteDLightDemo.prototype.create = function()
 		this.sprites[i].transform.scaleX = this.sprites[i].transform.scaleY = 1.0;
 	}
 
+	// designate one sprite that moves around to test the position relative lighting calculations
+	this.movingSprite = 4;
+	this.dirx = 3;
+	this.diry = 2;
+
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     pbPhaserRender.renderer.postUpdate = this.postUpdate;
 
@@ -128,6 +133,14 @@ pbSpriteDLightDemo.prototype.destroy = function()
 pbSpriteDLightDemo.prototype.update = function()
 {
 	// pbPhaserRender automatically draws the sprite to the render-to-texture
+
+	var moves = this.sprites[this.movingSprite];
+	moves.x += this.dirx;
+	moves.y += this.diry;
+	if (moves.x > pbPhaserRender.width) this.dirx = -this.dirx;
+	if (moves.x < 0) this.dirx = -this.dirx;
+	if (moves.y > pbPhaserRender.height) this.diry = -this.diry;
+	if (moves.y < 0) this.diry = -this.diry;
 
 	// only rotate the light if it's been a while since the last mouse move
 	if (pbPhaserRender.frameCount - this.move > 90)
