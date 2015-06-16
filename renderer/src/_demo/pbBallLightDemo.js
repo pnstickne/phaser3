@@ -1,20 +1,20 @@
 /**
  *
- * SpriteDLight demo - uses a shader to show lighting with normal maps created by the SpriteDLight tool
+ * BallLight demo - uses a shader to show lighting with normal maps, using perfect balls lets us see errors in the shader and maths more easily
  *
- * - create a sprite with the source texture
- * - create a bunch of litSprite objects which use a render-to-texture on the GPU as their source
- * - postUpdate and the setShader callback draw each litSprite source texture from the original source, normal map, specular, and the light position
- * - call the layer update to display the litSprite objects
+ * TODO:
+ * - specular reflection is grainy when it should be perfectly smooth... maths limits due to lightHigh, or poor normal map smoothing?
+ * - rotating ball (bottom left) the specular reflection rotates with the ball a bit, it shouldn't move at all
+ * - insufficient curvature from the normal maps, is this the vectors created by SpriteDLight, or the source image, or the shader
  * 
  */
 
 
 
 // created while the data is loading (preloader)
-function pbSpriteDLightDemo( docId )
+function pbBallLightDemo( docId )
 {
-	console.log( "pbSpriteDLightDemo c'tor entry" );
+	console.log( "pbBallLightDemo c'tor entry" );
 
 	this.rttTexture = null;
 	this.rttFramebuffer = null;
@@ -23,60 +23,65 @@ function pbSpriteDLightDemo( docId )
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( 'webgl', this.create, this.update, this );
 
-	pbPhaserRender.loader.loadImage( "texture", "../img/spriteDLight/standing1_0001.png" );
-	this.normalsImg = pbPhaserRender.loader.loadImage( "normals", "../img/spriteDLight/standing1_0001_NORMALS.png" );
-	this.specularImg = pbPhaserRender.loader.loadImage( "specular", "../img/spriteDLight/standing1_0001_SPECULAR.png" );
+	this.diffuseImg = pbPhaserRender.loader.loadImage( "texture", "../img/spriteDLight/redBall_512.png" );
+	this.normalsImg = pbPhaserRender.loader.loadImage( "normals", "../img/spriteDLight/sphere_512_NORMALS.png" );
+	this.specularImg = pbPhaserRender.loader.loadImage( "specular", "../img/spriteDLight/sphere_512_SPECULAR.png" );
 
 	this.multiLightShaderJSON = pbPhaserRender.loader.loadFile( "../json/spriteDLightSpecular.json" );
 
-	console.log( "pbSpriteDLightDemo c'tor exit" );
+	console.log( "pbBallLightDemo c'tor exit" );
 }
 
 
-pbSpriteDLightDemo.prototype.create = function()
+pbBallLightDemo.prototype.create = function()
 {
-	console.log("pbSpriteDLightDemo.create");
+	console.log("pbBallLightDemo.create");
 
-	// prepare the light circle and a sprite to show where it is
+	// set the light source's parameters
+	this.lightColour = { r:1.0, g:1.0, b:0.9 };
+	this.lightHigh = 3.0;
+	this.lightSpecular = 0.5;					// power of the specular reflection
+	this.lightSpecularMult = 1000.0;		// smaller numbers make the specular "hotspot" wider
+	this.lightAmbient = 0.3;
+
+	// prepare the light source auto-movement
 	this.lightPos = { x:0.0, y:0.0, z:-1.0 };
 	this.lightRadius = 0.25;
 	this.lightAngle = 90.0;
-	this.lightHigh = 0.5;
-	this.move = 0;
 
-	// create a sprite to hold the source image
-	this.sprite = new pbSprite();
-	this.sprite.createWithKey(0, 0, "texture", rootLayer);
 
 	// add the shader
 	var jsonString = pbPhaserRender.loader.getFile( this.multiLightShaderJSON ).responseText;
 	this.spriteDLightShaderProgram = pbPhaserRender.renderer.graphics.shaders.addJSON( jsonString );
 
-	// create the render-to-texture, depth buffer, and a frame buffer to hold them
+	// create a GPU texture containing the source image
 	this.rttTextureNumber = 1;
-	this.rttTexture = pbWebGlTextures.initTexture(this.rttTextureNumber, 600, 600);
-	this.rttFramebuffer = pbWebGlTextures.useFramebufferRenderbuffer( this.rttTexture );
-
-    // get the ImageData for the normals
-    this.normalsTextureNumber = 2;
-	var imageData = pbPhaserRender.loader.getFile( this.normalsImg );
-	// upload the normals image directly to the GPU
-	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, this.normalsTextureNumber, true);
-
-    // get the ImageData for the specular information
-    this.specularTextureNumber = 3;
-	imageData = pbPhaserRender.loader.getFile( this.specularImg );
-	// upload the normals image directly to the GPU
-	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, this.specularTextureNumber, true);
+	var imageData = pbPhaserRender.loader.getFile( this.diffuseImg );
+	// _imageData, _tiling, _npot, _textureNumber, _flipy
+	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, false, this.rttTextureNumber, true);
+	this.rttTexture = pbPhaserRender.renderer.graphics.textures.currentSrcTexture;
+	this.rttTexture.register = this.rttTextureNumber;
 
 	// create an independent layer that will be processed in postUpdate to draw all the sprites
 	this.layer = new layerClass();
 	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
 	this.layer.create(rootLayer, this.phaserRender, 0, 0, 0, 0, 1, 1);
 
-	// create some lit sprites
-	this.destWidth = 256;
-	this.destHeight = 256;
+    // get the normals
+    this.normalsTextureNumber = 2;
+	imageData = pbPhaserRender.loader.getFile( this.normalsImg );
+	// upload the normals image directly to the GPU
+	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, this.normalsTextureNumber, true);
+
+    // get the specular brightness
+    this.specularTextureNumber = 3;
+	imageData = pbPhaserRender.loader.getFile( this.specularImg );
+	// upload the specular image directly to the GPU
+	pbPhaserRender.renderer.graphics.textures.prepare(imageData, false, true, this.specularTextureNumber, true);
+
+	// create some lit sprites with unique texture surfaces
+	this.destWidth = 128;
+	this.destHeight = 128;
 	this.litSprite = [];
 	for(var i = 0; i < 9; i++)
 	{
@@ -86,9 +91,8 @@ pbSpriteDLightDemo.prototype.create = function()
 
 		// create a sprite which uses that texture as it's source
 		var sprite = new pbSprite();
-		sprite.createGPU(pbPhaserRender.width / 2 + (i % 3 - 1) * 128, pbPhaserRender.height / 2 - (Math.floor(i / 3) - 1) * 128, texture, this.layer);
-		sprite.anchorX = 0.5;
-		sprite.anchorY = 0.5;
+		sprite.createGPU(pbPhaserRender.width / 2 + (i % 3 - 1) * this.destWidth, pbPhaserRender.height / 2 - (Math.floor(i / 3) - 1) * this.destHeight, texture, this.layer);
+		sprite.anchorX = sprite.anchorY = 0.5;
 		sprite.transform.scaleX = sprite.transform.scaleY = 1.0;
 
 		this.litSprite[i] = {
@@ -100,10 +104,12 @@ pbSpriteDLightDemo.prototype.create = function()
 	}
 
 	// designate one sprite that moves around to test the position relative lighting calculations
-	this.movingSprite = 4;
+	this.movingSprite = 0;
 	this.dirx = 3;
 	this.diry = 2;
-	this.turningSprite = 0;
+
+	// designate one sprite that rotates slowly to test the rotational lighting calculations
+	this.turningSprite = 8;
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     pbPhaserRender.renderer.postUpdate = this.postUpdate;
@@ -126,27 +132,25 @@ pbSpriteDLightDemo.prototype.create = function()
 		_this.lightPos.y = (e.clientY / pbPhaserRender.height);
 		_this.lock = !_this.lock;
 		if (_this.lock)
-			_this.move = pbPhaserRender.frameCount + 6000;
+			_this.move = pbPhaserRender.frameCount + 10000;
 	};
 };
 
 
-pbSpriteDLightDemo.prototype.destroy = function()
+pbBallLightDemo.prototype.destroy = function()
 {
-	console.log("pbSpriteDLightDemo.destroy");
+	console.log("pbBallLightDemo.destroy");
 
 	this.phaserRender.destroy();
 	this.phaserRender = null;
 
 	this.rttTexture = null;
-	this.rttRenderbuffer = null;
-	this.rttFramebuffer = null;
 
 	this.litSprite = null;
 };
 
 
-pbSpriteDLightDemo.prototype.update = function()
+pbBallLightDemo.prototype.update = function()
 {
 	// pbPhaserRender automatically draws the sprites to the render-to-textures
 
@@ -176,7 +180,7 @@ pbSpriteDLightDemo.prototype.update = function()
  * postUpdate - apply the shader to the rttTexture, then draw the results on screen
  *
  */
-pbSpriteDLightDemo.prototype.postUpdate = function()
+pbBallLightDemo.prototype.postUpdate = function()
 {
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
@@ -213,7 +217,7 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 
 
 // callback to set the correct shader program and it's associated attributes and/or uniforms
-pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
+pbBallLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 {
    	// set the shader program
 	_shaders.setProgram(this.spriteDLightShaderProgram, _textureNumber);
@@ -223,12 +227,12 @@ pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 	gl.uniform1i( _shaders.getSampler( "uSpecularSampler" ), this.specularTextureNumber );
 
 	// set the parameters for the shader program
-	gl.uniform1f( _shaders.getUniform( "uSpecularMult" ), 24.0 );					// smaller numbers make the specular "hotspot" wider
-	gl.uniform3f( _shaders.getUniform( "uSpecularCol" ), 0.5, 0.5, 0.5 );			// larger numbers make the specular effect brighter
+	gl.uniform1f( _shaders.getUniform( "uSpecularMult" ), this.lightSpecularMult );
+	gl.uniform3f( _shaders.getUniform( "uSpecularCol" ), this.lightSpecular, this.lightSpecular, this.lightSpecular );
 
-	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.20, 0.20, 0.20 );			// ambient percentage for indirect lighting
+	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), this.lightAmbient, this.lightAmbient, this.lightAmbient );
 
-	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 1.0, 1.0, 1.0 );				// basic point light colour and brightness
+	gl.uniform3f( _shaders.getUniform( "uLightCol" ), this.lightColour.r, this.lightColour.g, this.lightColour.b);
 	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightRelX, this.lightRelY, this.lightHigh );
 
 	gl.uniform2f( _shaders.getUniform( "uDstSize" ), this.destWidth, this.destHeight );

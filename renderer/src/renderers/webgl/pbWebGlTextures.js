@@ -128,6 +128,7 @@ pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textu
 	    // link the texture object to the imageData and vice-versa
 		texture = gl.createTexture();
 		texture.imageData = _imageData;
+		texture.register = _textureNumber;
 		_imageData.gpuTexture = texture;
 	    _imageData.isDirty = false;
 

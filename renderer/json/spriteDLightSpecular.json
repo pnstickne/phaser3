@@ -6,7 +6,7 @@
     ],
 
   "fragment": [
-    "precision mediump float;",
+    "precision highp float;",
 	
     "uniform sampler2D uImageSampler;",
     "uniform sampler2D uNormalSampler;",
@@ -41,14 +41,14 @@
 	"  vec3 eye = vec3(0.0, 0.0, 1.0);",
 	"  float s = pow(max(dot(ref, eye), 0.0), spc);",
 	"  // combine the various bits to get the pixel colour",
-	"  vec3 lightPower = uAmbientCol + uLightCol * b + uSpecularCol * s;",
-    "  vec3 c = min(lightPower * col.rgb, vec3(1,1,1));",
+	"  vec3 lightPower = uAmbientCol + uLightCol * b;",
+    "  vec3 c = min(lightPower * col.rgb + uSpecularCol * s, vec3(1,1,1));",
     "  gl_FragColor = vec4(c, col.a);",
     "}"
     ],
 
   "vertex": [
-    "precision mediump float;",
+    "precision highp float;",
 
     "attribute vec4 aPosition;",
 	
