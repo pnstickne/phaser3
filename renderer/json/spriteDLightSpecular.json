@@ -1,6 +1,8 @@
 {
   "comment": [
-    "// lighting shader to use SpriteDLight generated normal and specular maps for pseudo-3d effect lighting of 2D sprites"
+    "// lighting shader to use SpriteDLight generated normal and specular maps for pseudo-3d effect lighting of 2D sprites",
+	"// TODO: should use vec2 for aPosition instead of vec4 - reduce the amount of data per vertex",
+	"// TODO: put the specular multiplier image into the alpha channel of the surface normals to eliminate one extra texture"
     ],
 
   "fragment": [
@@ -16,19 +18,26 @@
     "uniform vec3 uLightCol;",
     "uniform vec3 uLightPos;",
 	
-	"uniform vec2 uSrcSize;",
+	"uniform vec2 uDstSize;",
 	
     "void main()",
     "{",
-	"  vec2 texCoord = gl_FragCoord.xy / uSrcSize;",
+	"  // gl_FragCoord is a pixel position into the texture, divide it down to get 0..1",
+	"  vec2 texCoord = gl_FragCoord.xy / uDstSize;",
+	"  // get the diffuse colour, the surface normal, and the specular multiplier",
     "  vec4 col = texture2D(uImageSampler, texCoord);",
     "  vec3 nrm = normalize(texture2D(uNormalSampler, texCoord).rgb * 2.0 - 1.0);",
 	"  float spc = length(texture2D(uSpecularSampler, texCoord).rgb) * uSpecularMult;",
-	"  vec3 off = normalize(uLightPos - vec3(texCoord, 0.0));",
+	"  // calculate the offset from the light position to the centre of this texture",
+	"  vec3 off = normalize(uLightPos - vec3(texCoord - 0.5, 0.0));",
+	"  // lighting calculations...",
+	"  // angle between light and surface normal dictates brightness",
 	"  float b = max(dot(nrm, off), 0.0);",
+	"  // angle between reflected light and eye dictates specular",
 	"  vec3 ref = reflect(-off, nrm);",
 	"  vec3 eye = vec3(0.0, 0.0, 1.0);",
 	"  float s = pow(max(dot(ref, eye), 0.0), spc);",
+	"  // combine the various bits to get the pixel colour",
 	"  vec3 lightPower = uAmbientCol + uLightCol * b + uSpecularCol * s;",
     "  vec3 c = min(lightPower * col.rgb, vec3(1,1,1));",
     "  gl_FragColor = vec4(c, col.a);",
@@ -37,7 +46,7 @@
 
   "vertex": [
     "precision mediump float;",
-	
+
     "attribute vec4 aPosition;",
 	
     "void main(void)",
@@ -49,7 +58,7 @@
 "attributes":
 	[ "aPosition" ],
   "uniforms":
-    [ "uLightPos", "uLightCol", "uAmbientCol", "uSpecularCol", "uSpecularMult", "uSrcSize" ],
+    [ "uLightPos", "uLightCol", "uAmbientCol", "uSpecularCol", "uSpecularMult", "uDstSize" ],
   "samplers":
     [ "uImageSampler", "uNormalSampler", "uSpecularSampler" ]
 }

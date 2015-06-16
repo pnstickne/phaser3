@@ -35,7 +35,7 @@ pbSpriteDLightDemo.prototype.create = function()
 
 	// prepare the light circle and a sprite to show where it is
 	this.lightPos = { x:0.0, y:0.0, z:-1.0 };
-	this.lightRadius = 0.5;
+	this.lightRadius = 0.25;
 	this.lightAngle = 90.0;
 	this.move = 0;
 	// this.lightSprite = new pbSprite();
@@ -153,10 +153,17 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.destinationTextures[i].framebuffer);
 		// clear the destTexture ready to receive a texture with alpha
 		gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+
+		// calculate the light position relative to the centre of this destinationTexture
+		// in the destinationTexture's own coordinate frame (0..1 = the width/height of the texture)
+		// 
+		// divide screen coordinates of sprite (pixels) by screen size, for 0..1 = width and height of screen (same as lightPos)
+		// then rescale by screen dimension / texture dimension to get texture coordinate frame
+		this.lightRelX = (this.lightPos.x - this.sprites[i].x / pbPhaserRender.width)  * (pbPhaserRender.width / this.destWidth);
+		this.lightRelY = (this.sprites[i].y / pbPhaserRender.height - this.lightPos.y) * (pbPhaserRender.height / this.destHeight);
+
 		// copy the rttTexture to the framebuffer attached texture, applying a shader as it draws
 		gl.activeTexture(gl.TEXTURE1);
-		this.lightRelX = this.lightPos.x - this.sprites[i].x / this.destWidth;
-		this.lightRelY = this.sprites[i].y / this.destHeight - this.lightPos.y;
 		pbPhaserRender.renderer.graphics.applyShaderToTexture( this.rttTexture, this.setShader, this );
 	}
 
@@ -178,13 +185,13 @@ pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 
 	// set the parameters for the shader program
 	gl.uniform1f( _shaders.getUniform( "uSpecularMult" ), 24.0 );					// smaller numbers make the specular "hotspot" wider
-	gl.uniform3f( _shaders.getUniform( "uSpecularCol" ), 5.0, 5.0, 5.0 );		// larger numbers make the specular effect brighter
+	gl.uniform3f( _shaders.getUniform( "uSpecularCol" ), 5.0, 5.0, 5.0 );			// larger numbers make the specular effect brighter
 
 	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), 0.20, 0.20, 0.20 );			// ambient percentage for indirect lighting
 
 	gl.uniform3f( _shaders.getUniform( "uLightCol" ), 1.0, 1.0, 1.0 );				// basic point light colour and brightness
 	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightRelX, this.lightRelY, 0.1 );		// hardwire light to 0.1 above the scene (z direction)
 
-	gl.uniform2f( _shaders.getUniform( "uSrcSize" ), this.destWidth, this.destHeight );
+	gl.uniform2f( _shaders.getUniform( "uDstSize" ), this.destWidth, this.destHeight );
 };
 
