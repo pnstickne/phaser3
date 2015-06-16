@@ -99,6 +99,7 @@ pbSpriteDLightDemo.prototype.create = function()
 	this.movingSprite = 4;
 	this.dirx = 3;
 	this.diry = 2;
+	this.turningSprite = 0;
 
 	// set up the renderer postUpdate callback to apply the filter and draw the result on the display
     pbPhaserRender.renderer.postUpdate = this.postUpdate;
@@ -141,6 +142,9 @@ pbSpriteDLightDemo.prototype.update = function()
 	if (moves.x < 0) this.dirx = -this.dirx;
 	if (moves.y > pbPhaserRender.height) this.diry = -this.diry;
 	if (moves.y < 0) this.diry = -this.diry;
+
+	var turns = this.sprites[this.turningSprite];
+	turns.angleInRadians += 0.01;
 
 	// only rotate the light if it's been a while since the last mouse move
 	if (pbPhaserRender.frameCount - this.move > 90)
