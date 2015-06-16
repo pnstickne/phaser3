@@ -18,7 +18,6 @@ function pbSpriteDLightDemo( docId )
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( 'webgl', this.create, this.update, this );
 
-	pbPhaserRender.loader.loadImage( "ball", "../img/sphere3.png" );
 	pbPhaserRender.loader.loadImage( "texture", "../img/spriteDLight/standing1_0001.png" );
 	this.normalsImg = pbPhaserRender.loader.loadImage( "normals", "../img/spriteDLight/standing1_0001_NORMALS.png" );
 	this.specularImg = pbPhaserRender.loader.loadImage( "specular", "../img/spriteDLight/standing1_0001_SPECULAR.png" );
@@ -38,10 +37,8 @@ pbSpriteDLightDemo.prototype.create = function()
 	this.lightRadius = 0.25;
 	this.lightAngle = 90.0;
 	this.move = 0;
-	// this.lightSprite = new pbSprite();
-	// this.lightSprite.createWithKey(0, 0, "ball", rootLayer);
 
-	// create a sprite to display
+	// create a sprite to hold the source image
 	this.sprite = new pbSprite();
 	this.sprite.createWithKey(0, 0, "texture", rootLayer);
 
@@ -71,28 +68,30 @@ pbSpriteDLightDemo.prototype.create = function()
 	// _parent, _renderer, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
 	this.layer.create(rootLayer, this.phaserRender, 0, 0, 0, 0, 1, 1);
 
-	// create the destination texture and framebuffer
+	// create some lit sprites
 	this.destWidth = 256;
 	this.destHeight = 256;
-	this.destinationTextures = [];
-	this.sprites = [];
+	this.litSprite = [];
 	for(var i = 0; i < 9; i++)
 	{
-		// create a texture
+		// create a texture to render to with lighting applied
 		var tn = 4 + i;
 		var texture = pbWebGlTextures.initTexture(tn, this.destWidth, this.destHeight);
-		this.destinationTextures[i] = {
+
+		// create a sprite which uses that texture as it's source
+		var sprite = new pbSprite();
+		sprite.createGPU(pbPhaserRender.width / 2 + (i % 3 - 1) * 128, pbPhaserRender.height / 2 - (Math.floor(i / 3) - 1) * 128, texture, this.layer);
+		sprite.anchorX = 0.5;
+		sprite.anchorY = 0.5;
+		sprite.transform.scaleX = sprite.transform.scaleY = 1.0;
+
+		this.litSprite[i] = {
 			textureNumber : tn,
 			texture : texture,
-			framebuffer : pbWebGlTextures.initFramebuffer(texture, null)
+			framebuffer : pbWebGlTextures.initFramebuffer(texture, null),
+			sprite : sprite
 		};
 
-		// create a sprite which uses that texture
-		this.sprites[i] = new pbSprite();
-		this.sprites[i].createGPU(pbPhaserRender.width / 2 + (i % 3 - 1) * 128, pbPhaserRender.height / 2 - (Math.floor(i / 3) - 1) * 128, texture, this.layer);
-		this.sprites[i].anchorX = 0.5;
-		this.sprites[i].anchorY = 0.5;
-		this.sprites[i].transform.scaleX = this.sprites[i].transform.scaleY = 1.0;
 	}
 
 	// designate one sprite that moves around to test the position relative lighting calculations
@@ -126,16 +125,15 @@ pbSpriteDLightDemo.prototype.destroy = function()
 	this.rttRenderbuffer = null;
 	this.rttFramebuffer = null;
 
-	this.destinationTextures = null;
-	this.sprites = null;
+	this.litSprite = null;
 };
 
 
 pbSpriteDLightDemo.prototype.update = function()
 {
-	// pbPhaserRender automatically draws the sprite to the render-to-texture
+	// pbPhaserRender automatically draws the sprites to the render-to-textures
 
-	var moves = this.sprites[this.movingSprite];
+	var moves = this.litSprite[this.movingSprite].sprite;
 	moves.x += this.dirx;
 	moves.y += this.diry;
 	if (moves.x > pbPhaserRender.width) this.dirx = -this.dirx;
@@ -143,11 +141,11 @@ pbSpriteDLightDemo.prototype.update = function()
 	if (moves.y > pbPhaserRender.height) this.diry = -this.diry;
 	if (moves.y < 0) this.diry = -this.diry;
 
-	var turns = this.sprites[this.turningSprite];
+	var turns = this.litSprite[this.turningSprite].sprite;
 	turns.angleInRadians += 0.01;
 
-	// only rotate the light if it's been a while since the last mouse move
-	if (pbPhaserRender.frameCount - this.move > 90)
+	// only rotate the light if it's been quite a while since the last mouse move
+	if (pbPhaserRender.frameCount - this.move > 180)
 	{
 		// move the light source in a circle around the middle of the output texture
 		this.lightPos.x = 0.5 + this.lightRadius * Math.cos(this.lightAngle * Math.PI / 180.0);
@@ -165,19 +163,22 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 {
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
-	for(var i = 0, l = this.destinationTextures.length; i < l; i++)
+	for(var i = 0, l = this.litSprite.length; i < l; i++)
 	{
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this.destinationTextures[i].framebuffer);
+		var litSprite = this.litSprite[i];
+
+		// bind the framebuffer for this litSprite's source texture to be drawn to with lighting
+		gl.bindFramebuffer(gl.FRAMEBUFFER, litSprite.framebuffer);
 		// clear the destTexture ready to receive a texture with alpha
 		gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
-		// calculate the light position relative to the centre of this destinationTexture
-		// in the destinationTexture's own coordinate frame (0..1 = the width/height of the texture)
+		// calculate the light position relative to the centre of this litSprite
+		// in the litSprite's own coordinate frame (0..1 = the width/height of the texture)
 		// 
 		// divide screen coordinates of sprite (pixels) by screen size, for 0..1 = width and height of screen (same as lightPos)
 		// then rescale by screen dimension / texture dimension to get texture coordinate frame
-		this.lightRelX = (this.lightPos.x - this.sprites[i].x / pbPhaserRender.width)  * (pbPhaserRender.width / this.destWidth);
-		this.lightRelY = (this.sprites[i].y / pbPhaserRender.height - this.lightPos.y) * (pbPhaserRender.height / this.destHeight);
+		this.lightRelX = (this.lightPos.x - litSprite.sprite.x / pbPhaserRender.width)  * (pbPhaserRender.width / this.destWidth);
+		this.lightRelY = (litSprite.sprite.y / pbPhaserRender.height - this.lightPos.y) * (pbPhaserRender.height / this.destHeight);
 
 		// copy the rttTexture to the framebuffer attached texture, applying a shader as it draws
 		gl.activeTexture(gl.TEXTURE1);
