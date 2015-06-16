@@ -23,7 +23,7 @@ function pbBallLightDemo( docId )
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( 'webgl', this.create, this.update, this );
 
-	this.diffuseImg = pbPhaserRender.loader.loadImage( "texture", "../img/spriteDLight/redBall_512.png" );
+	this.diffuseImg = pbPhaserRender.loader.loadImage( "texture", "../img/spriteDLight/redBall_shaded_512.png" );
 	this.normalsImg = pbPhaserRender.loader.loadImage( "normals", "../img/spriteDLight/sphere_512_NORMALS.png" );
 	this.specularImg = pbPhaserRender.loader.loadImage( "specular", "../img/spriteDLight/sphere_512_SPECULAR.png" );
 
@@ -39,15 +39,15 @@ pbBallLightDemo.prototype.create = function()
 
 	// set the light source's parameters
 	this.lightColour = { r:1.0, g:1.0, b:0.9 };
-	this.lightHigh = 3.0;
-	this.lightSpecular = 0.5;					// power of the specular reflection
-	this.lightSpecularMult = 1000.0;		// smaller numbers make the specular "hotspot" wider
-	this.lightAmbient = 0.3;
+	this.lightHigh = 1.5;
+	this.lightSpecular = 0.8;					// power of the specular reflection
+	this.lightSpecularMult = 100.0;				// smaller numbers make the specular "hotspot" wider
+	this.lightAmbient = 0.5;
 
 	// prepare the light source auto-movement
 	this.lightPos = { x:0.0, y:0.0, z:-1.0 };
 	this.lightRadius = 0.25;
-	this.lightAngle = 90.0;
+	this.lightAngle = 0.0;
 
 
 	// add the shader
