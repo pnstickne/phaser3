@@ -1,0 +1,76 @@
+Phaser 3 renderer progress.
+2015-06-16
+
+The WIP can be found here: https://github.com/photonstorm/phaser3/tree/master/renderer
+A recent online demo is here: http://www.insanehero.com/html/renderer/src/
+The project commit log is here: https://github.com/photonstorm/phaser3/commits?author=pjbaron
+
+This update:
+
+10th, 11th, 12th, 15th, 16th June
+
+Rich gave me a license for SpriteDLight (a recent Kickstarter project) which creates normal maps automatically from sprites.  I pushed the "demon" character from Danger Dungeon through it to get a normal map, then wrote a demo with a new shader that lights these objects using the normal map for shadow casting.  The new "spriteDLight" demo shows this effect, if the mouse is stationary the light source will orbit the sprite.  If you move the mouse the light source will be where the mouse is.
+
+Added another new demo for SpriteDLight to illustrate the use of the multiDLightSources shader.  This new shader permits a sprite to be affected by multiple separate SpriteDLight style sources simultaneously.  Currently I've got the demo running with a red and a blue light rotating in opposite directions.  It's limited to 8 lights maximum however this can be adjusted using the MAX_LIGHTS constant in the fragment shader.
+
+Improved both SpriteDLight demos by making the lighting vector use full 3D coordinates (instead of the previous 2D xy only)... this removes many 'flicker' artifacts caused when the light moves across a slope boundary and the far side was suddenly thrown into shadow... now it will receive a gradually diminishing amount of light until it is in full shadow due to the angles involved.
+Added specular lighting to the "spriteDLight" (original) demo.  I'm using the specular map produced by spriteDLight as a multiplier for the specular effect, so to make an area more shiny (like spectacle glass), colour it brighter white.  To make a matte area like cloth, colour it darker.  I found it very simple to adjust the specular output image from SpriteDLight (with Gimp) to get the desired effect of shiny hooves, horns and tail and the rest strongly matte.
+
+Further modified "spriteDLight" demo to draw 5 demons as separate sprites and attempt to apply lighting to each one independently with reference to the sprite's original location.  This proved extremely problematical with multiple frames of reference to resolve and the additional factor that other transforms (scaling, rotation, skew etc) will also need to be included.  I've had an idea how to resolve these issues by rendering all sprites to a GPU texture surface the full size of the screen, simultaneously rendering the normal maps and specular maps using identical transforms... then finally applying the existing lighting shader to all three full-screen surfaces as if they are simply a large sprite.  This would immediately fix all of the transform issues, would make it easy to align screen space (0..1) with the lighting position, and provide a nice template for future complex rendering processes.  The down-sides are: I'm not sure if a transformed (rotated & scaled) normal map will still continue to work properly (although I'm not certain that it won't) and processing the whole screen will be relatively expensive (but we'd only be doing it once, and with many sprites this would eventually be the faster way to handle it anyway).  Overall I'm pretty sure it's worth having a go.
+
+I resolved the coordinate frame issues without resorting to the full-screen lighting technique.  If I can fix it so that rotation works too then I'll be able to avoid that approach entirely.  Rotating a normal map will not rotate the normal angles, because the r,g,b components are fixed to world axis x,y,z directions.  This will create some very strange lighting effects.
+
+Created a new lighting demo of snooker balls on a baize background "ballLight", this should let me spot errors in the lighting model more easily.  Found and fixed a problem with specular lighting which was multiplying through the diffuse surface colour... but specular lights are reflections of a light source, and though they may carry a tint from a less than perfect mirrored surface, they generally reflect the colour of the light.  For now I'm relying on the diffuse light to provide that tint, then adding specular in the final fragment shader stage.  This has resulted in what I think are much better looking images when specular highlights are visible.
+
+Noticed that the lighting wasn't working properly on rotating surfaces and spent some time working out what exactly was wrong with it, eventually fixed it by rotating the normal vector (corresponding to the pixel we're going to draw) before any lighting calculations.  I *think* it's correct now although I should do some more tests with different images to be sure.
+
+
+
+
+
+Coming soon / TODO:
+
+SpriteDLight:
+Modify pbSprite to accept the output from user shaders == Add capability for sprites to use the render-to-texture as a source but otherwise display as currently.
+Extend spriteDLight code to handle multiple sprites around the light source.  Make a 'snooker' demo with really high quality balls.
+Set up a rendering pipeline/new shader to use the position of pbSprites to get the lighting offsets, yet render them to rttTextures and feed those to the pbSprite.
+Add occlusion to the spriteDLight shader (create new shaders so user has all options available).
+
+Canvas:
+Fix all canvas demos (they got left behind during the recent API changes).
+Improve canvas implementation to use faster, cleaner classes and interfaces.
+
+Clean up:
+Clean up webgl and gltextures files again... they're sprawling.
+
+New functions:
+Provide api function to permit async processing before allLoaded fires (Timer?)... for preloaders etc.
+Add API to simplify drawing to the texture.
+
+Alterations:
+Make texture dictionary handle GPU textures transparently to pbSurface etc. Assign a key when adding it then forget about the source.
+Try to find alternative to setting gl.viewport to the texture size... it requires everything else to be scaled by (screen size / texture size) to draw at the correct sizes.
+Update rttCamera and/or multiCamera demo to use new rtt sprites.
+Integrate the 'creature' drawing tricks into the primary render system with a few new API calls and a "drawing queue" system to allow the user to schedule a complicated series of drawings and system changes.
+The bump shader needs to handle different bump textures for different tiles... probably the best way to do this is to have a bump texture which parallels the tile texture (all tiles in the same positions in both textures).  I need to decide if I want bump mapping for wall tops (currently when it's on top of a wall it's using a flat shader for the lighting effect over-spill).
+The bump shader needs some work to permit a tile-map of different bump textures, currently it just tiles a single one for the whole ground area.
+Explore replacing the current "super" implementation with simple prototype declarations... for derived classes specify exactly and only the functions that are derived using the prototype syntax... is it possible to call super functions this way?  If this can work it'll reduce call overhead in the crucial drawing stack loops considerably.
+
+New Demos:
+Make a more impressive render-to-texture sprite demo... the distinguishing feature of this ability is the pre-render (otherwise it's just like cameras again... only transparent backgrounds ie. sprites...)  Maybe extend the rtt camera demo to use sprites??
+
+External tools and utilities:
+Test the demos in Cocoon.
+Add modification tools to the bump map editor so it's possible to edit the pseudo-3D image of the bump surface and generate the bump data image.  Extend the bump map editor to use the 'b' colour component to carry further information (height or reflectivity) to improve the power of this approach.  Carry those changes over into the shader code.
+
+Research:
+Look into "how to build shaders dynamically" (find a good structure) so we can have several shader effects in a single shader program and avoid the overhead of running them sequentially.
+
+Bugs:
+Fix the in-game bump shader (it's still shading the vertical component reversed - already fixed in the editor c# code).
+
+TODO:
+Find all 'TODO' code and commit comments and: make a full list in one place; prioritise the list; start knocking things off until it's all dealt with.
+
+- Pete
+
