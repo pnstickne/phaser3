@@ -23,6 +23,7 @@ function pbBallLightDemo( docId )
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( 'webgl', this.create, this.update, this );
 
+	pbPhaserRender.loader.loadImage( "baize", "../img/spriteDLight/baize.png" );
 	this.diffuseImg = pbPhaserRender.loader.loadImage( "texture", "../img/spriteDLight/redBall_shaded_512.png" );
 	this.normalsImg = pbPhaserRender.loader.loadImage( "normals", "../img/spriteDLight/sphere_512_NORMALS.png" );
 	this.specularImg = pbPhaserRender.loader.loadImage( "specular", "../img/spriteDLight/sphere_512_SPECULAR.png" );
@@ -37,12 +38,16 @@ pbBallLightDemo.prototype.create = function()
 {
 	console.log("pbBallLightDemo.create");
 
+	this.bg = new pbSprite();
+	this.bg.createWithKey(0, 0, "baize", rootLayer);
+	this.bg.fullScreen = true;
+
 	// set the light source's parameters
-	this.lightColour = { r:1.0, g:1.0, b:0.9 };
-	this.lightHigh = 1.5;
-	this.lightSpecular = 0.8;					// power of the specular reflection
-	this.lightSpecularMult = 100.0;				// smaller numbers make the specular "hotspot" wider
-	this.lightAmbient = 0.5;
+	this.lightColour = { r:1.0, g:1.0, b:1.0 };
+	this.lightHigh = 2.0;
+	this.lightSpecular = 1.0;						// power of the specular reflection
+	this.lightSpecularMult = 100.0;					// smaller numbers make the specular "hotspot" wider
+	this.lightAmbient = { r:0.6, g:1.0, b:0.6 };	// greenish ambient light due to reflection from the baize
 
 	// prepare the light source auto-movement
 	this.lightPos = { x:0.0, y:0.0, z:-1.0 };
@@ -230,15 +235,15 @@ pbBallLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 	gl.uniform1f( _shaders.getUniform( "uSpecularMult" ), this.lightSpecularMult );
 	gl.uniform3f( _shaders.getUniform( "uSpecularCol" ), this.lightSpecular, this.lightSpecular, this.lightSpecular );
 
-	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), this.lightAmbient, this.lightAmbient, this.lightAmbient );
+	gl.uniform3f( _shaders.getUniform( "uAmbientCol" ), this.lightAmbient.r, this.lightAmbient.g, this.lightAmbient.b );
 
 	gl.uniform3f( _shaders.getUniform( "uLightCol" ), this.lightColour.r, this.lightColour.g, this.lightColour.b);
 	gl.uniform3f( _shaders.getUniform( "uLightPos" ), this.lightRelX, this.lightRelY, this.lightHigh );
 
 	gl.uniform2f( _shaders.getUniform( "uDstSize" ), this.destWidth, this.destHeight );
 
-	var sin = Math.sin(-this.rotation);
-	var cos = Math.cos(-this.rotation);
+	var sin = Math.sin(this.rotation);
+	var cos = Math.cos(this.rotation);
 	gl.uniform2f( _shaders.getUniform( "uRotateFactors" ), sin, cos );
 };
 
