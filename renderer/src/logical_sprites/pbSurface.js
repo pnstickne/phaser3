@@ -138,7 +138,7 @@ pbSurface.prototype.createJSON = function(_JSON, _imageData)
 
 	this.imageData = _imageData;
 	this.cellTextureBounds = [];
-	thie.cellSourceSize = [];
+	this.cellSourceSize = [];
 	for(var i = 0, l = data.frames.length; i < l; i++)
 	{
 		var f = data.frames[i];
