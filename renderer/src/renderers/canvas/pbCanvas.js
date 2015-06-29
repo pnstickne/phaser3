@@ -120,7 +120,7 @@ pbCanvas.prototype.drawImageWithTransform = function(_textureNumber, _image, _tr
 	{
 		var cell = Math.floor(_image.cellFrame);
 		// TODO: modify cellTextureBounds for canvas to be cellWide/cellHigh factors instead of 0..1
-		var rect = srf.cellTextureBounds[cell % srf.cellsWide][Math.floor(cell / srf.cellsWide)];
+		var rect = srf.cellTextureBounds[cell];
 
 		// TODO: debug only
 		if (!rect)

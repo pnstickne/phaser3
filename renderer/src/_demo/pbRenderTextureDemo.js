@@ -80,8 +80,8 @@ pbRenderTextureDemo.prototype.addSprites = function()
 
 	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
-	// _wide, _high, _numWide, _numHigh, _image
-	this.surface.create(0, 0, 1, 1, imageData);
+	// _wide, _high, _imageData, _rttTexture, _rttTextureRegister
+	this.surface.createSingle(0, 0, imageData);
 
 	this.srcImage = new imageClass();
 	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen

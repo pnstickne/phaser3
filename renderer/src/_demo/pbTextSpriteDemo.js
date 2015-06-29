@@ -60,7 +60,7 @@ pbTextSpriteDemo.prototype.addSprites = function()
 	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	imageData = imageToPowerOfTwo(imageData);
 	this.surface = new pbSurface();
-	this.surface.create(16, 16, 95, 7, imageData);		// there are 7 rows of 95 characters which are 16x16 pixels each
+	this.surface.createGrid(16, 16, 95, 7, imageData);		// there are 7 rows of 95 characters which are 16x16 pixels each
 
 	this.greenLayer = new layerClass();
 	this.greenLayer.create(rootLayer, this.phaserRender, 0, 0, 0, 0, 1, 1);

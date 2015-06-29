@@ -24,7 +24,58 @@ function pbSurface()
 }
 
 
-pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageData, _rttTexture, _rttTextureRegister)
+pbSurface.prototype.createSingle = function(_wide, _high, _imageData, _rttTexture, _rttTextureRegister)
+{
+	if (_rttTexture === undefined) _rttTexture = null;
+	if (_rttTextureRegister === undefined) _rttTextureRegister = 0;
+
+	var srcWide, srcHigh;
+	if (_rttTexture)
+	{
+		srcWide = _rttTexture.width;
+		srcHigh = _rttTexture.height;
+	}
+	else if (_imageData)
+	{
+		srcWide = _imageData.width;
+		srcHigh = _imageData.height;
+	}
+	this.isNPOT = !(is_power_of_2(srcWide) && is_power_of_2(srcHigh));
+
+	if (_wide === 0) _wide = srcWide;
+	if (_high === 0) _high = srcHigh;
+	
+	this.cellWide = _wide;
+	this.cellHigh = _high;
+	this.cellsWide = this.cellsHigh = 1;
+
+	this.rttTexture = _rttTexture;
+	this.rttTextureRegister = _rttTextureRegister;
+	this.imageData = _imageData;
+	
+	console.log("pbSurface.createSingle " + this.cellWide +  "x" + this.cellHigh + " isNPOT = " + (this.isNPOT ? "true" : "false"));
+
+	// dimensions of one cell in texture coordinates (0 = left/top, 1 = right/bottom)
+	var texWide, texHigh;
+	if (_imageData)
+	{
+		// _image may have padding around the animation cells
+		texWide = 1.0 / (srcWide / this.cellWide);
+		texHigh = 1.0 / (srcHigh / this.cellHigh);
+	}
+	else
+	{
+		// there is no image attached, create a surface to exactly fit the animation cell
+		texWide = 1.0;
+		texHigh = 1.0;
+	}
+
+	this.cellTextureBounds = [];
+	this.cellTextureBounds[0] = new pbRectangle(0, 0, texWide, texHigh);
+};
+
+
+pbSurface.prototype.createGrid = function(_wide, _high, _numWide, _numHigh, _imageData, _rttTexture, _rttTextureRegister)
 {
 	if (_rttTexture === undefined) _rttTexture = null;
 	if (_rttTextureRegister === undefined) _rttTextureRegister = 0;
@@ -57,6 +108,7 @@ pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageDa
 	console.log("pbSurface.create " + this.cellWide +  "x" + this.cellHigh + " " + this.cellsWide + "x" + this.cellsHigh + " isNPOT = " + (this.isNPOT ? "true" : "false"));
 
 	// dimensions of one cell in texture coordinates (0 = left/top, 1 = right/bottom)
+	var texWide, texHigh;
 	if (_imageData)
 	{
 		// _image may have padding around the animation cells
@@ -70,14 +122,16 @@ pbSurface.prototype.create = function(_wide, _high, _numWide, _numHigh, _imageDa
 		texHigh = 1.0 / this.cellsHigh;
 	}
 
-	// TODO: change cellTextureBounds into a linear list indexed only by pbImage.cellFrame... faster, and more logical when sprites are not grid aligned!
 	this.cellTextureBounds = [];
-	for(var x = 0; x < this.cellsWide; x++)
-	{
-		this.cellTextureBounds[x] = [];
-		for(var y = 0; y < this.cellsHigh; y++)
-			this.cellTextureBounds[x][y] = new pbRectangle(x * texWide, y * texHigh, texWide, texHigh);
-	}
+	var i = 0;
+	for(var y = 0; y < this.cellsHigh; y++)
+		for(var x = 0; x < this.cellsWide; x++)
+			this.cellTextureBounds[i++] = new pbRectangle(x * texWide, y * texHigh, texWide, texHigh);
+};
+
+
+pbSurface.prototype.createJSON = function(_wide, _high, _JSON, _imageData, _rttTexture, _rttTextureRegister)
+{
 
 };
 

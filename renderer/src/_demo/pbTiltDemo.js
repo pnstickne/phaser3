@@ -66,7 +66,8 @@ pbTiltDemo.prototype.addSprites = function()
 	// create surface from raw image data
 	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
-	this.surface.create(0, 0, 1, 1, imageData);
+	// _wide, _high, _imageData, _rttTexture, _rttTextureRegister
+	this.surface.createSingle(0, 0, imageData);
 
 	// create an image holder for the surface
 	var img = new imageClass();

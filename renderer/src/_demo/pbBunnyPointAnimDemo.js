@@ -81,7 +81,7 @@ pbBunnyPointAnimDemo.prototype.addSprites = function(num)
 	{
 		var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 		this.surface = new pbSurface();
-		this.surface.create(32, 32, 4, 2, imageData);
+		this.surface.createGrid(32, 32, 4, 2, imageData);
 		this.surface.isNPOT = true;
 		
 		// tell the layer what surface it will draw from

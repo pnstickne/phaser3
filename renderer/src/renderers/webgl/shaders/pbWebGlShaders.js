@@ -16,10 +16,10 @@ var blitShaderPointAnimSources = {
 	fragment:
 		"  precision mediump float;" +
 		"  uniform sampler2D uImageSampler;" +
-		"  varying mediump vec2 texSize;" +
+		"  uniform vec2 uTextureSize;" +
 		"  varying mediump vec2 texCoord;" +
 		"  void main () {" +
-		"    mediump vec2 coord = texCoord + (gl_PointCoord * texSize);" +
+		"    mediump vec2 coord = texCoord + (gl_PointCoord * uTextureSize);" +
 		"    gl_FragColor = texture2D(uImageSampler, coord);" +
 		"  }",
 
@@ -28,16 +28,13 @@ var blitShaderPointAnimSources = {
 		"  attribute vec2 aPosition;" +
 		"  attribute vec2 aTextureCoord;" +
 		"  uniform float uSize;" +
-		"  uniform vec2 uTextureSize;" +
 		"  uniform mat3 uProjectionMatrix;" +
-		"  varying mediump vec2 texSize;" +
 		"  varying mediump vec2 texCoord;" +
 		"  void main() {" +
 		"    gl_PointSize = uSize;" +
 		"    vec3 pos = vec3(aPosition, 1);" +
 		"    gl_Position = vec4(uProjectionMatrix * pos, 1);" +
 		"    texCoord = aTextureCoord;" +
-		"    texSize = uTextureSize;" +
 		"  }",
 
 	attributes:
@@ -61,9 +58,9 @@ var blitShaderPointSources = {
 	fragment:
 		"  precision mediump float;" +
 		"  uniform sampler2D uImageSampler;" +
-		"  varying mediump vec2 texSize;" +
+		"  uniform vec2 uTextureSize;" +
 		"  void main () {" +
-		"    mediump vec2 coord = gl_PointCoord * texSize;" +
+		"    mediump vec2 coord = gl_PointCoord * uTextureSize;" +
 		"    gl_FragColor = texture2D(uImageSampler, coord);" +
 		"  }",
 
@@ -71,14 +68,11 @@ var blitShaderPointSources = {
 		"  precision mediump float;" +
 		"  attribute vec2 aPosition;" +
 		"  uniform float uSize;" +
-		"  uniform vec2 uTextureSize;" +
 		"  uniform mat3 uProjectionMatrix;" +
-		"  varying mediump vec2 texSize;" +
 		"  void main() {" +
 		"    gl_PointSize = uSize;" +
 		"    vec3 pos = vec3(aPosition, 1);" +
 		"    gl_Position = vec4(uProjectionMatrix * pos, 1);" +
-		"    texSize = uTextureSize;" +
 		"  }",
 
 	attributes:

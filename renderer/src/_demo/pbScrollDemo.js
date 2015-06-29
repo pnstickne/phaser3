@@ -131,8 +131,9 @@ pbScrollDemo.prototype.createSurfaces = function()
 	// the background image (tiled and stretched to fill the whole viewport)
 	var imageData = pbPhaserRender.loader.getFile( this.bgImg );
 	var surface = new pbSurface();
-	surface.create(0, 0, 1, 1, imageData);
-	surface.cellTextureBounds[0][0].width = pbPhaserRender.width / surface.cellWide;
+	// _wide, _high, _imageData, _rttTexture, _rttTextureRegister
+	surface.createSingle(0, 0, imageData);
+	surface.cellTextureBounds[0].width = pbPhaserRender.width / surface.cellWide;
 	var img = new imageClass();
 	img.create(surface, 0, 0, 0, true, false);
 	this.bgSpr = new pbTransformObject();
@@ -145,8 +146,8 @@ pbScrollDemo.prototype.createSurfaces = function()
 	// set up the tiles in a pbTransformObject
 	imageData = pbPhaserRender.loader.getFile( this.tileImg );
 	this.tileSurface = new pbSurface();
-	this.tileSurface.create(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, imageData);
-	this.tileSurface.isNPOT = true;
+	this.tileSurface.createGrid(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, imageData);
+	this.tileSurface.isNPOT = true;		// TODO: is this required?
 
 	// create all the scrolling layers to draw from the tileSurface
 	this.createLayers(this.tileSurface);

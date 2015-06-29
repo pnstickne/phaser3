@@ -123,7 +123,7 @@ pbLoader.prototype.loaded = function(evt, type, index)
 	{
 		var image = evt.target;
 		var surface = new pbSurface();
-		surface.create(image.cellWide, image.cellHigh, image.cellsWide, image.cellsHigh, image);
+		surface.createGrid(image.cellWide, image.cellHigh, image.cellsWide, image.cellsHigh, image);
 		// add the Image and the surface to the textures dictionary referenced by 'key'
 		textures.add(image.key, { imageData: image, surface: surface });
 	}

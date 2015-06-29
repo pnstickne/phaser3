@@ -148,8 +148,8 @@ pbDungeonLightDemo.prototype.createSurfaces = function()
 	// set up the tiles in a pbTransformObject
 	imageData = pbPhaserRender.loader.getFile( this.tileImg );
 	this.tileSurface = new pbSurface();
-	this.tileSurface.create(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, imageData);
-	this.tileSurface.isNPOT = true;
+	this.tileSurface.createGrid(this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].tileheight, this.tileMap.tilesets[0].imagewidth / this.tileMap.tilesets[0].tilewidth, this.tileMap.tilesets[0].imageheight / this.tileMap.tilesets[0].tileheight, imageData);
+	this.tileSurface.isNPOT = true;		// TODO: is this required?
 
 	// create all the scrolling layers to draw from the tileSurface
 	this.createLayers(this.tileSurface);

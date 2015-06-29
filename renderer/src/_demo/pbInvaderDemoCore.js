@@ -248,7 +248,7 @@ pbInvaderDemoCore.prototype.addInvaders = function()
 pbInvaderDemoCore.prototype.update = function()
 {
 	// scroll the background by adjusting the start point of the texture read y coordinate
-	//this.bgSurface.cellTextureBounds[0][0].y -= 1 / pbPhaserRender.height;
+	//this.bgSurface.cellTextureBounds[0].y -= 1 / pbPhaserRender.height;
 
 	//
 	// update player

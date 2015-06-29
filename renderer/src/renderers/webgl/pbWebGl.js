@@ -271,7 +271,7 @@ pbWebGl.prototype.drawImageWithTransform = function( _srcTextureRegister, _image
 
 	// set up the animation frame
 	var cell = Math.floor(_image.cellFrame);
-	var rect = surface.cellTextureBounds[cell % surface.cellsWide][Math.floor(cell / surface.cellsWide)];
+	var rect = surface.cellTextureBounds[cell];
 
 	var wide, high;
 	if (_image.fullScreen)
@@ -519,7 +519,7 @@ pbWebGl.prototype.drawModeZ = function( _textureNumber, _image, _transform, _z )
 
 	// set up the animation frame
 	var cell = Math.floor(_image.cellFrame);
-	var rect = surface.cellTextureBounds[cell % surface.cellsWide][Math.floor(cell / surface.cellsWide)];
+	var rect = surface.cellTextureBounds[cell];
 
 	var wide, high;
 	if (_image.fullScreen)
@@ -587,8 +587,8 @@ pbWebGl.prototype.drawModeZ = function( _textureNumber, _image, _transform, _z )
 	// point the position attribute at the last bound buffer
     gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 
-    var ut = this.shaders.getUniform( "uTime" );
-	if (ut) gl.uniform1f( ut, (pbPhaserRender.frameCount % 100) / 100.0 );
+//    var ut = this.shaders.getUniform( "uTime" );
+//	if (ut) gl.uniform1f( ut, (pbPhaserRender.frameCount % 100) / 100.0 );
 
     // four vertices per quad, one quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -613,7 +613,7 @@ pbWebGl.prototype.drawImageWithTransform3D = function( _textureNumber, _image, _
 
 	// set up the animation frame
 	var cell = Math.floor(_image.cellFrame);
-	var rect = surface.cellTextureBounds[cell % surface.cellsWide][Math.floor(cell / surface.cellsWide)];
+	var rect = surface.cellTextureBounds[cell];
 
 	// width, height (of source frame)
 	var wide = surface.cellWide;
@@ -674,9 +674,7 @@ pbWebGl.prototype.drawImage = function( _textureNumber, _x, _y, _z, _surface, _c
 
 	// set up the animation frame
 	var cell = Math.floor(_cellFrame);
-	var cx = cell % _surface.cellsWide;
-	var cy = Math.floor(cell / _surface.cellsWide);
-	var rect = _surface.cellTextureBounds[cx][cy];
+	var rect = _surface.cellTextureBounds[cell];
 	var tex_x = rect.x;
 	var tex_y = rect.y;
 	var tex_r = rect.x + rect.width;
@@ -1085,9 +1083,7 @@ pbWebGl.prototype.batchDrawImages = function( _textureNumber, _list, _surface )
 		var img = _list[i].image;
 		var cell = Math.floor(img.cellFrame);
 		var surface = img.surface;
-		var cx = cell % surface.cellsWide;
-		var cy = Math.floor(cell / surface.cellsWide);
-		var rect = surface.cellTextureBounds[cx][cy];
+		var rect = surface.cellTextureBounds[cell];
 		var tex_x = rect.x;
 		var tex_y = rect.y;
 		var tex_r = rect.x + rect.width;
@@ -1228,11 +1224,9 @@ pbWebGl.prototype.rawBatchDrawImages = function( _textureNumber, _list )
 
 		// set up texture reference coordinates based on the image frame number
 		var cell = Math.floor(img.cellFrame);
-		var cx = cell % surface.cellsWide;
-		var cy = Math.floor(cell / surface.cellsWide);
-		var rect = surface.cellTextureBounds[cx][cy];
+		var rect = surface.cellTextureBounds[cell];
 		if (!rect)
-			console.log("ERROR: invalid cellFrame", cx, cy);
+			console.log("ERROR: invalid cellFrame", cell);
 		var tex_x = rect.x;
 		var tex_y = rect.y;
 		var tex_r = rect.x + rect.width;
@@ -1376,11 +1370,9 @@ pbWebGl.prototype.rawBatchDrawTextures = function( _list )
 
 		// set up texture reference coordinates based on the image frame number
 		var cell = Math.floor(img.cellFrame);
-		var cx = cell % surface.cellsWide;
-		var cy = Math.floor(cell / surface.cellsWide);
-		var rect = surface.cellTextureBounds[cx][cy];
+		var rect = surface.cellTextureBounds[cell];
 		if (!rect)
-			console.log("ERROR: invalid cellFrame", cx, cy);
+			console.log("ERROR: invalid cellFrame", cell);
 		var tex_x = rect.x;
 		var tex_y = rect.y;
 		var tex_r = rect.x + rect.width;

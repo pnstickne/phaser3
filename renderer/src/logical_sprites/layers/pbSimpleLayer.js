@@ -120,9 +120,7 @@ pbSimpleLayer.prototype.prepareXYUV = function()
 		{
 			this.drawList[drawLength++] = child.x + x;
 			this.drawList[drawLength++] = child.y + y;
-			var cx = child.image.cellFrame % this.surface.cellsWide;
-			var cy = Math.floor(child.image.cellFrame / this.surface.cellsWide);
-			var r = this.surface.cellTextureBounds[cx][cy];
+			var r = this.surface.cellTextureBounds[child.image.cellFrame];
 			this.drawList[drawLength++] = r.x;
 			this.drawList[drawLength++] = r.y;
 		}

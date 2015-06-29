@@ -66,7 +66,8 @@ pbRoadDemo.prototype.addSprites = function()
 	// create animation data and set destination for movement
 	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
-	this.surface.create(0, 0, 1, 1, imageData);
+	// _wide, _high, _imageData, _rttTexture, _rttTextureRegister
+	this.surface.createSingle(0, 0, imageData);
 
 	// create a layer to draw using mode z
 	this.layer = new pbWebGlLayer();

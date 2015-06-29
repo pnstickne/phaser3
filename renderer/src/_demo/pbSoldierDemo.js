@@ -80,12 +80,12 @@ pbSoldierDemo.prototype.addSprites = function(num)
 	if (!this.surface_run)
 	{
 		this.surface_run = new pbSurface();
-		this.surface_run.create(32, 64, 8, 5, pbPhaserRender.loader.getFile( this.sprite_run ));
+		this.surface_run.createGrid(32, 64, 8, 5, pbPhaserRender.loader.getFile( this.sprite_run ));
 	}
 	if (!this.surface_smash)
 	{
 		this.surface_smash = new pbSurface();
-		this.surface_smash.create(32, 64, 8, 5, pbPhaserRender.loader.getFile( this.sprite_smash ));
+		this.surface_smash.createGrid(32, 64, 8, 5, pbPhaserRender.loader.getFile( this.sprite_smash ));
 	}
 
 	// create animation data and set destination for movement

@@ -65,7 +65,8 @@ pbSpriteRTTDemo.prototype.renderToTexture = function()
 	// get the loaded image into a surface
 	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	var surface = new pbSurface();
-	surface.create(0, 0, 1, 1, imageData);
+	// _wide, _high, _imageData, _rttTexture, _rttTextureRegister
+	surface.createSingle(0, 0, imageData);
 
 	// draw the surface to a render-to-texture on the GPU
 	// _surface, _textureWide, _textureHigh, _dstTextureRegister
@@ -74,8 +75,8 @@ pbSpriteRTTDemo.prototype.renderToTexture = function()
 
 	// create a new surface using the render-to-texture texture as the source
 	this.rttSurface = new pbSurface();
-	// _wide, _high, _numWide, _numHigh, _imageData, _rttTexture, _rttTextureRegister
-	this.rttSurface.create(0, 0, 1, 1, null, this.rttTexture, this.rttTextureRegister);
+	// _wide, _high, _imageData, _rttTexture, _rttTextureRegister
+	this.rttSurface.createSingle(0, 0, null, this.rttTexture, this.rttTextureRegister);
 };
 
 

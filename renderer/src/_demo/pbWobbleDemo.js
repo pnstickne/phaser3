@@ -73,7 +73,7 @@ pbWobbleDemo.prototype.addSprites = function()
 
 	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
-	this.surface.create(80, 100, 10, 6, imageData);
+	this.surface.createGrid(80, 100, 10, 6, imageData);
 
 	var c = 0, x, y;
 
