@@ -267,8 +267,8 @@ pbInvaderDemoCore.prototype.update = function()
 		else this.playerDirX = -Math.abs(this.playerDirX);
 	}
 	// bounce off edges
-	if (this.player.x < this.player.surface.cellWide * 0.5
-		|| this.player.x > pbPhaserRender.width - this.player.surface.cellWide * 0.5)
+	if (this.player.x < this.player.surface.cellSourceSize[0].wide * 0.5
+		|| this.player.x > pbPhaserRender.width - this.player.surface.cellSourceSize[0].wide * 0.5)
 		this.playerDirX = -this.playerDirX;
 	// move
 	this.player.x += this.playerDirX;
@@ -303,8 +303,8 @@ pbInvaderDemoCore.prototype.update = function()
 		{
 			// horizontal movement
 			invader.x += this.invaderDirX;
-			if (invader.x < invader.surface.cellWide * 0.5
-				|| invader.x > pbPhaserRender.width - invader.surface.cellWide * 0.5)
+			if (invader.x < invader.surface.cellSourceSize[0].wide * 0.5
+				|| invader.x > pbPhaserRender.width - invader.surface.cellSourceSize[0].wide * 0.5)
 				this.flipDir = true;
 
 			// invader dropping bomb
@@ -315,7 +315,7 @@ pbInvaderDemoCore.prototype.update = function()
 
 		// vertical movement
 		invader.y += this.invaderMoveY;
-		if (invader.y > pbPhaserRender.height + invader.surface.cellHigh)
+		if (invader.y > pbPhaserRender.height + invader.surface.cellSourceSize[0].high)
 			invader.die = true;
 
 		// animation
@@ -368,7 +368,7 @@ pbInvaderDemoCore.prototype.playerShoot = function()
 {
 	var b = this.bulletPool.pop();
 	b.x = this.player.x;
-	b.y = this.player.y - b.surface.cellHigh;
+	b.y = this.player.y - b.surface.cellSourceSize[0].high;
 	this.layer.addChild(b.transform);
 
 	this.bullets.push(b);
@@ -384,7 +384,7 @@ pbInvaderDemoCore.prototype.playerBulletMove = function()
 		b.y -= 8;
 
 		// hit alien or off the top of the screen?
-		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.surface.cellHigh)
+		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.surface.cellSourceSize[0].high)
 		{
 			// kill the bullet and add it back to the pool
 			this.layer.removeChild(b.transform);
@@ -458,7 +458,7 @@ pbInvaderDemoCore.prototype.playerRocketMove = function()
 		}
 
 		// hit alien or off the edges of the screen?
-		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.surface.cellHigh || b.x < 0 || b.x > pbPhaserRender.width)
+		if (this.invaderCollide(b.x, b.y, true) || b.y < -b.surface.cellSourceSize[0].high || b.x < 0 || b.x > pbPhaserRender.width)
 		{
 			// kill the rocket and add it back to the pool
 			this.layer.removeChild(b.transform);
@@ -474,10 +474,10 @@ pbInvaderDemoCore.prototype.invaderCollide = function(_x, _y, _explode)
 	for(var i = 0, l = this.invaders.length; i < l; i++)
 	{
 		var invader = this.invaders[i];
-		var w2 = invader.surface.cellWide * 0.5;
+		var w2 = invader.surface.cellSourceSize[0].wide * 0.5;
 		if (_x > invader.x - w2 && _x < invader.x + w2)
 		{
-			var h2 = invader.surface.cellHigh * 0.5;
+			var h2 = invader.surface.cellSourceSize[0].high * 0.5;
 			if (_y > invader.y - h2 && _y < invader.y + h2)
 			{
 				if (_explode)
@@ -519,10 +519,10 @@ pbInvaderDemoCore.prototype.invaderBombMove = function()
 		b.vy += 0.02;
 
 		var hit = false;
-		var w2 = this.player.surface.cellWide * 0.5;
+		var w2 = this.player.surface.cellSourceSize[0].wide * 0.5;
 		if (b.x > this.player.x - w2 && b.x < this.player.x + w2)
 		{
-			var h2 = this.player.surface.cellHigh * 0.5;
+			var h2 = this.player.surface.cellSourceSize[0].high * 0.5;
 			if (b.y > this.player.y - h2 && b.y < this.player.y + h2)
 			{
 				this.addExplosion(this.player.x, this.player.y);
@@ -543,7 +543,7 @@ pbInvaderDemoCore.prototype.invaderBombMove = function()
 		}
 
 		// hit player or off the bottom of the screen?
-		if (hit || b.y > pbPhaserRender.height + b.surface.cellHigh * 0.5)
+		if (hit || b.y > pbPhaserRender.height + b.surface.cellSourceSize[0].high * 0.5)
 		{
 			// kill the bullet and add it back to the pool
 			this.layer.removeChild(b.transform);

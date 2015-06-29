@@ -127,11 +127,11 @@ pbSoldierDemo.prototype.addSprites = function(num)
 
 		// line up in ranks getting smaller and smaller
 		var finalScale = (this.targety + 96) / 600;
-		this.targetx += img.surface.cellWide * 0.65 * finalScale;
+		this.targetx += img.surface.cellSourceSize[0].wide * 0.65 * finalScale;
 		if (this.targetx >= 800 + img.surface.imageData.width * 0.5 * finalScale)
 		{
 			this.targetx = -img.surface.imageData.width * 0.5 * finalScale;
-			this.targety -= img.surface.cellHigh * 0.15 * finalScale;
+			this.targety -= img.surface.cellSourceSize[0].high * 0.15 * finalScale;
 		}
 	}
 	this.numSprites = this.spriteList.length;

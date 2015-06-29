@@ -59,8 +59,8 @@ pbFilterDemo.prototype.create = function()
 
 	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
-	// _wide, _high, _imageData, _rttTexture, _rttTextureRegister
-	this.surface.createSingle(0, 0, imageData);
+	// _imageData, _rttTexture, _rttTextureRegister
+	this.surface.createSingle(imageData);
 
 	this.srcImage = new imageClass();
 	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen

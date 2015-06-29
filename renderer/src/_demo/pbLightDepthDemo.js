@@ -118,7 +118,7 @@ pbLightDepthDemo.prototype.create = function()
     this.wiz.createWithKey(32, 32, "wizard", this.topLayer);
     this.wiz.z = 0;
     this.wiz.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 50 };
-    this.wiz.light = { x : this.wiz.surface.cellWide * 0.5, y : this.wiz.surface.cellHigh * 0.5, r : 0.0, g : 0.0, b : 8.0, range : 0.40 };
+    this.wiz.light = { x : this.wiz.surface.cellSourceSize[0].wide * 0.5, y : this.wiz.surface.cellSourceSize[0].high * 0.5, r : 0.0, g : 0.0, b : 8.0, range : 0.40 };
 
     // create the enemies
     this.enemy = [];
@@ -128,7 +128,7 @@ pbLightDepthDemo.prototype.create = function()
     	enemy.createWithKey(32, 32, "minotaur", this.topLayer);
 	    enemy.z = 0;
     	enemy.move = { x : 1000, y : 1000, cellFrame : 0, dx : 0, dy : 0, speed : 10 + Math.floor(Math.random() * 40) };
-    	enemy.light = { x : enemy.surface.cellWide * 0.5, y : enemy.surface.cellHigh * 0.5, r : 0.50 + Math.random() * 0.5, g : 0.50 + Math.random() * 0.5, b : 0.0, range : 0.15 + e / 50.0 };
+    	enemy.light = { x : enemy.surface.cellSourceSize[0].wide * 0.5, y : enemy.surface.cellSourceSize[0].high * 0.5, r : 0.50 + Math.random() * 0.5, g : 0.50 + Math.random() * 0.5, b : 0.0, range : 0.15 + e / 50.0 };
     	this.enemy.push(enemy);
     	this.moveToRandomEmptyLocation(this.enemy[e]);
     }

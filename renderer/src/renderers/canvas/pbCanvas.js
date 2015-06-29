@@ -103,8 +103,8 @@ pbCanvas.prototype.drawImageWithTransform = function(_textureNumber, _image, _tr
 		// TODO: store scale in pbMatrix3 when it's set to avoid sqrt here... how best to deal with matrix multiplication for transform tree though?
 		// var sx = Math.sqrt(a * a + b * b);
 		// var sy = Math.sqrt(c * c + d * d);	
-		w = srf.cellWide;		// * sx;
-		h = srf.cellHigh;		// * sy;  TODO: I think this scale factor should be required but it works without... try with some larger images to check
+		w = srf.cellSourceSize[0].wide;		// * sx;
+		h = srf.cellSourceSize[0].high;		// * sy;  TODO: I think this scale factor should be required but it works without... try with some larger images to check
 
 		// don't allow transforms to accumulate, save state and restore it...
 		this.ctx.save();
@@ -131,8 +131,8 @@ pbCanvas.prototype.drawImageWithTransform = function(_textureNumber, _image, _tr
 		this.ctx.transform(a, b, c, d, e, f);
 		var sx = Math.sqrt(a * a + b * b);
 		var sy = Math.sqrt(c * c + d * d);	
-		w = srf.cellWide * sx;
-		h = srf.cellHigh * sy;
+		w = srf.cellSourceSize[0].wide * sx;
+		h = srf.cellSourceSize[0].high * sy;
 		// part of a sprite sheet, use 9 parameter drawImage call
 		this.ctx.drawImage(srcImageData,
 			rect.x * srcImageData.width, rect.y * srcImageData.height,
@@ -225,8 +225,8 @@ pbCanvas.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface
 pbCanvas.prototype.blitListDirect = function( _list, _listLength, _surface )
 {
 	var c = _listLength;
-	var w = _surface.cellWide * 0.5;
-	var h = _surface.cellWide * 0.5;
+	var w = _surface.cellSourceSize[0].wide * 0.5;
+	var h = _surface.cellSourceSize[0].high * 0.5;
 	while(c--)
 	{
 		// round to integer positions for faster rendering
@@ -244,8 +244,8 @@ pbCanvas.prototype.blitListDirect = function( _list, _listLength, _surface )
 pbCanvas.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface )
 {
 	var c = _listLength;
-	var w = _surface.cellWide * 0.5;
-	var h = _surface.cellWide * 0.5;
+	var w = _surface.cellSourceSize[0].wide * 0.5;
+	var h = _surface.cellSourceSize[0].high * 0.5;
 	while(c--)
 	{
 		// round to integer positions for faster rendering
@@ -262,8 +262,8 @@ pbCanvas.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface 
 pbCanvas.prototype.blitDrawImagesPointAnim = function( _list, _listLength, _surface )
 {
 	var c = _listLength;
-	var w = _surface.cellWide;
-	var h = _surface.cellWide;
+	var w = _surface.cellSourceSize[0].wide;
+	var h = _surface.cellSourceSize[0].high;
 	var w2 = w * 0.5;
 	var h2 = h * 0.5;
 	while(c--)

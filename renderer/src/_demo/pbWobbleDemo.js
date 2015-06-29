@@ -89,8 +89,8 @@ pbWobbleDemo.prototype.addSprites = function()
 			var img = new imageClass();
 			img.create(this.surface, c, 0.5, 0.5);
 
-			var cx = x * this.surface.cellWide + this.surface.cellWide * 0.5;
-			var cy = y * this.surface.cellHigh + this.surface.cellHigh * 0.5;
+			var cx = x * this.surface.cellSourceSize[0].wide + this.surface.cellSourceSize[0].wide * 0.5;
+			var cy = y * this.surface.cellSourceSize[0].high + this.surface.cellSourceSize[0].high * 0.5;
 			this.grid[y][x] = { gx:cx, gy:cy, x:cx, y:cy, vx:0.0, vy:0.0, dx: 0, dy: 0 };
 
 			this.sprList[c] = new pbTransformObject();
@@ -107,8 +107,8 @@ pbWobbleDemo.prototype.addSprites = function()
 pbWobbleDemo.prototype.update = function()
 {
 	var c = 0, x, y, lastx = 1, lasty = 1;
-	var w2 = 1.0 / (this.surface.cellWide * 0.5);
-	var h2 = 1.0 / (this.surface.cellHigh * 0.5);
+	var w2 = 1.0 / (this.surface.cellSourceSize[0].wide * 0.5);
+	var h2 = 1.0 / (this.surface.cellSourceSize[0].high * 0.5);
 
 	for(y = 0; y < this.surface.cellsHigh; y++)
 	{
@@ -141,14 +141,14 @@ pbWobbleDemo.prototype.update = function()
 			var rb = this.grid[y][x];
 
 			// calculate the multiplier value (used to offset the corners) from the offset distances and the square dimensions
-			lt.ox = (this.surface.cellWide * 0.5 - lt.dx) / (this.surface.cellWide * 0.5);
-			lt.oy = (this.surface.cellHigh * 0.5 - lt.dy) / (this.surface.cellHigh * 0.5);
-			rt.ox = (this.surface.cellWide * 0.5 + rt.dx) / (this.surface.cellWide * 0.5);
-			rt.oy = (this.surface.cellHigh * 0.5 - rt.dy) / (this.surface.cellHigh * 0.5);
-			lb.ox = (this.surface.cellWide * 0.5 - lb.dx) / (this.surface.cellWide * 0.5);
-			lb.oy = (this.surface.cellHigh * 0.5 + lb.dy) / (this.surface.cellHigh * 0.5);
-			rb.ox = (this.surface.cellWide * 0.5 + rb.dx) / (this.surface.cellWide * 0.5);
-			rb.oy = (this.surface.cellHigh * 0.5 + rb.dy) / (this.surface.cellHigh * 0.5);
+			lt.ox = (this.surface.cellSourceSize[0].wide * 0.5 - lt.dx) / (this.surface.cellSourceSize[0].wide * 0.5);
+			lt.oy = (this.surface.cellSourceSize[0].high * 0.5 - lt.dy) / (this.surface.cellSourceSize[0].high * 0.5);
+			rt.ox = (this.surface.cellSourceSize[0].wide * 0.5 + rt.dx) / (this.surface.cellSourceSize[0].wide * 0.5);
+			rt.oy = (this.surface.cellSourceSize[0].high * 0.5 - rt.dy) / (this.surface.cellSourceSize[0].high * 0.5);
+			lb.ox = (this.surface.cellSourceSize[0].wide * 0.5 - lb.dx) / (this.surface.cellSourceSize[0].wide * 0.5);
+			lb.oy = (this.surface.cellSourceSize[0].high * 0.5 + lb.dy) / (this.surface.cellSourceSize[0].high * 0.5);
+			rb.ox = (this.surface.cellSourceSize[0].wide * 0.5 + rb.dx) / (this.surface.cellSourceSize[0].wide * 0.5);
+			rb.oy = (this.surface.cellSourceSize[0].high * 0.5 + rb.dy) / (this.surface.cellSourceSize[0].high * 0.5);
 
 			// set all four corner multipler offsets
 			img.setCorners(lt.ox, lt.oy, rt.ox, rt.oy, lb.ox, lb.oy, rb.ox, rb.oy);

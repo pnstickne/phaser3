@@ -81,8 +81,8 @@ pbBunnyPointDemo.prototype.addSprites = function(num)
 	{
 		var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 		this.surface = new pbSurface();
-		// _wide, _high, _imageData, _rttTexture, _rttTextureRegister
-		this.surface.createSingle(0, 0, imageData);
+		// _imageData, _rttTexture, _rttTextureRegister
+		this.surface.createSingle(imageData);
 		this.surface.isNPOT = true;
 		
 		// tell the layer what surface it will draw from

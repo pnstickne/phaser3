@@ -131,16 +131,16 @@ pbScrollDemo.prototype.createSurfaces = function()
 	// the background image (tiled and stretched to fill the whole viewport)
 	var imageData = pbPhaserRender.loader.getFile( this.bgImg );
 	var surface = new pbSurface();
-	// _wide, _high, _imageData, _rttTexture, _rttTextureRegister
-	surface.createSingle(0, 0, imageData);
-	surface.cellTextureBounds[0].width = pbPhaserRender.width / surface.cellWide;
+	// _imageData, _rttTexture, _rttTextureRegister
+	surface.createSingle(imageData);
+	surface.cellTextureBounds[0].width = pbPhaserRender.width / surface.cellSourceSize[0].wide;
 	var img = new imageClass();
 	img.create(surface, 0, 0, 0, true, false);
 	this.bgSpr = new pbTransformObject();
 
 	// scale the tiled background to compensate for the extra drawn width from tiling
 	// TODO: create a simple API to fix surface and sprite scaling, or add a separate variable to handle tiling properly
-	this.bgSpr.create(img, 0, 0, 1.0, 0, pbPhaserRender.width / surface.cellWide, pbPhaserRender.height / surface.cellHigh);
+	this.bgSpr.create(img, 0, 0, 1.0, 0, pbPhaserRender.width / surface.cellSourceSize[0].wide, pbPhaserRender.height / surface.cellSourceSize[0].high);
 	rootLayer.addChild(this.bgSpr);
 
 	// set up the tiles in a pbTransformObject

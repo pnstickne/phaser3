@@ -66,8 +66,8 @@ pbRoadDemo.prototype.addSprites = function()
 	// create animation data and set destination for movement
 	var imageData = pbPhaserRender.loader.getFile( this.spriteImg );
 	this.surface = new pbSurface();
-	// _wide, _high, _imageData, _rttTexture, _rttTextureRegister
-	this.surface.createSingle(0, 0, imageData);
+	// _imageData, _rttTexture, _rttTextureRegister
+	this.surface.createSingle(imageData);
 
 	// create a layer to draw using mode z
 	this.layer = new pbWebGlLayer();
@@ -85,7 +85,7 @@ pbRoadDemo.prototype.addSprites = function()
 	// create a sprite to draw using mode z
 	this.spr = new pbTransformObject();
 	// _image, _x, _y, _z, _angleInRadians, _scaleX, _scaleY
-	this.spr.create(img, pbPhaserRender.width * 0.5, 100.0, 1.0, 0, pbPhaserRender.width / this.surface.cellWide, 4.0);
+	this.spr.create(img, pbPhaserRender.width * 0.5, 100.0, 1.0, 0, pbPhaserRender.width / this.surface.cellSourceSize[0].wide, 4.0);
 	this.layer.addChild(this.spr);
 };
 

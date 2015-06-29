@@ -276,16 +276,16 @@ pbWebGl.prototype.drawImageWithTransform = function( _srcTextureRegister, _image
 	var wide, high;
 	if (_image.fullScreen)
 	{
-		rect.width = gl.drawingBufferWidth / surface.cellWide;
-		rect.height = gl.drawingBufferHeight / surface.cellHigh;
+		rect.width = gl.drawingBufferWidth / surface.cellSourceSize[cell].wide;
+		rect.height = gl.drawingBufferHeight / surface.cellSourceSize[cell].high;
 		wide = gl.drawingBufferWidth;
 		high = gl.drawingBufferHeight;
 	}
 	else
 	{
-		// half width, half height (of source frame)
-		wide = surface.cellWide;
-		high = surface.cellHigh;
+		// width, height (of source frame)
+		wide = surface.cellSourceSize[cell].wide;
+		high = surface.cellSourceSize[cell].high;
 	}
 
 	// screen destination position
@@ -524,16 +524,16 @@ pbWebGl.prototype.drawModeZ = function( _textureNumber, _image, _transform, _z )
 	var wide, high;
 	if (_image.fullScreen)
 	{
-		rect.width = gl.drawingBufferWidth / surface.cellWide;
-		rect.height = gl.drawingBufferHeight / surface.cellHigh;
+		rect.width = gl.drawingBufferWidth / surface.cellSourceSize[cell].wide;
+		rect.height = gl.drawingBufferHeight / surface.cellSourceSize[cell].high;
 		wide = gl.drawingBufferWidth;
 		high = gl.drawingBufferHeight;
 	}
 	else
 	{
-		// half width, half height (of source frame)
-		wide = surface.cellWide;
-		high = surface.cellHigh;
+		// width, height (of source frame)
+		wide = surface.cellSourceSize[cell].wide;
+		high = surface.cellSourceSize[cell].high;
 	}
 
 	// screen destination position
@@ -616,8 +616,8 @@ pbWebGl.prototype.drawImageWithTransform3D = function( _textureNumber, _image, _
 	var rect = surface.cellTextureBounds[cell];
 
 	// width, height (of source frame)
-	var wide = surface.cellWide;
-	var high = surface.cellHigh;
+	var wide = surface.cellSourceSize[cell].wide;
+	var high = surface.cellSourceSize[cell].high;
 
 	// screen destination position (aPosition.xy in vertex shader)
 	// l, b,		0,1
@@ -668,12 +668,12 @@ pbWebGl.prototype.drawImage = function( _textureNumber, _x, _y, _z, _surface, _c
 	// split off a small part of the big buffer, for a single display object
 	var buffer = this.drawingArray.subarray(0, 20);
 
-	// half width, half height (of source frame)
-	var wide = _surface.cellWide * 0.5;
-	var high = _surface.cellHigh * 0.5;
 
 	// set up the animation frame
 	var cell = Math.floor(_cellFrame);
+	// half width, half height (of source frame)
+	var wide = _surface.cellSourceSize[cell].wide * 0.5;
+	var high = _surface.cellSourceSize[cell].high * 0.5;
 	var rect = _surface.cellTextureBounds[cell];
 	var tex_x = rect.x;
 	var tex_y = rect.y;
@@ -751,8 +751,8 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface,
 	var len = Math.min(_listLength, MAX_SPRITES * 2);
 
 	var scale = 1.0;
-	var wide = _surface.cellWide * scale * 0.5 / screenWide2;
-	var high = _surface.cellHigh * scale * 0.5 / screenHigh2;
+	var wide = _surface.cellSourceSize[0].wide * scale * 0.5 / screenWide2;
+	var high = _surface.cellSourceSize[0].high * scale * 0.5 / screenHigh2;
 
 	var old_t;
 	var old_r;
@@ -832,8 +832,8 @@ pbWebGl.prototype.blitListDirect = function( _list, _listLength, _surface, _text
 	var len = Math.min(_listLength, MAX_SPRITES);
 
 	var scale = 1.0;
-	var wide = _surface.cellWide * scale * 0.5 / screenWide2;
-	var high = _surface.cellHigh * scale * 0.5 / screenHigh2;
+	var wide = _surface.cellSourceSize[0].wide * scale * 0.5 / screenWide2;
+	var high = _surface.cellSourceSize[0].high * scale * 0.5 / screenHigh2;
 
 	var old_t;
 	var old_r;
@@ -913,8 +913,8 @@ pbWebGl.prototype.blitDrawImages = function( _textureNumber, _list, _surface )
 	var len = Math.min(_list.length, MAX_SPRITES);
 
 	var scale = 1.0;
-	var wide = _surface.cellWide * scale * 0.5 / screenWide2;
-	var high = _surface.cellHigh * scale * 0.5 / screenHigh2;
+	var wide = _surface.cellSourceSize[0].wide * scale * 0.5 / screenWide2;
+	var high = _surface.cellSourceSize[0].high * scale * 0.5 / screenHigh2;
 
 	var old_t;
 	var old_r;
@@ -984,7 +984,9 @@ pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface, 
 		this.prepareBuffer();
 		this.shaders.prepare(_textureNumber);
 
-		var max = Math.max(_surface.cellWide, _surface.cellHigh);
+		var w = _surface.cellSourceSize[0].wide;
+		var h = _surface.cellSourceSize[0].high;
+		var max = Math.max(w, h);
 		// set the size of the 'point' (it's square)
 		if (this.shaders.getUniform( "uSize" ))
 		{
@@ -993,7 +995,7 @@ pbWebGl.prototype.blitDrawImagesPoint = function( _list, _listLength, _surface, 
 		// set the dimensions of the actual texture (can be rectangular)
 		if (this.shaders.getUniform( "uTextureSize" ))
 		{
-			gl.uniform2f( this.shaders.getUniform( "uTextureSize" ), max / _surface.cellWide, max / _surface.cellHigh );
+			gl.uniform2f( this.shaders.getUniform( "uTextureSize" ), max / w, max / h );
 		}
 	}
 
@@ -1020,7 +1022,7 @@ pbWebGl.prototype.blitDrawImagesPointAnim = function(_list, _listLength, _surfac
 		this.prepareBuffer();
 		this.shaders.prepare(_textureNumber);
 
-		var max = Math.max(_surface.cellWide, _surface.cellHigh);
+		var max = Math.max(_surface.cellSourceSize[0].wide, _surface.cellSourceSize[0].high);
 		// set the size of the 'point' (it's square)
 		if (this.shaders.getUniform( "uSize" ))
 		{
@@ -1066,10 +1068,6 @@ pbWebGl.prototype.batchDrawImages = function( _textureNumber, _list, _surface )
 		this.shaders.prepare(_textureNumber);
 	}
 
-	// half width, half height (of source frame)
-	var wide = _surface.cellWide * 0.5;
-	var high = _surface.cellHigh * 0.5;
-
 	// TODO: generate warning if length is capped
 	var len = Math.min(_list.length, MAX_SPRITES);
 
@@ -1083,6 +1081,9 @@ pbWebGl.prototype.batchDrawImages = function( _textureNumber, _list, _surface )
 		var img = _list[i].image;
 		var cell = Math.floor(img.cellFrame);
 		var surface = img.surface;
+		// half width, half height (of source frame)
+		var wide = surface.cellSourceSize[cell].wide * 0.5;
+		var high = surface.cellSourceSize[cell].high * 0.5;
 		var rect = surface.cellTextureBounds[cell];
 		var tex_x = rect.x;
 		var tex_y = rect.y;
@@ -1204,10 +1205,6 @@ pbWebGl.prototype.rawBatchDrawImages = function( _textureNumber, _list )
 		this.shaders.prepare(_textureNumber);
 	}
 
-	// half width, half height (of source frame)
-	var wide = surface.cellWide;
-	var high = surface.cellHigh;
-
 	// TODO: generate warning if length is capped
 	var len = Math.min(_list.length, MAX_SPRITES);
 
@@ -1224,6 +1221,9 @@ pbWebGl.prototype.rawBatchDrawImages = function( _textureNumber, _list )
 
 		// set up texture reference coordinates based on the image frame number
 		var cell = Math.floor(img.cellFrame);
+		// half width, half height (of source frame)
+		var wide = surface.cellSourceSize[cell].wide;
+		var high = surface.cellSourceSize[cell].high;
 		var rect = surface.cellTextureBounds[cell];
 		if (!rect)
 			console.log("ERROR: invalid cellFrame", cell);
