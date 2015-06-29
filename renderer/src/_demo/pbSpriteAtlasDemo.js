@@ -44,7 +44,7 @@ pbSpriteAtlasDemo.prototype.create = function()
 	// create a surface for the sprite atlas
 	this.surface = new pbSurface();
 	// initialise the surface using the loaded image and the atlas JSON
-	this.surface.createJSON(jsonString, pbPhaserRender.loader.getFile( this.dragon ));
+	this.surface.createAtlas(jsonString, pbPhaserRender.loader.getFile( this.dragon ));
 
 	this.addSprites();
 };
