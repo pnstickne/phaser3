@@ -162,7 +162,7 @@ pbSpriteDLightDemo.prototype.update = function()
 	turns.angleInRadians += 0.01;
 
 	// only rotate the light if it's been quite a while since the last mouse move
-	if (pbPhaserRender.frameCount - this.move > 180)
+	if (pbPhaserRender.frameCount - this.move > 300)
 	{
 		// move the light source in a circle around the middle of the output texture
 		this.lightPos.x = 0.5 + this.lightRadius * Math.cos(this.lightAngle * Math.PI / 180.0);
@@ -196,7 +196,6 @@ pbSpriteDLightDemo.prototype.postUpdate = function()
 		// then rescale by screen dimension / texture dimension to get texture coordinate frame
 		this.lightRelX = (this.lightPos.x - litSprite.sprite.x / pbPhaserRender.width)  * (pbPhaserRender.width / this.destWidth);
 		this.lightRelY = (litSprite.sprite.y / pbPhaserRender.height - this.lightPos.y) * (pbPhaserRender.height / this.destHeight);
-
 		this.rotation = litSprite.sprite.angleInRadians;
 
 		// copy the rttTexture to the framebuffer attached texture, applying a shader as it draws
@@ -233,8 +232,6 @@ pbSpriteDLightDemo.prototype.setShader = function(_shaders, _textureNumber)
 
 	gl.uniform2f( _shaders.getUniform( "uDstSize" ), this.destWidth, this.destHeight );
 
-	var sin = Math.sin(-this.rotation);
-	var cos = Math.cos(-this.rotation);
-	gl.uniform2f( _shaders.getUniform( "uRotateFactors" ), sin, cos );
+	gl.uniform1f( _shaders.getUniform( "uRotation" ), -this.rotation );
 };
 
