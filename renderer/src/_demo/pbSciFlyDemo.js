@@ -82,8 +82,6 @@ pbSciFlyDemo.prototype.destroy = function()
 {
 	console.log("pbSciFlyDemo.destroy");
 
-	gui.remove(this.numCtrl);
-
 	this.phaserRender.destroy();
 	this.phaserRender = null;
 

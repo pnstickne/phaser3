@@ -16,10 +16,6 @@ function pbBunnyDemoNPOT( docId )
 	this.fps60 = 0;
 	this.numSprites = 0;
 
-	// dat.GUI controlled variables and callbacks
-	this.numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
-	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
-
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( useRenderer, this.create, this.update, this );
 	this.spriteImg = pbPhaserRender.loader.loadImage( "bunny", "../img/bunny.png" );
@@ -52,7 +48,6 @@ pbBunnyDemoNPOT.prototype.destroy = function()
 {
 	console.log("pbBunnyDemoNPOT.destroy");
 
-	gui.remove(this.numCtrl);
 	this.list = null;
 
 	if (this.surface)
@@ -124,6 +119,9 @@ pbBunnyDemoNPOT.prototype.removeSprites = function(num)
 
 pbBunnyDemoNPOT.prototype.update = function()
 {
+	// debug sprite count
+	sprCountDbg += this.list.length;
+
 	var i = this.list.length;
 	while(i--)
 	{

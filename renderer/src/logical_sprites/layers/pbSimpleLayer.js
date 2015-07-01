@@ -82,6 +82,10 @@ pbSimpleLayer.prototype.prepareXY = function()
 
 	// for all of my child sprites
 	var c = Math.min(this.children.length, MAX_SPRITES);
+	
+	// debug sprite count
+	sprCountDbg += c;
+
 	while(c--)
 	{
 		var child = this.children[c];
@@ -111,6 +115,10 @@ pbSimpleLayer.prototype.prepareXYUV = function()
 
 	// for all of my child sprites
 	var c = Math.min(this.children.length, MAX_SPRITES);
+	
+	// debug sprite count
+	sprCountDbg += c;
+
 	while(c--)
 	{
 		var child = this.children[c];

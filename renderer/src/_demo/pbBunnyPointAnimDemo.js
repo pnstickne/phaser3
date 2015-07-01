@@ -16,10 +16,6 @@ function pbBunnyPointAnimDemo( docId )
 	this.fps60 = 0;
 	this.numSprites = 0;
 
-	// dat.GUI controlled variables and callbacks
-	this.numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
-	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
-
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( useRenderer, this.create, this.update, this );
 	this.spriteImg = pbPhaserRender.loader.loadImage( "bunny", "../img/bunny_8x32x32.png", 32, 32, 8, 1 );
@@ -49,7 +45,6 @@ pbBunnyPointAnimDemo.prototype.destroy = function()
 {
 	console.log("pbBunnyPointAnimDemo.destroy");
 
-	gui.remove(this.numCtrl);
 	this.list = null;
 
 	this.layer.destroy();

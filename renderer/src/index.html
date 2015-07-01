@@ -117,6 +117,8 @@
     var useRenderer = 'webgl';             // which renderer will the demos use today?  valid values: undefined, 'webgl', 'canvas'  Switchable by dat.GUI pickRenderer widget.
     var layerClass = pbCanvasLayer;         // TODO: consider making a FunctionManager class to handle switchable classes and functions like this more tidily
     var imageClass = pbCanvasImage;
+    // debug global to count how many sprites are being drawn each frame
+    var sprCountDbg = 0;
     
     
     // after reading: http://www.sitepoint.com/google-closure-how-not-to-write-javascript/
@@ -167,7 +169,6 @@
             }
         }
     );
-
 
     // let the user select a demo to view
     var pickDemo = gui.add(this, "demoName",
@@ -230,6 +231,7 @@
             demoName = value;
         }
     );
+    gui.add(this, "sprCountDbg").listen();
 
 
 </script>

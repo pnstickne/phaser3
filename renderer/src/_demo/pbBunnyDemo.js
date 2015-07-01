@@ -18,10 +18,6 @@ function pbBunnyDemo( docId )
 	this.fps60 = 0;
 	this.numSprites = 0;
 
-	// dat.GUI controlled variables and callbacks
-	this.numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
-	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
-
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( useRenderer, this.create, this.update, this );
 	this.spriteImg = pbPhaserRender.loader.loadImage( "bunny", "../img/bunny_pot.png" );
@@ -43,8 +39,6 @@ pbBunnyDemo.prototype.destroy = function()
 {
 	console.log("pbBunnyDemo.destroy");
 
-	gui.remove(this.numCtrl);
-	
 	this.list = null;
 
 	this.surface.destroy();
@@ -99,6 +93,9 @@ pbBunnyDemo.prototype.removeSprites = function(num)
 
 pbBunnyDemo.prototype.update = function()
 {
+	// debug sprite count
+	sprCountDbg += this.list.length;
+
 	for(var i = 0, l = this.list.length; i < l; i++)
 	{
 		var obj = this.list[i];

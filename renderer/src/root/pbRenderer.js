@@ -128,6 +128,9 @@ pbRenderer.prototype.tryRenderer = function(_which)
 
 pbRenderer.prototype.update = function( _callback, _context )
 {
+	// debug global to count how many sprites are being drawn each frame
+	sprCountDbg = 0;
+
 	// prepare to draw (erase screen)
 	this.graphics.preRender( pbPhaserRender.width, pbPhaserRender.height, this.useFramebuffer, this.useRenderbuffer );
 	

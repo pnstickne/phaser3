@@ -80,6 +80,9 @@ pbBaseLayer.prototype.draw = function(_list)
 	var obj = _list[0];
 	var srf = obj.image.surface;
 	
+	// debug sprite count
+	sprCountDbg += _list.length;
+
 	if (_list.length === 1)
 	{
 		if (obj.image.onGPU)
