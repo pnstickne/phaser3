@@ -140,7 +140,7 @@ pbSimpleLayer.prototype.prepareXYUV = function()
 
 
 /**
- * draw using blitSimpleDrawImages 
+ * draw using blitSimpleDrawImages, which expects a list of X,Y per sprite
  * (sends a tri-strip for all quads in the batch to the GPU, standard stuff, very reliable, moderately heavy CPU overhead in the data preparation)
  *
  * @param  {[type]} _length [description]
@@ -151,6 +151,21 @@ pbSimpleLayer.prototype.draw = function(_length)
 {
 	// hard-wired to TEXTURE0 as the source texture
 	pbPhaserRender.renderer.graphics.blitSimpleDrawImages( this.drawList, _length, this.surface, 0 );
+};
+
+
+/**
+ * draw using blitSimpleDrawAnimImages, which expects a list of X,Y,U,V per sprite
+ * (sends a tri-strip for all quads in the batch to the GPU, standard stuff, very reliable, moderately heavy CPU overhead in the data preparation)
+ *
+ * @param  {[type]} _length [description]
+ *
+ * @return {[type]}         [description]
+ */
+pbSimpleLayer.prototype.drawAnim = function(_length)
+{
+	// hard-wired to TEXTURE0 as the source texture
+	pbPhaserRender.renderer.graphics.blitSimpleDrawAnimImages( this.drawList, _length, this.surface, 0 );
 };
 
 

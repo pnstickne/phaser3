@@ -728,7 +728,7 @@ pbWebGl.prototype.drawImage = function( _textureNumber, _x, _y, _z, _surface, _c
 
 // TODO: test variation of blitSimpleDrawImages that uses non-indexed triangle list instead of tri-strips... overhead of degenerate triangles might be greater than the extra vertex data, especially as the JS will become shorter/simpler too!
 
-// batch images, no transforms, pbSimpleLayer, pbBunnyDemo
+// batch images, one full surface cell only, no transforms, pbSimpleLayer, pbBunnyDemo
 // requires _list to be alternately x and y coordinate values
 pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface, _textureNumber )
 {
@@ -806,6 +806,101 @@ pbWebGl.prototype.blitSimpleDrawImages = function( _list, _listLength, _surface,
     gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, len / 2 * 6 - 2);		// four vertices per sprite plus two degenerate points
+};
+
+
+// batch images with animation cells on the surface, no transforms, pbSimpleLayer, pbBunnyDemo
+// requires _list to be x, y, u, v coordinate values
+// infers width and height for all by using the first cell of the surface (they must all be the same sizes)
+pbWebGl.prototype.blitSimpleDrawAnimImages = function( _list, _listLength, _surface, _textureNumber )
+{
+	this.shaders.setProgram(this.shaders.blitShaderProgram, _textureNumber);
+
+	if (this.textures.prepare( _surface.imageData, null, _surface.isNPOT ))
+	{
+		this.prepareBuffer();
+		this.shaders.prepare(_textureNumber);
+	}
+
+	var screenWide2 = gl.drawingBufferWidth * 0.5;
+	var screenHigh2 = gl.drawingBufferHeight * 0.5;
+
+	// calculate inverse to avoid division in loop
+	var iWide = 1.0 / screenWide2;
+	var iHigh = 1.0 / screenHigh2;
+
+	// TODO: generate warning if length is capped
+	var len = Math.min(_listLength, MAX_SPRITES * 4);
+
+	// NOTE: assumes that all cell sources on a pbSimpleLayer surface are equally sized
+	var scale = 1.0;
+	var wide = _surface.cellSourceSize[0].wide * scale * 0.5 / screenWide2;
+	var high = _surface.cellSourceSize[0].high * scale * 0.5 / screenHigh2;
+
+	var old_t;
+	var old_r;
+
+	// NOTE: assumes that all cell textures on a pbSimpleLayer surface are equally sized
+	var uWide = _surface.cellTextureBounds[0].width;
+	var vHigh = _surface.cellTextureBounds[0].height;
+
+	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
+    var buffer = this.drawingArray.subarray(0, len * 24 - 8);
+
+	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
+	for ( var i = -4, c = 0; (i += 4) < len; c += 16 )
+	{
+		var x = _list[i] * iWide - 1;
+		var y = 1 - _list[i + 1] * iHigh;
+		var l = x - wide;
+		var b = y + high;
+
+		var u = _list[i + 2];
+		var v = _list[i + 3];
+
+		if ( c > 0 )
+		{
+			// degenerate triangle: repeat the last vertex
+			buffer[ c     ] = old_r;
+			buffer[ c + 1 ] = old_t;
+		 	// repeat the next vertex
+			buffer[ c + 4 ] = l;
+		 	buffer[ c + 5 ] = b;
+		 	// texture coordinates
+			buffer[ c + 2 ] = u;
+			buffer[ c + 3 ] = v;
+			buffer[ c + 6 ] = u;
+			buffer[ c + 7 ] = v;
+			c += 8;
+		}
+
+		// screen destination position
+		// l, b,		0,1
+		// l, t,		4,5
+		// r, b,		8,9
+		// r, t,		12,13
+
+		buffer[ c     ] = buffer[ c + 4 ] = l;
+		buffer[ c + 1 ] = buffer[ c + 9 ] = b;
+		buffer[ c + 8 ] = buffer[ c + 12] = old_r = x + wide;
+		buffer[ c + 5 ] = buffer[ c + 13] = old_t = y - high;
+
+		// texture source position
+		// l, b,		2,3
+		// l, t,		6,7
+		// r, b,		10,11
+		// r, t,		14,15
+		buffer[ c + 2 ] = buffer[ c + 6 ] = u;				// l
+		buffer[ c + 3 ] = buffer[ c + 11] = v;				// b
+		buffer[ c + 10] = buffer[ c + 14] = u + uWide;		// r
+		buffer[ c + 7 ] = buffer[ c + 15] = v + vHigh;		// t
+	}
+
+
+    gl.bufferData( gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW );
+    gl.vertexAttribPointer( this.shaders.getAttribute( "aPosition" ), 4, gl.FLOAT, false, 0, 0 );
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, len / 4 * 6 - 2);		// four vertices per sprite plus two degenerate points
 };
 
 

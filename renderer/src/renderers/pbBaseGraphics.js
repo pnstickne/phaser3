@@ -155,6 +155,11 @@ pbBaseGraphics.prototype.blitSimpleDrawImages = function( _list, _listLength, _s
 	alert("ERROR: the selected graphic mode does not extend blitSimpleDrawImages from pbBaseGraphics!");
 };
 
+pbBaseGraphics.prototype.blitSimpleDrawAnimImages = function( _list, _listLength, _surface )
+{
+	alert("ERROR: the selected graphic mode does not extend blitSimpleDrawAnimImages from pbBaseGraphics!");
+};
+
 pbBaseGraphics.prototype.blitListDirect = function( _list, _listLength, _surface )
 {
 	alert("ERROR: the selected graphic mode does not extend blitListDirect from pbBaseGraphics!");

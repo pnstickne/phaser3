@@ -137,8 +137,11 @@ pbSciFlyDemo.prototype.createLayers = function(_surface)
 
 pbSciFlyDemo.prototype.addLayer = function(_surface)
 {
-	var layer = new layerClass();
-	layer.create(rootLayer, this.phaserRender, 0, 0, 1, 0, 1, 1);
+	var layer = new pbSimpleLayer();	//new layerClass();
+//	layer.create(rootLayer, this.phaserRender, 0, 0, 1, 0, 1, 1);
+	layer.create(rootLayer, this.phaserRender, 0, 0, this.tileSurface);
+	layer.setDrawingFunctions( layer.prepareXYUV, layer.drawAnim );	
+
 	rootLayer.addChild(layer);
 	var i = this.scrollLayers.length;
 	layer.dirX = 1 / (i + 1);
@@ -178,6 +181,7 @@ pbSciFlyDemo.prototype.drawMap = function(_layer)
 pbSciFlyDemo.prototype.createTile = function(_x, _y, _cell)
 {
 	var img = new imageClass();
+	// _surface, _cellFrame, _anchorX, _anchorY, _tiling, _fullScreen
 	img.create(this.tileSurface, _cell, 0, 0, false, false);
 	var spr = new pbTransformObject();
 	spr.create(img, _x, _y, 0.5, 0, 1, 1);
