@@ -87,18 +87,44 @@ pbSimpleLayer.prototype.prepareXY = function()
 	// for all of my child sprites
 	var c = Math.min(this.children.length, MAX_SPRITES);
 	
-	while(c--)
+	var child;
+	if (this.clipping)
 	{
-		var child = this.children[c];
-
-		// add sprite location to drawList
-		if (child.alive)
+		while(c--)
 		{
-			this.drawList[drawLength++] = child.x + x;
-			this.drawList[drawLength++] = child.y + y;
+			child = this.children[c];
+
+			// add sprite location to drawList
+			if (child.alive)
+			{
+				var nx = child.x + x;
+				var ny = child.y + y;
+				if (nx >= this.clipping.x && nx <= this.clipping.width)
+				{
+					if (ny >= this.clipping.y && ny <= this.clipping.height)
+					{
+						this.drawList[drawLength++] = nx;
+						this.drawList[drawLength++] = ny;
+					}
+				}
+			}
 		}
 	}
-	
+	else
+	{
+		while(c--)
+		{
+			child = this.children[c];
+
+			// add sprite location to drawList
+			if (child.alive)
+			{
+				this.drawList[drawLength++] = child.x + x;
+				this.drawList[drawLength++] = child.y + y;
+			}
+		}
+	}
+
 	// debug sprite count
 	sprCountDbg += drawLength / 2;
 
