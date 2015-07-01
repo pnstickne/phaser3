@@ -55,7 +55,7 @@ pbSpriteAtlasDemo.prototype.destroy = function()
 	console.log("pbSpriteAtlasDemo.destroy");
 
 	this.surface.destroy();
-	this.dragon.destroy();
+	this.dragon = null;
 	this.dragonJSON = null;
 	this.list = null;
 

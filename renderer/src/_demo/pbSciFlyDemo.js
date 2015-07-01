@@ -86,8 +86,6 @@ pbSciFlyDemo.prototype.destroy = function()
 	this.phaserRender = null;
 
 	this.tileMap = null;
-	this.bgSpr.destroy();
-	this.bgSpr = null;
 	this.tileSurface.destroy();
 	this.tileSurface = null;
 	this.mapSprites = null;

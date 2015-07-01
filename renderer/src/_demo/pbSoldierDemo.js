@@ -24,11 +24,6 @@ function pbSoldierDemo( docId )
 	this.targety = 0;
 	this.numSprites = 0;
 	this.spriteList = null;
-
-	// dat.GUI controlled variables and callbacks
-	// this.gui = new dat.GUI();
-	this.numCtrl = gui.add(this, "numSprites").min(0).max(MAX_SPRITES).step(250).listen();
-	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numSprites = 0; _this.restart(); });
 }
 
 
@@ -48,8 +43,6 @@ pbSoldierDemo.prototype.create = function()
 pbSoldierDemo.prototype.destroy = function()
 {
 	console.log("pbSoldierDemo.destroy");
-
-	gui.remove(this.numCtrl);
 
 	this.spriteList = null;
 	if (this.surface_run)
