@@ -138,8 +138,10 @@ pbSciFlyDemo.prototype.createLayers = function(_surface)
 pbSciFlyDemo.prototype.addLayer = function(_surface)
 {
 	var layer = new pbSimpleLayer();	//new layerClass();
-//	layer.create(rootLayer, this.phaserRender, 0, 0, 1, 0, 1, 1);
-	layer.create(rootLayer, this.phaserRender, 0, 0, this.tileSurface);
+	// create a clipping rectangle for the layer which is around the screen
+	// tiles outside of this clipping rectangle will be culled in the layer.prepareXYUV function
+	var clipRect = new pbRectangle(-this.tileMap.tilesets[0].tilewidth, -this.tileMap.tilesets[0].tileheight, pbPhaserRender.width + this.tileMap.tilesets[0].tilewidth, pbPhaserRender.height + this.tileMap.tilesets[0].tileheight);
+	layer.create(rootLayer, this.phaserRender, 0, 0, this.tileSurface, clipRect);
 	layer.setDrawingFunctions( layer.prepareXYUV, layer.drawAnim );	
 
 	rootLayer.addChild(layer);

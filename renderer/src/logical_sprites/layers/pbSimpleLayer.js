@@ -13,6 +13,7 @@ function pbSimpleLayer()
 	this.drawList = null;
 	this.drawCall = null;
 	this.prepareCall = null;
+	this.clipping = null;
 }
 
 // pbSimpleLayer extends from the pbTransformObject prototype chain
@@ -21,7 +22,7 @@ pbSimpleLayer.prototype = new pbTransformObject();
 pbSimpleLayer.prototype.__super__ = pbTransformObject;		// http://stackoverflow.com/questions/7300552/calling-overridden-methods-in-javascript
 
 
-pbSimpleLayer.prototype.create = function(_parent, _renderer, _x, _y, _surface)
+pbSimpleLayer.prototype.create = function(_parent, _renderer, _x, _y, _surface, _clipping)
 {
 	this.parent = _parent;
 	this.phaserRender = _renderer;
@@ -32,6 +33,8 @@ pbSimpleLayer.prototype.create = function(_parent, _renderer, _x, _y, _surface)
 	// default to the safer (slower?) of the two drawing functions
 	this.drawCall = this.draw;
 	this.prepareCall = this.prepareXY;
+	if (_clipping !== undefined)
+		this.clipping = _clipping;
 };
 
 
@@ -45,6 +48,7 @@ pbSimpleLayer.prototype.destroy = function()
 	this.drawList = null;
 	this.drawCall = null;
 	this.prepareCall = null;
+	this.clipping = null;
 };
 
 
@@ -83,9 +87,6 @@ pbSimpleLayer.prototype.prepareXY = function()
 	// for all of my child sprites
 	var c = Math.min(this.children.length, MAX_SPRITES);
 	
-	// debug sprite count
-	sprCountDbg += c;
-
 	while(c--)
 	{
 		var child = this.children[c];
@@ -98,6 +99,9 @@ pbSimpleLayer.prototype.prepareXY = function()
 		}
 	}
 	
+	// debug sprite count
+	sprCountDbg += drawLength / 2;
+
 	return drawLength;
 };
 
@@ -116,23 +120,52 @@ pbSimpleLayer.prototype.prepareXYUV = function()
 	// for all of my child sprites
 	var c = Math.min(this.children.length, MAX_SPRITES);
 	
-	// debug sprite count
-	sprCountDbg += c;
-
-	while(c--)
+	var child, r;
+	if (this.clipping)
 	{
-		var child = this.children[c];
-
-		// add sprite location to drawList
-		if (child.alive)
+		while(c--)
 		{
-			this.drawList[drawLength++] = child.x + x;
-			this.drawList[drawLength++] = child.y + y;
-			var r = this.surface.cellTextureBounds[child.image.cellFrame];
-			this.drawList[drawLength++] = r.x;
-			this.drawList[drawLength++] = r.y;
+			child = this.children[c];
+
+			// add sprite location to drawList
+			if (child.alive)
+			{
+				var nx = child.x + x;
+				var ny = child.y + y;
+				if (nx >= this.clipping.x && nx <= this.clipping.width)
+				{
+					if (ny >= this.clipping.y && ny <= this.clipping.height)
+					{
+						this.drawList[drawLength++] = nx;
+						this.drawList[drawLength++] = ny;
+						r = this.surface.cellTextureBounds[child.image.cellFrame];
+						this.drawList[drawLength++] = r.x;
+						this.drawList[drawLength++] = r.y;
+					}
+				}
+			}
 		}
 	}
+	else
+	{
+		while(c--)
+		{
+			child = this.children[c];
+
+			// add sprite location to drawList
+			if (child.alive)
+			{
+				this.drawList[drawLength++] = child.x + x;
+				this.drawList[drawLength++] = child.y + y;
+				r = this.surface.cellTextureBounds[child.image.cellFrame];
+				this.drawList[drawLength++] = r.x;
+				this.drawList[drawLength++] = r.y;
+			}
+		}
+	}
+
+	// debug sprite count
+	sprCountDbg += drawLength / 4;
 
 	return drawLength;
 };
