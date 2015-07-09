@@ -2,22 +2,31 @@
  *
  * A raw texture surface with handling and manipulation methods.
  * TODO: Currently holds the HTML Image only but should be extended to any other image sources.
+ * TODO: Atlas needs to be able to handle 90 degree rotation of images (used for better packing sometimes)
+ * TODO: Atlas needs to handle 'trimmed' images where necessary white-space has been cut off for better packing (necessary for correct positioning - use offsets)
  * 
  * Each surface may contain a number of separate images, called 'cells' here because they will often be animation cells.
  * Surfaces will be sent entire to graphics card in WebGL mode, the shaders use the cell data to pick out the correct frame.
  * 
  */
 
+/*
+Notes for atlas with trimmed sprites:
+"frame" contains the rectangle of the sprite in this texture
+"spriteSourceSize" contains the offsets required to position the "frame" into the original source rectangle
+"sourceSize" contains the original source dimensions
+ */
 
 function pbSurface()
 {
 	this.cellsWide = 0;
 	this.cellsHigh = 0;
 	this.imageData = null;
+	this.cells = 0;
 	this.cellTextureBounds = null;
 	this.cellSourceSize = null;
+	this.cellOffsets = null;
 	this.isNPOT = false;
-
 	this.rttTexture = null;
 	this.rttTextureRegister = -1;
 }
@@ -37,7 +46,7 @@ pbSurface.prototype.createSingle = function(_imageData, _rttTexture, _rttTexture
 	if (_rttTexture === undefined) _rttTexture = null;
 	if (_rttTextureRegister === undefined) _rttTextureRegister = 0;
 
-	this.cellsWide = this.cellsHigh = 1;
+	this.cells = this.cellsWide = this.cellsHigh = 1;
 
 	this.cellSourceSize = [];
 	if (_rttTexture)
@@ -84,6 +93,7 @@ pbSurface.prototype.createGrid = function(_wide, _high, _numWide, _numHigh, _ima
 	
 	this.cellsWide = _numWide;
 	this.cellsHigh = _numHigh;
+	this.cells = this.cellsWide * this.cellsHigh;
 
 	this.rttTexture = _rttTexture;
 	this.rttTextureRegister = _rttTextureRegister;
@@ -121,7 +131,7 @@ pbSurface.prototype.createGrid = function(_wide, _high, _numWide, _numHigh, _ima
 
 /**
  * createAtlas - create a surface and specify the cell positions using a JSON data structure
- * I have tested this on the dragon_atlas.json file used in Phaser previously, which was
+ * I have tested this with the dragon_atlas.json file used in Phaser demos previously, which was
  * created with TexturePacker.
  *
  * @param  {[type]} _JSON               [description]
@@ -136,14 +146,18 @@ pbSurface.prototype.createAtlas = function(_JSON, _imageData)
 
 	console.log("pbSurface.createAtlas " + w + "x" + h + " frames = " + data.frames.length + " isNPOT = " + (this.isNPOT ? "true" : "false"));
 
+	this.cells = data.frames.length;
 	this.imageData = _imageData;
 	this.cellTextureBounds = [];
 	this.cellSourceSize = [];
-	for(var i = 0, l = data.frames.length; i < l; i++)
+	this.cellOffsets = [];
+	for(var i = 0, l = this.cells; i < l; i++)
 	{
 		var f = data.frames[i];
 		this.cellSourceSize[i] = { wide: f.sourceSize.w, high: f.sourceSize.h };
 		this.cellTextureBounds[i] = new pbRectangle(f.frame.x / w, f.frame.y / h, f.frame.w / w, f.frame.h / h);
+		if (f.trimmed)
+			this.cellOffsets[i] = { x: f.spriteSourceSize.x, y: f.spriteSourceSize.y };
 	}
 };
 
