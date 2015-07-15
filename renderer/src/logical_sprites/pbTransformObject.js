@@ -121,27 +121,6 @@ pbTransformObject.prototype.update = function(_drawDictionary)
 };
 
 
-pbTransformObject.prototype._setTransformWithOffset = function()
-{
-	var img = this.image;
-	if (img)
-	{
-		var srf = img.surface;
-		if (srf && srf.cellOffsets)
-		{
-			var cell = Math.floor(img.cellFrame);
-			var off = srf.cellOffsets[cell];
-			if (off)
-			{
-				pbMatrix3.setTransform(this.transform, this.x + off.x, this.y + off.y, this.angleInRadians, this.scaleX, this.scaleY);
-				return;
-			}
-		}
-	}
-	pbMatrix3.setTransform(this.transform, this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY);
-};
-
-
 pbTransformObject.prototype.update2D = function(_drawDictionary)
 {
 	// console.log("pbTransformObject.update");
@@ -149,8 +128,7 @@ pbTransformObject.prototype.update2D = function(_drawDictionary)
 	if (!this.alive)
 		return true;
 
-	// set my own transform matrix taking into account the cellFrame's cell offsets (if any)
-	this._setTransformWithOffset();
+	pbMatrix3.setTransform(this.transform, this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY);
 
 	// multiply with the transform matrix from my parent
 	if (this.parent && this.parent.transform)

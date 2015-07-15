@@ -52,8 +52,7 @@ pbSurface.prototype.createSingle = function(_imageData, _rttTexture, _rttTexture
 
 	this.cells = this.cellsWide = this.cellsHigh = 1;
 
-	this.srcSize = null;
-	this.cellSourceSize = [];
+	this.srcSize = this.cellSourceSize = [];
 	if (_rttTexture)
 	{
 		this.cellSourceSize[0] = { wide:_rttTexture.width, high:_rttTexture.height };
@@ -120,8 +119,8 @@ pbSurface.prototype.createGrid = function(_wide, _high, _numWide, _numHigh, _ima
 		texHigh = 1.0 / this.cellsHigh;
 	}
 
-	this.srcSize = null;
-	this.cellSourceSize = [];
+	
+	this.srcSize = this.cellSourceSize = [];
 	this.cellTextureBounds = [];
 	var i = 0;
 	for(var y = 0; y < this.cellsHigh; y++)

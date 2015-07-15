@@ -273,19 +273,27 @@ pbWebGl.prototype.drawImageWithTransform = function( _srcTextureRegister, _image
 	var cell = Math.floor(_image.cellFrame);
 	var rect = surface.cellTextureBounds[cell];
 
-	var wide, high;
+	var wide, high, oWide, oHigh;
 	if (_image.fullScreen)
 	{
 		rect.width = gl.drawingBufferWidth / surface.cellSourceSize[cell].wide;
 		rect.height = gl.drawingBufferHeight / surface.cellSourceSize[cell].high;
-		wide = gl.drawingBufferWidth;
-		high = gl.drawingBufferHeight;
+		oWide = wide = gl.drawingBufferWidth;
+		oHigh = high = gl.drawingBufferHeight;
 	}
 	else
 	{
-		// width, height (of source frame)
+		// width, height (of source frame in source texture)
 		wide = surface.cellSourceSize[cell].wide;
 		high = surface.cellSourceSize[cell].high;
+		oWide = surface.srcSize[cell].wide;
+		oHigh = surface.srcSize[cell].high;
+	}
+
+	var off = { x:0, y:0 };
+	if (surface.cellOffsets)
+	{
+		off = surface.cellOffsets[cell];
 	}
 
 	// screen destination position
@@ -293,14 +301,13 @@ pbWebGl.prototype.drawImageWithTransform = function( _srcTextureRegister, _image
 	// l, t,		4,5
 	// r, b,		8,9
 	// r, t,		12,13
-	var l, r, t, b;
+	var l = -oWide * _image.anchorX + off.x;
+	var r = wide + l;
+	var t = -oHigh * _image.anchorY + off.y;
+	var b = high + t;
 	if (_image.corners)
 	{
 		var cnr = _image.corners;
-		l = -wide * _image.anchorX;
-		r = wide + l;
-		t = -high * _image.anchorY;
-		b = high + t;
 		// object has corner offets (skewing/perspective etc)
 		buffer[ 0 ] = cnr.lbx * l; buffer[ 1 ] = cnr.lby * b;
 		buffer[ 4 ] = cnr.ltx * l; buffer[ 5 ] = cnr.lty * t;
@@ -309,10 +316,6 @@ pbWebGl.prototype.drawImageWithTransform = function( _srcTextureRegister, _image
 	}
 	else
 	{
-		l = -wide * _image.anchorX;
-		r = wide + l;
-		t = -high * _image.anchorY;
-		b = high + t;
 		buffer[ 0 ] = buffer[ 4 ] = l;
 		buffer[ 1 ] = buffer[ 9 ] = b;
 		buffer[ 8 ] = buffer[ 12] = r;
@@ -1306,8 +1309,6 @@ pbWebGl.prototype.rawBatchDrawImages = function( _textureNumber, _list )
 	// store local reference to avoid extra scope resolution (http://www.slideshare.net/nzakas/java-script-variable-performance-presentation)
     var buffer = this.drawingArray.subarray(0, len * (44 + 22) - 22);
 
-    var l, r, t, b;
-
 	// weird loop speed-up (http://www.paulirish.com/i/d9f0.png) gained 2fps on my rig!
 	for ( var i = -1, c = 0; ++i < len; c += 44 )
 	{
@@ -1319,6 +1320,13 @@ pbWebGl.prototype.rawBatchDrawImages = function( _textureNumber, _list )
 		// half width, half height (of source frame)
 		var wide = surface.cellSourceSize[cell].wide;
 		var high = surface.cellSourceSize[cell].high;
+		var oWide = surface.srcSize[cell].wide;
+		var oHigh = surface.srcSize[cell].high;
+		var off = { x:0, y:0 };
+		if (surface.cellOffsets)
+		{
+			off = surface.cellOffsets[cell];
+		}
 		var rect = surface.cellTextureBounds[cell];
 		if (!rect)
 			console.log("ERROR: invalid cellFrame", cell);
@@ -1352,13 +1360,13 @@ pbWebGl.prototype.rawBatchDrawImages = function( _textureNumber, _list )
 		// l, t,		11,12
 		// r, b,		22,23
 		// r, t,		33,34
+		var l = -oWide * img.anchorX + off.x;
+		var r = wide + l;
+		var t = -oHigh * img.anchorY + off.y;
+		var b = high + t;
 		if (img.corners)
 		{
 			var cnr = img.corners;
-			l = -wide * img.anchorX;
-			r = wide + l;
-			t = -high * img.anchorY;
-			b = high + t;
 			// object has corner offets (skewing/perspective etc)
 			buffer[ c     ] = cnr.lbx * l; buffer[ c + 1 ] = cnr.lby * b;
 			buffer[ c + 11] = cnr.ltx * l; buffer[ c + 12] = cnr.lty * t;
@@ -1367,10 +1375,6 @@ pbWebGl.prototype.rawBatchDrawImages = function( _textureNumber, _list )
 		}
 		else
 		{
-			l = -wide * img.anchorX;
-			r = wide + l;
-			t = -high * img.anchorY;
-			b = high + t;
 			buffer[ c     ] = l; buffer[ c + 1 ] = b;
 			buffer[ c + 11] = l; buffer[ c + 12] = t;
 			buffer[ c + 22] = r; buffer[ c + 23] = b;
