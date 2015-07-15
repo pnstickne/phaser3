@@ -49,6 +49,8 @@ pbSpriteAtlasTrimmedDemo.prototype.create = function()
 
 	this.original = new pbSprite();
 	this.original.createWithKey(200, 300, 'original', rootLayer);
+	this.original.anchorX = 0.5;
+	this.original.anchorY = 0.5;
 
 	this.addSprites();
 };
@@ -83,20 +85,18 @@ pbSpriteAtlasTrimmedDemo.prototype.addSprites = function()
 	console.log("pbSpriteAtlasTrimmedDemo.addSprites");
 
 	this.list = [];
-	for(var i = 0; i < 1; i++)
+	for(var i = 0; i < 2; i++)
 	{
 		var img = new imageClass();
-		img.create(this.surface, i, 0.5, 0.5);
-		var spr = new pbTransformObject();
-		spr.create(img, this.original.x + 128, this.original.y, 1.0, 0, 1, 1);
-		spr.animDir = 0.1;
-		rootLayer.addChild(spr);
+		img.create(this.surface, 0, 0.5, 0.5);
+
+		var obj = new pbTransformObject();
+		obj.create(img, this.original.x + 64 * (i + 1), this.original.y, 1.0, 0, 1, 1);
+		rootLayer.addChild(obj);
 
 		this.list[i] = {
-			sprite: spr,
-			dx: 0,
-			dy: 0,
-			rot: 0
+			transformObj: obj,
+			dir: 0.1
 		};
 	}
 };
@@ -104,33 +104,32 @@ pbSpriteAtlasTrimmedDemo.prototype.addSprites = function()
 
 pbSpriteAtlasTrimmedDemo.prototype.update = function()
 {
+	var obj;
+
 	for(var i = 0, l = this.list.length; i < l; i++)
 	{
-		var spr = this.list[i].sprite;
-		spr.x += this.list[i].dx * 4.0;
-		if (spr.x < 0) this.list[i].dx *= -1;
-		if (spr.x >= pbPhaserRender.width) this.list[i].dx *= -1;
-		spr.y += this.list[i].dy * 3.0;
-		if (spr.y < 0) this.list[i].dy *= -1;
-		if (spr.y >= pbPhaserRender.height) this.list[i].dy *= -1;
-		spr.angleInRadians += this.list[i].rot * 0.02;
+		obj = this.list[i].transformObj;
 
-		spr.image.cellFrame += spr.animDir;
-		if (spr.image.cellFrame >= spr.image.surface.cells)
+		obj.image.cellFrame += this.list[i].dir;
+		if (obj.image.cellFrame >= obj.image.surface.cells)
 		{
-			spr.image.cellFrame = spr.image.surface.cells - 1;
-			spr.animDir = -spr.animDir;
-		}
-		if (spr.image.cellFrame < 0)
-		{
-			spr.image.cellFrame = 0;
-			spr.animDir = -spr.animDir;
-			spr.angleInRadians += 0.1;
+			obj.image.cellFrame = obj.image.surface.cells - 1;
+			this.list[i].dir = -this.list[i].dir;
 		}
 
+		if (obj.image.cellFrame < 0)
+		{
+			obj.image.cellFrame = 0;
+			this.list[i].dir = -this.list[i].dir;
+			obj.angleInRadians += 0.1;
+		}
+	}
+
+	if (obj)
+	{
 		// make the original sprite match the animation and rotation of the reconstructed atlas version
-		this.original.cellFrame = spr.image.cellFrame;
-		this.original.angleInRadians = spr.angleInRadians;
+		this.original.cellFrame = obj.image.cellFrame;
+		this.original.angleInRadians = obj.angleInRadians;
 	}
 };
 
