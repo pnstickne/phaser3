@@ -23,8 +23,12 @@ function pbSurface()
 	this.cellsHigh = 0;
 	this.imageData = null;
 	this.cells = 0;
+	// the percentage of the source texture occupied by each animation cell
 	this.cellTextureBounds = null;
+	// the size of a trimmed cell of the animation (size to draw)
 	this.cellSourceSize = null;
+	// the size of an untrimmed cell of the animation
+	this.srcSize = null;
 	this.cellOffsets = null;
 	this.isNPOT = false;
 	this.rttTexture = null;
@@ -48,6 +52,7 @@ pbSurface.prototype.createSingle = function(_imageData, _rttTexture, _rttTexture
 
 	this.cells = this.cellsWide = this.cellsHigh = 1;
 
+	this.srcSize = null;
 	this.cellSourceSize = [];
 	if (_rttTexture)
 	{
@@ -115,6 +120,7 @@ pbSurface.prototype.createGrid = function(_wide, _high, _numWide, _numHigh, _ima
 		texHigh = 1.0 / this.cellsHigh;
 	}
 
+	this.srcSize = null;
 	this.cellSourceSize = [];
 	this.cellTextureBounds = [];
 	var i = 0;
@@ -149,12 +155,17 @@ pbSurface.prototype.createAtlas = function(_JSON, _imageData)
 	this.cells = data.frames.length;
 	this.imageData = _imageData;
 	this.cellTextureBounds = [];
+	this.srcSize = [];
 	this.cellSourceSize = [];
 	this.cellOffsets = [];
 	for(var i = 0, l = this.cells; i < l; i++)
 	{
 		var f = data.frames[i];
+		// the size of an untrimmed cell of the animation
+		this.srcSize[i] = { wide: f.sourceSize.w, high: f.sourceSize.h };
+		// the size of a trimmed cell of the animation (size to draw)
 		this.cellSourceSize[i] = { wide: f.spriteSourceSize.w, high: f.spriteSourceSize.h };
+		// the percentage of the source texture occupied by each animation cell
 		this.cellTextureBounds[i] = new pbRectangle(f.frame.x / w, f.frame.y / h, f.frame.w / w, f.frame.h / h);
 		if (f.trimmed)
 			this.cellOffsets[i] = { x: f.spriteSourceSize.x, y: f.spriteSourceSize.y };
