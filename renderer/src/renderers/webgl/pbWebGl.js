@@ -1600,11 +1600,6 @@ pbWebGl.prototype.scissor = function(_x, _y, _width, _height)
 };
 
 
-// function clearDepthBuffer()
-// {
-// 	gl.clear(gl.DEPTH_BUFFER_BIT);
-// }
-
 
 // pbCanvasToGlDemo and pbGlToCanvasDemo.  Uses imageShaderProgram to draw after transfering the canvas data to gl.
 pbWebGl.prototype.drawCanvasWithTransform = function( _canvas, _dirty, _transform, _z )
