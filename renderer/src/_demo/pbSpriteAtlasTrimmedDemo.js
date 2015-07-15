@@ -19,8 +19,8 @@ function pbSpriteAtlasTrimmedDemo( docId )
 
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( useRenderer, this.create, this.update, this );
-	this.dragon = pbPhaserRender.loader.loadImage( "dragon", "../img/spriteAtlas/running_bot.png" );
-	this.dragonJSON = pbPhaserRender.loader.loadFile( "../img/spriteAtlas/running_bot.json" );
+	this.dragon = pbPhaserRender.loader.loadImage( "dragon", "../img/spriteAtlas/test.png" );
+	this.dragonJSON = pbPhaserRender.loader.loadFile( "../img/spriteAtlas/test.json" );
 
 	console.log( "pbSpriteAtlasTrimmedDemo c'tor exit" );
 }
@@ -87,6 +87,7 @@ pbSpriteAtlasTrimmedDemo.prototype.addSprites = function()
 		img.create(this.surface, i, 0.5, 0.5);
 		var spr = new pbTransformObject();
 		spr.create(img, x, y, 1.0, 0, 1, 1);
+		spr.animDir = 0.1;
 		rootLayer.addChild(spr);
 
 		this.list[i] = {
@@ -112,9 +113,18 @@ pbSpriteAtlasTrimmedDemo.prototype.update = function()
 		if (spr.y >= pbPhaserRender.height) this.list[i].dy *= -1;
 		spr.angleInRadians += this.list[i].rot * 0.02;
 
-		spr.image.cellFrame += 0.1;
+		spr.image.cellFrame += spr.animDir;
 		if (spr.image.cellFrame >= spr.image.surface.cells)
+		{
+			spr.image.cellFrame = spr.image.surface.cells - 1;
+			spr.animDir = -spr.animDir;
+		}
+		if (spr.image.cellFrame < 0)
+		{
 			spr.image.cellFrame = 0;
+			spr.animDir = -spr.animDir;
+			spr.angleInRadians += 0.1;
+		}
 	}
 };
 
