@@ -19,8 +19,9 @@ function pbSpriteAtlasTrimmedDemo( docId )
 
 	this.phaserRender = new pbPhaserRender( docId );
 	this.phaserRender.create( useRenderer, this.create, this.update, this );
-	this.dragon = pbPhaserRender.loader.loadImage( "dragon", "../img/spriteAtlas/test.png" );
-	this.dragonJSON = pbPhaserRender.loader.loadFile( "../img/spriteAtlas/test.json" );
+	pbPhaserRender.loader.loadImage( "original", "../img/spriteAtlas/test_original.png", 64, 64, 2, 2 );
+	this.ball = pbPhaserRender.loader.loadImage( "ball", "../img/spriteAtlas/test.png" );
+	this.ballJSON = pbPhaserRender.loader.loadFile( "../img/spriteAtlas/test.json" );
 
 	console.log( "pbSpriteAtlasTrimmedDemo c'tor exit" );
 }
@@ -39,12 +40,15 @@ pbSpriteAtlasTrimmedDemo.prototype.create = function()
 	console.log("pbSpriteAtlasTrimmedDemo.create");
 
 	// get the atlas data
-	var jsonString = pbPhaserRender.loader.getFile( this.dragonJSON ).responseText;
+	var jsonString = pbPhaserRender.loader.getFile( this.ballJSON ).responseText;
 
 	// create a surface for the sprite atlas
 	this.surface = new pbSurface();
 	// initialise the surface using the loaded image and the atlas JSON
-	this.surface.createAtlas(jsonString, pbPhaserRender.loader.getFile( this.dragon ));
+	this.surface.createAtlas(jsonString, pbPhaserRender.loader.getFile( this.ball ));
+
+	this.original = new pbSprite();
+	this.original.createWithKey(200, 300, 'original', rootLayer);
 
 	this.addSprites();
 };
@@ -55,8 +59,8 @@ pbSpriteAtlasTrimmedDemo.prototype.destroy = function()
 	console.log("pbSpriteAtlasTrimmedDemo.destroy");
 
 	this.surface.destroy();
-	this.dragon = null;
-	this.dragonJSON = null;
+	this.ball = null;
+	this.ballJSON = null;
 	this.list = null;
 
 	if (this.phaserRender)
@@ -79,14 +83,12 @@ pbSpriteAtlasTrimmedDemo.prototype.addSprites = function()
 	console.log("pbSpriteAtlasTrimmedDemo.addSprites");
 
 	this.list = [];
-	var x = 100;
-	var y = 50;
 	for(var i = 0; i < 1; i++)
 	{
 		var img = new imageClass();
 		img.create(this.surface, i, 0.5, 0.5);
 		var spr = new pbTransformObject();
-		spr.create(img, x, y, 1.0, 0, 1, 1);
+		spr.create(img, this.original.x + 128, this.original.y, 1.0, 0, 1, 1);
 		spr.animDir = 0.1;
 		rootLayer.addChild(spr);
 
@@ -125,6 +127,10 @@ pbSpriteAtlasTrimmedDemo.prototype.update = function()
 			spr.animDir = -spr.animDir;
 			spr.angleInRadians += 0.1;
 		}
+
+		// make the original sprite match the animation and rotation of the reconstructed atlas version
+		this.original.cellFrame = spr.image.cellFrame;
+		this.original.angleInRadians = spr.angleInRadians;
 	}
 };
 
