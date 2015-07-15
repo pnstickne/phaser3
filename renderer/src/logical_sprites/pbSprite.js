@@ -171,6 +171,15 @@ Object.defineProperties(pbSprite.prototype, {
     	set: function(value) {
     		this.image.tiling = value;
     	}
+    },
+
+    cellFrame: {
+        get: function() {
+            return this.image.cellFrame;
+        },
+        set: function(value) {
+            this.image.cellFrame = value;
+        }
     }
 });
 
