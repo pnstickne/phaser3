@@ -414,13 +414,13 @@ pbLightDepthDemo.prototype.randomWalk = function(who)
 	if (who.move.cellFrame >= 30)
 		who.move.cellFrame = 0;
 	if (who.move.dx > 0)
-		who.image.cellFrame = who.move.cellFrame + 90;
+		who.cellFrame = who.move.cellFrame + 90;
 	else if (who.move.dx < 0)
-		who.image.cellFrame = who.move.cellFrame + 30;
+		who.cellFrame = who.move.cellFrame + 30;
 	else if (who.move.dy > 0)
-		who.image.cellFrame = who.move.cellFrame + 0;
+		who.cellFrame = who.move.cellFrame + 0;
 	else if (who.move.dy < 0)
-		who.image.cellFrame = who.move.cellFrame + 60;
+		who.cellFrame = who.move.cellFrame + 60;
 };
 
 

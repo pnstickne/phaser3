@@ -164,7 +164,7 @@ pbPointLightsDemo.prototype.setLightData = function()
 	for(i = 0; i < Math.min(this.game.explosions.length, 7); i++)
 	{
 		var explosion = this.game.explosions[i];
-		var life = explosion.image.cellFrame / 16.0;
+		var life = explosion.cellFrame / 16.0;
 
 		j = (i + 1) * 4;
 		this.lightData[j + 0] = explosion.x / pbPhaserRender.width;

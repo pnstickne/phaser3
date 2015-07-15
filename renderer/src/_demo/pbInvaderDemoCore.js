@@ -231,7 +231,7 @@ pbInvaderDemoCore.prototype.addInvaders = function()
 			invader.z = 0.0;
 			invader.anchorX = 0.5;
 			invader.anchorY = 0.5;
-			invader.image.cellFrame = Math.floor(Math.random() * 3);
+			invader.cellFrame = Math.floor(Math.random() * 3);
 			invader.row = y;
 			invader.die = false;
 			this.invaders.push(invader);
@@ -319,8 +319,8 @@ pbInvaderDemoCore.prototype.update = function()
 			invader.die = true;
 
 		// animation
-		invader.image.cellFrame += 0.2;
-		if (invader.image.cellFrame >= 4) invader.image.cellFrame = 0;
+		invader.cellFrame += 0.2;
+		if (invader.cellFrame >= 4) invader.cellFrame = 0;
 
 		if (invader.die)
 		{
@@ -420,7 +420,7 @@ pbInvaderDemoCore.prototype.playerShootRocket = function()
 			b.x = this.player.x + 8;
 			b.angleInRadians = Math.PI - Math.PI / 3;
 		}
-		b.image.cellFrame = 0;
+		b.cellFrame = 0;
 		b.y = this.player.y;
 		b.velocity = 5;
 		this.layer.addChild(b.transform);
@@ -561,7 +561,7 @@ pbInvaderDemoCore.prototype.addExplosion = function(_x, _y)
 		var explosion = this.explosionPool.pop();
 		explosion.x = _x;
 		explosion.y = _y;
-		explosion.image.cellFrame = 0;
+		explosion.cellFrame = 0;
 		this.layer.addChild(explosion.transform);
 		this.explosions.push(explosion);
 	}
@@ -574,8 +574,8 @@ pbInvaderDemoCore.prototype.updateExplosions = function()
 	while(i--)
 	{
 		var explosion = this.explosions[i];
-		explosion.image.cellFrame += 0.2;
-		if (explosion.image.cellFrame >= 16)
+		explosion.cellFrame += 0.2;
+		if (explosion.cellFrame >= 16)
 		{
 			this.layer.removeChild(explosion.transform);
 			this.explosions.splice(i, 1);
@@ -592,7 +592,7 @@ pbInvaderDemoCore.prototype.addSmoke = function(_x, _y)
 		var smoke = this.smokePool.pop();
 		smoke.x = _x;
 		smoke.y = _y;
-		smoke.image.cellFrame = 0;
+		smoke.cellFrame = 0;
 		this.layer.addChild(smoke.transform);
 		this.smokes.push(smoke);
 	}
@@ -605,8 +605,8 @@ pbInvaderDemoCore.prototype.updateSmokes = function()
 	while(i--)
 	{
 		var smoke = this.smokes[i];
-		smoke.image.cellFrame += 0.2;
-		if (smoke.image.cellFrame >= 8)
+		smoke.cellFrame += 0.2;
+		if (smoke.cellFrame >= 8)
 		{
 			this.layer.removeChild(smoke.transform);
 			this.smokes.splice(i, 1);

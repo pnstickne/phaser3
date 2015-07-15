@@ -355,13 +355,13 @@ pbDungeonLightDemo.prototype.wizWalk = function()
 	if (this.wiz.move.cellFrame >= 30)
 		this.wiz.move.cellFrame = 0;
 	if (this.wiz.move.dx > 0)
-		this.wiz.image.cellFrame = this.wiz.move.cellFrame + 90;
+		this.wiz.cellFrame = this.wiz.move.cellFrame + 90;
 	else if (this.wiz.move.dx < 0)
-		this.wiz.image.cellFrame = this.wiz.move.cellFrame + 30;
+		this.wiz.cellFrame = this.wiz.move.cellFrame + 30;
 	else if (this.wiz.move.dy > 0)
-		this.wiz.image.cellFrame = this.wiz.move.cellFrame + 0;
+		this.wiz.cellFrame = this.wiz.move.cellFrame + 0;
 	else if (this.wiz.move.dy < 0)
-		this.wiz.image.cellFrame = this.wiz.move.cellFrame + 60;
+		this.wiz.cellFrame = this.wiz.move.cellFrame + 60;
 };
 
 
