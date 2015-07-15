@@ -154,7 +154,7 @@ pbSurface.prototype.createAtlas = function(_JSON, _imageData)
 	for(var i = 0, l = this.cells; i < l; i++)
 	{
 		var f = data.frames[i];
-		this.cellSourceSize[i] = { wide: f.sourceSize.w, high: f.sourceSize.h };
+		this.cellSourceSize[i] = { wide: f.spriteSourceSize.w, high: f.spriteSourceSize.h };
 		this.cellTextureBounds[i] = new pbRectangle(f.frame.x / w, f.frame.y / h, f.frame.w / w, f.frame.h / h);
 		if (f.trimmed)
 			this.cellOffsets[i] = { x: f.spriteSourceSize.x, y: f.spriteSourceSize.y };
