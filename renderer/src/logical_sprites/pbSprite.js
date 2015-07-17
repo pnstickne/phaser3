@@ -137,6 +137,23 @@ Object.defineProperties(pbSprite.prototype, {
         }
     },
 
+    scaleX: {
+        get: function () {
+            return this.transform.scaleX;
+        },
+        set: function (value) {
+            this.transform.scaleX = value;
+        }
+    },
+    scaleY: {
+        get: function () {
+            return this.transform.scaleY;
+        },
+        set: function (value) {
+            this.transform.scaleY = value;
+        }
+    },
+
     anchorX: {
         get: function () {
             return this.image.anchorX;
