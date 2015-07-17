@@ -42,17 +42,34 @@ function pbSurface()
  * @param  {[type]} _imageData          [description]
  * @param  {[type]} _rttTexture         [description]
  * @param  {[type]} _rttTextureRegister [description]
+ * @param  {Object {width,height}} _trimmmedFrom - optional, define the rectangle size that this shape was trimmed from
+ * @param  {Object {x,y}} _offsets - optional, define the offset of this shape within the untrimmed rectangle
  *
  * @return {[type]}                     [description]
  */
-pbSurface.prototype.createSingle = function(_imageData, _rttTexture, _rttTextureRegister)
+pbSurface.prototype.createSingle = function(_imageData, _rttTexture, _rttTextureRegister, _trimmedFrom, _offsets)
 {
 	if (_rttTexture === undefined) _rttTexture = null;
 	if (_rttTextureRegister === undefined) _rttTextureRegister = 0;
 
 	this.cells = this.cellsWide = this.cellsHigh = 1;
 
-	this.srcSize = this.cellSourceSize = [];
+	this.cellSourceSize = [];
+	if (_trimmedFrom === undefined)
+	{
+		this.srcSize = this.cellSourceSize;
+	}
+	else
+	{
+		this.srcSize = [];
+		this.srcSize[0] = { wide:_trimmedFrom.width, high:_trimmedFrom.height };
+		if (_offsets !== undefined)
+		{
+			this.cellOffsets = [];
+			this.cellOffsets[0] = { x: _offsets.x, y: _offsets.y };
+		}
+	}
+
 	if (_rttTexture)
 	{
 		this.cellSourceSize[0] = { wide:_rttTexture.width, high:_rttTexture.height };
