@@ -51,6 +51,7 @@ pbSpriteAtlasTrimmedDemo.prototype.create = function()
 	this.original.createWithKey(200, 300, 'original', rootLayer);
 	this.original.anchorX = 0.5;
 	this.original.anchorY = 0.5;
+	this.original.scaleX = 2.0;
 
 	this.addSprites();
 };
@@ -91,7 +92,7 @@ pbSpriteAtlasTrimmedDemo.prototype.addSprites = function()
 		img.create(this.surface, 0, 0.5, 0.5);
 
 		var obj = new pbTransformObject();
-		obj.create(img, this.original.x + 64 * (i + 1), this.original.y, 1.0, 0, 1, 1);
+		obj.create(img, this.original.x + 64 * (i + 1), this.original.y, 1.0, 0, 2, 1);
 		rootLayer.addChild(obj);
 
 		this.list[i] = {
