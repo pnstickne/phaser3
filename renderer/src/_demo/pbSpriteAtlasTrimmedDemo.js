@@ -51,6 +51,9 @@ pbSpriteAtlasTrimmedDemo.prototype.create = function()
 	// create a 'single' sprite surface to test the trimming offset parameters
 	this.single = new pbSurface();
 	//_imageData, _rttTexture, _rttTextureRegister, _trimmedFrom, _offsets)
+	// trimming data specifies that this 32x32 image was originally enclosed in a 100x100 surface, at an offset of 50-16 (centred on 50 x) and 100-16 (centred on 100 y)
+	// the expected result is that the sprite will draw at the next horizontal position (they are all evenly spaced) but down from the line formed by the others
+	// it should rotate around the centre of the 100x100 sprite (defining circles around the next in line position)
 	this.single.createSingle(pbPhaserRender.loader.getFile( this.ballSingle ), undefined, undefined, { width: 100, height:100 }, { x: 50 - 16, y: 100 - 16 });
 
 	this.original = new pbSprite();

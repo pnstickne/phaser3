@@ -91,7 +91,7 @@ pbSurface.prototype.createSingle = function(_imageData, _rttTexture, _rttTexture
 };
 
 
-pbSurface.prototype.createGrid = function(_wide, _high, _numWide, _numHigh, _imageData, _rttTexture, _rttTextureRegister)
+pbSurface.prototype.createGrid = function(_wide, _high, _numWide, _numHigh, _imageData, _rttTexture, _rttTextureRegister, _trimmedFrom, _offsets)
 {
 	if (_rttTexture === undefined) _rttTexture = null;
 	if (_rttTextureRegister === undefined) _rttTextureRegister = 0;
@@ -137,15 +137,26 @@ pbSurface.prototype.createGrid = function(_wide, _high, _numWide, _numHigh, _ima
 	}
 
 	
-	this.srcSize = this.cellSourceSize = [];
 	this.cellTextureBounds = [];
+	this.cellSourceSize = [];
+	if (_trimmedFrom === undefined)
+		this.srcSize = this.cellSourceSize;
+	else
+		this.srcSize = [];
+	if (_offsets !== undefined)
+		this.cellOffsets = [];
+
 	var i = 0;
 	for(var y = 0; y < this.cellsHigh; y++)
 	{
 		for(var x = 0; x < this.cellsWide; x++)
 		{
 			this.cellSourceSize[i] = { wide: _wide, high: _high };
+			if (_trimmedFrom !== undefined)
+				this.srcSize[i] = { wide:_trimmedFrom.width, high:_trimmedFrom.height };
 			this.cellTextureBounds[i++] = new pbRectangle(x * texWide, y * texHigh, texWide, texHigh);
+			if (_offsets !== undefined)
+				this.cellOffsets[i] = { x: _offsets.x, y: _offsets.y };
 		}
 	}
 };
