@@ -184,7 +184,7 @@ pbSurface.prototype.createAtlas = function(_JSON, _imageData)
 	this.cellTextureBounds = [];
 	this.srcSize = [];
 	this.cellSourceSize = [];
-	this.cellOffsets = [];
+	this.cellOffsets = null;
 	for(var i = 0, l = this.cells; i < l; i++)
 	{
 		var f = data.frames[i];
@@ -195,7 +195,11 @@ pbSurface.prototype.createAtlas = function(_JSON, _imageData)
 		// the percentage of the source texture occupied by each animation cell
 		this.cellTextureBounds[i] = new pbRectangle(f.frame.x / w, f.frame.y / h, f.frame.w / w, f.frame.h / h);
 		if (f.trimmed)
+		{
+			if (!this.cellOffsets)
+				this.cellOffsets = [];
 			this.cellOffsets[i] = { x: f.spriteSourceSize.x, y: f.spriteSourceSize.y };
+		}
 	}
 };
 
