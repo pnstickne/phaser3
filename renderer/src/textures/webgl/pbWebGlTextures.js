@@ -54,6 +54,7 @@ pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _tiling, _npot, _tex
 	// bind the texture to the currently active texture register
    	gl.bindTexture(gl.TEXTURE_2D, _texture);
 
+   	// specify parameters for the texture
     if (_npot)
     {
 	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -77,12 +78,13 @@ pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _tiling, _npot, _tex
 	    gl.generateMipmap(gl.TEXTURE_2D);
 	}
 
+	// remember which texture is currently active
     this.currentSrcTexture = _texture;
 };
 
 
 /**
- * prepare - prepare a texture to be rendered with webGl
+ * prepare - prepare a texture (ImageData) to be rendered with webGl
  *
  * @param  {ImageData} _imageData  [description]
  * @param  {Boolean} _tiling - true if the image will repeat to tile a larger area
@@ -92,13 +94,15 @@ pbWebGlTextures.prototype.prepareOnGPU = function(_texture, _tiling, _npot, _tex
  */
 pbWebGlTextures.prototype.prepare = function( _imageData, _tiling, _npot, _textureNumber, _flipy )
 {
-	// this _imageData is already the selected texture
+	// exit immediately if this _imageData is already the selected texture
 	if (this.currentSrcTexture && this.currentSrcTexture.imageData === _imageData)
 		return false;
 
 	var texture = null;
 
-	// activate the texture
+	// activate the texture (default to use texture register zero if it's not specified)
+	// TODO: if we keep a log of all textureRegisters which have been used so far and what is in them...
+	// ...and we know how many registers are available, we can reduce the frequency of texture uploading.
 	if (_textureNumber === undefined)
     	_textureNumber = 0;
    	gl.activeTexture( gl.TEXTURE0 + _textureNumber );
@@ -191,7 +195,7 @@ function ImageData(_width, _height)
 
 
 /**
- * prepare - prepare a texture for webGl to render to it, leave it bound to the framebuffer so everything will go there
+ * prepareRenderToTexture - prepare a texture for webGl to render to it, leave it bound to the framebuffer so future drawing will go there
  *
  */
 pbWebGlTextures.prototype.prepareRenderToTexture = function( _width, _height )
@@ -268,7 +272,7 @@ pbWebGlTextures.prototype.stopRenderTexture = function()
 
 pbWebGlTextures.prototype.setRenderSourceImage = function( _textureNumber, _imageData )
 {
-	// make sure that _image is the current source texture
+	// make sure that _imageData is the current source texture
 	if (!this.currentSrcTexture || this.currentSrcTexture.imageData !== _imageData)
 	{
 		console.log("pbWebGlTextures.setRenderSourceImage", _textureNumber, _imageData.width, "x", _imageData.height);
@@ -350,7 +354,6 @@ pbWebGlTextures.prototype.getSurfaceFromTexture = function(_surface)
 	{
 		var wide = this.currentSrcTexture.width;
 		var high = this.currentSrcTexture.height;
-		// console.log("pbWebGlTextures.getSurfaceFromTexture", wide, "x", high);
 
 		var imageData = _surface.imageData;
 		if (!imageData || imageData.width != wide || imageData.height != high)
@@ -364,8 +367,6 @@ pbWebGlTextures.prototype.getSurfaceFromTexture = function(_surface)
 
 		// associate the ImageData with the _surface
 		_surface.imageData = imageData;
-		// _wide, _high, _numWide, _numHigh, _imageData)
-//		_surface.create(wide, high, 1, 1, imageData);
 	}
 };
 
@@ -385,7 +386,7 @@ pbWebGlTextures.prototype.getTextureData = function(_fb, _texture, _buffer)
 		// attach the texture to the framebuffer again (to update the contents)
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, _texture, 0);
 
-		// dimensions of the texture, branch depending on the original image source
+		// dimensions of the texture set depending on the original image source
 		var wide, high;
 		if (_texture.canvas)
 		{
@@ -402,8 +403,6 @@ pbWebGlTextures.prototype.getTextureData = function(_fb, _texture, _buffer)
 			wide = _texture.width;
 			high = _texture.height;
 		}
-
-		//console.log("pbWebGlTextures.getTextureData", wide, "x", high);
 
 		var buf8;
 		if (_buffer !== null && _buffer !== undefined)
@@ -434,14 +433,9 @@ pbWebGlTextures.prototype.getTextureData = function(_fb, _texture, _buffer)
 };
 
 
-// TODO: look into http://www.goocreate.com/learn/procedural-textures/
-
+// useful link - http://www.goocreate.com/learn/procedural-textures/
 pbWebGlTextures.prototype.createTextureFromCanvas = function(_textureNumber, _canvas)
 {
-//	var ctx = _canvas.getContext('2d');
-//	var p2width = nextHighestPowerOfTwo(_canvas.width);
-//	var p2height = nextHighestPowerOfTwo(_canvas.height);
-
 	var texture = gl.createTexture();
 	// bind the texture to the currently active texture register
 	gl.activeTexture(gl.TEXTURE0 + _textureNumber);
