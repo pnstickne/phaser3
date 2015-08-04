@@ -1,0 +1,133 @@
+Phaser 3 renderer progress.
+2015-08-04
+
+The WIP can be found here: https://github.com/photonstorm/phaser3/tree/master/renderer
+A recent online demo is here: http://www.insanehero.com/html/renderer/src/
+The project commit log is here: https://github.com/photonstorm/phaser3/commits?author=pjbaron
+
+The phaser-sans-pixi fork is here: https://github.com/pjbaron/phaser
+The phaser and new renderer branch is here: https://github.com/pjbaron/phaser/tree/new_renderer
+
+
+This update:
+
+29th, 30th June, 1st, 2nd, 9th, 15th, 17th, 20th, 22nd, 24th, 27th July, 4th August
+
+
+I decided it was past time to implement full sprite Atlas capabilities and started work on that.  It required some pretty deep changes to a few systems, most notably the pbSurface class had to change considerably.
+I've split the create function into three variants (createSingle, createGrid, and createJSON - which I think I will rename to createAtlas), removed cellWide and cellHigh (single values for cell sizes won't work with sprite atlases and rather than add conditional code in the drawing functions, I decided to store these dimensions per cell for all pbSurface objects).  After a bit of mucking around tracking down all references to the changed functions and parameters I got all the demos running again.
+Added a new demo 'atlas' to show how to load the atlas and json, how to initialise a surface using them both, how to access frames from the atlas in code, and how to create moving sprites based on pieces of the atlas.
+
+Ouch, I just lost most of a day tracking down the bugs in the SpriteDLight ball lighting demo.  I noticed that the rotating ball's specular spot was moving around as the ball spins, so I started to investigate.  Many hours of pulling bits apart, checking the equations, changing the format of various bits, and putting it all back together again (only to see it show the same problem), I finally realised the normal map isn't perfectly centred.  When I created it using SpriteDLight I attempted to get the light source and camera directly above the centre, however either SpriteDLight doesn't produce perfectly symmetrical and balanced normal maps... or more more likely I was slightly off.  After a quick manual sampling of the normal map and hand-conversion of the rgb values in x,y,z vectors I managed to confirm this hypothesis.  At some point I'll generate a sphere graphic, specular and normal map mathematically in order to fix this, but for now I'm going to move on to more productive tasks!  One good thing, I found several unrelated mistakes in the shader while I was hunting this down and it's now a lot more solid and accurate as evidenced by the improved look of the "spriteDLight" demo with the embossed wooden looking demons: Move the cursor to move the light, click to lock the light so it won't go into auto-rotate while you admire the lighting, click again to free it.
+
+Added new sci-fly demo based on the original Phaser demo of the same name.  This is a speed test for the tile-map drawing functions used in the scroll demo, as the cybernoid tileset is composed of small (16x16) tiles and the map is fairly large.  As I expected, it's struggling with 7050 tiles being drawn per frame and optimisations are in order.
+Switched sci-fly to use pbSimpleLayer instead of the fully featured but slower pbBaseLayer derived classes.  I had to add some new drawing functions as the simple layer didn't previously support cell numbers (animation frames, or different tile pictures) for anything except point sprites (seen in the bunnyPointAnim demo).  It's faster but still not good enough.
+Added a clipping rectangle to pbSimpleLayer, and modified the data preparation functions to cull any sprite which is outside that region from the subsequent drawing steps.  I set up an appropriately sized clipping region - for speed, the layer does not look at the size of each sprite to work out it's boundaries... so it is necessary to define a clipping region sufficiently larger than the camera to prevent sprites/tiles from vanishing as they approach the edges.  The results are that it now draws only 2028 tiles per frame and should use nearly stable CPU/GPU time regardless of the overall map size (it still needs to cull the outside sprites/tiles, but it won't send them to the GPU or canvas).
+
+I've been examining Phaser 2 classes with a mind to ripping off a bunch of the Frame.js type functionality to extend my sprite Atlas capabilities.  This lead me to a few issues that I need to resolve with Rich in regards to how the renderer will fit with Phaser 3 as a whole.  In particular, if I'm ripping off Phaser 2 code... won't that just get duplicated when Phaser 2 becomes the basis for Phaser 3, and where do I draw the line between what goes into the renderer vs what comes from the main Phaser project.
+To wrap my head around this whole area better, I created the following functional summary...
+
+Recap of the overall structure for Phaser 3 Renderer:
+
+- the Phaser 3 renderer uses layers to hold all drawing objects
+- within each layer, any sprites that draw from a common source texture will be batch processed (which is significantly faster than processing them individually)
+- the layers are stacked in a tree hierarchy (hence the recursive nature of the processing which gives us automatic depth-first evaluation of a tree)
+- layers in the hierarchy have a fixed depth relation with each other, but within each layer there is no guaranteed ordering (*see footnote)
+- this means the user should make decisions about his layers which permit most efficient batching given the z-order requirements of his game display
+- layers are extensions of transform objects, and the hierarchy logic and evaluation is run through the base class rather than the layer
+- ** second footnote
+- transform objects have parameters for rotation, translation, and scaling, which are accumulated during the depth-first evaluation (so a parent's rotation is automatically applied to all of it's children, and the parent/child combined rotation will be applied to grand-children, and so on)
+- no graphics get transformed until the final step when a sprite is actually drawn to screen at which point the accumulated transform matrix is applied once during the render
+- because layers derive from transform object, layers are also 'cameras' which can be embedded at any level in the hierarchy and scaled, rotated and translated
+
+*that's not exactly true, but the ordering is complex and hard to explain due to the way the algorithm batches sprites together.  Also it is possible to make a shader that 'clips' alpha at a certain threshold, and by combining that shader with the 'z' parameter of the pbTransformObject you get a different form of depth ordering - the soldiers demo uses this approach, and so does invaders (notice how the smoke images are raggedly clipped at the edges where it should be softly diffuse).
+
+** transform objects recurse to other transform objects to create the display hierarchy.  Layers have a secondary system which stores a list of other layers.  In this way we get a standard tree structure for transform objects, with optional horizontal layer lists at each layer type node.  I'm still deciding if that's a wonderful addition to the standard tree model, or completely unnecessary... I can't make my mind up from the simple examples we've built so far, it'll have to be a rather complex project to require that functionality.   Effectively you can parent a list of full display hierarchies from any layer, and can make certain guarantees about the processing and display order of the contents of all of them.  It also permits you to juggle multiple display hierarchies for example multiple cameras which need to swap priority without needing to adjust lots of pointers.
+
+Rich and I have discussed the possibility of testing the Phaser 3 renderer in a stripped down version of the current Phaser project.  We don't see any problem with trying this, and I suspect it will be very valuable in highlighting all the things which I haven't thought of yet!
+In preparation for this, Rich is going to strip Phaser of it's Pixi references for me, and I'm busy looking at the interface between Phaser and Pixi to try to anticipate problem areas.  I expect the biggest issues will be related to missing features and the layer system (which is a somewhat different approach to heirarchy and batching than the one Pixi has traditionally used).
+
+Further work on the "atlas Trimmed" demo in order to fully support this feature which is essential for Phaser.
+I realised that the first attempt would fail when rotating the pbTransformObject so I had to go back to the drawing board and work the maths through the drawing system from creation to actual drawing.  After a couple of false starts I have a demo that appears to be working correctly now.
+I used a new surface srcSize object per cell to calculate anchor points and trimmed sprite offsets for single sprites and batch jobs too.  srcSize is the original size of the image before trimming, it's required in this context because anchor points are a percentage of the srcSize, and offsets are offset from the left edge of the original srcSize too.  For surfaces that can't be trimmed yet (single sprites, gridded sprites) I've set srcSize to the same data as cellSourceSize (which is the size of the sprite in the actual texture, trimmed or not).
+Tested trimming system for scale invariance and non-central anchor points, then extended it to include 'single' sprite surfaces (where there's only one sprite in a surface but it has had white-space trimmed) and 'grid' sprite surfaces (where there are a number of cells laid out in a grid pattern, and each cell has been trimmed by the same amount).
+
+Added a render-to-texture to the graphics demo as a first test of a system to make my webgl graphics drawing functions compatible with html Canvas drawing - as far as possible.  The idea is to embed an rttTexture inside the graphics drawing object which will have it's own transform.  This will allow context changes very similar to the way Canvas works.
+
+Cleaned up pbWebGlTextures and created a new folder 'textures' to hold all texture related code.
+Cleaned up pbWebGl and broke it down into four new files to separate the methods based on the type of drawing and the data source.  This has separated a previously unmanageable huge pile of code into some easily handled and logically divided files.
+
+Commenced work in a Phaser dev branch fork (https://github.com/pjbaron/phaser/tree/dev) removing PIXI references and adding comments (prefixed with // PJBNOTE for easy Find) about the work that will need to be done to insert the new renderer into this project.
+Finished that after a few part-days in a row (it was too boring to do in a single sitting).  It's raised lots of questions to be answered about the future implementation and integration of the new renderer, which I've put into the PJBNOTE comments.
+Checked for missed PIXI references by rebuilding the dist/phaser.js and searching in it directly for uncommented PIXI statements.  Found a bunch and fixed them, I'm now reasonably certain that my fork is empty of PIXI references... next job is to define which classes from Phaser will need to be deprecated, what new classes might be needed, and which ones will need to change to fit the new renderer approach.
+
+Did a global search for PJBNOTE comments, and another for PIXI references, and merged the two to create the PJBNOTE.txt file.  This file lets me easily see all the parts of Phaser that need to be changed, and get a quick idea of how PIXI was being used previously.
+
+Created a new branch 'new_renderer' of the Phaser-sans-pixi fork and cleaned out all Pixi references from the build files.
+Modified the build files to bring all the new renderer files in when constructing /dist/phaser.js and verified that they're correctly included in that file.  This should now let us start to add references to the new renderer in all the places where I've added PJBNOTE comments.
+
+Started work on modifying Phaser to use the new renderer.  Rapidly hit a road-block in regards to which system should change when Phaser expects something from PIXI and the new renderer doesn't provide it in the same format as PIXI did.  Should I change Phaser to fit the renderer, the other way around, or a bit of both?  On hold until I've had a chance to discuss this in detail with Rich.
+
+
+
+
+Coming soon / TODO:
+
+Merge with Phaser 2.X
+Address all PJBNOTE comments in the Phaser source code where PIXI references have been removed, by modifying Phaser or the new renderer (or both) to work together.
+
+
+From Phaser:
+Tile maps in different formats (csv, json, cybernoid see sci fly.js) and more capable... src/tilemaps.  Optimise for webgl to avoid huge textures.  
+Grab the Frames class and use it for more advanced texture atlas handling.
+Support TexturePacker atlasses which use multiple images with one json file.
+
+
+SpriteDLight:
+Calculate a normal map and graphic for a 'perfect' sphere and plug it into the balls demo.
+Make a 'snooker' demo with really high quality balls.
+Set up a rendering pipeline/new shader to use the position of pbSprites to get the lighting offsets, yet render them to rttTextures and feed those to the pbSprite.
+Add occlusion to the spriteDLight shader (create new shaders so user has all options available).
+
+Modify pbSprite to accept the output from user shaders == Add capability for sprites to use the render-to-texture as a source but otherwise display as currently.
+
+Canvas:
+Fix all canvas demos (they got left behind during the recent API changes).
+Improve canvas implementation to use faster, cleaner classes and interfaces.
+
+New functions:
+Provide api function to permit async processing before allLoaded fires (Timer?)... for preloaders etc.
+Add API to simplify drawing to the texture.
+
+Alterations:
+Make texture dictionary handle GPU textures transparently to pbSurface etc. Assign a key when adding it then forget about the source.
+Try to find alternative to setting gl.viewport to the texture size... it requires everything else to be scaled by (screen size / texture size) to draw at the correct sizes.
+
+Update rttCamera and/or multiCamera demo to use new rtt sprites.
+
+Integrate the 'creature' drawing tricks into the primary render system with a few new API calls and a "drawing queue" system to allow the user to schedule a complicated series of drawings and system changes.
+
+The bump shader needs to handle different bump textures for different tiles... probably the best way to do this is to have a bump texture which parallels the tile texture (all tiles in the same positions in both textures).  I need to decide if I want bump mapping for wall tops (currently when it's on top of a wall it's using a flat shader for the lighting effect over-spill).
+
+The bump shader needs some work to permit a tile-map of different bump textures, currently it just tiles a single one for the whole ground area.
+
+Explore replacing the current "super" implementation with simple prototype declarations... for derived classes specify exactly and only the functions that are derived using the prototype syntax... is it possible to call super functions this way?  If this can work it'll reduce call overhead in the crucial drawing stack loops considerably.
+
+New Demos:
+Make a more impressive render-to-texture sprite demo... the distinguishing feature of this ability is the pre-render (otherwise it's just like cameras again... only transparent backgrounds ie. sprites...)  Maybe extend the rtt camera demo to use sprites??
+
+External tools and utilities:
+Test the demos in Cocoon.
+Add modification tools to the bump map editor so it's possible to edit the pseudo-3D image of the bump surface and generate the bump data image.  Extend the bump map editor to use the 'b' colour component to carry further information (height or reflectivity) to improve the power of this approach.  Carry those changes over into the shader code.
+
+Research:
+Look into "how to build shaders dynamically" (find a good structure) so we can have several shader effects in a single shader program and avoid the overhead of running them sequentially.
+
+Bugs:
+Fix the in-game bump shader (it's still shading the vertical component reversed - already fixed in the editor c# code).
+
+TODO:
+Find all 'TODO' code and commit comments and: make a full list in one place; prioritise the list; start knocking things off until it's all dealt with.
+
+- Pete
+
