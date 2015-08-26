@@ -12,7 +12,7 @@ function pbSprite()
     this.textureObject = null;
     this.surface = null;
     this.image = null;
-    this.transform = null;
+    this.transform = new pbTransformObject();
 }
 
 
@@ -32,7 +32,6 @@ pbSprite.prototype.createWithKey = function(_x, _y, _key, _layer)
     this.image.create(this.surface);
 
     // create a transform object for the image
-    this.transform = new pbTransformObject();
     this.transform.create(this.image, _x, _y);
 
     // if a layer is specified, add the new object as a child of it
@@ -52,7 +51,6 @@ pbSprite.prototype.createGPU = function(_x, _y, _texture, _layer)
     this.image.onGPU = _texture;
 
     // create a transform object for the image
-    this.transform = new pbTransformObject();
     this.transform.create(this.image, _x, _y);
 
     // if a layer is specified, add the new object as a child of it
