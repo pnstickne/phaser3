@@ -113,15 +113,15 @@ pbTransformObject.prototype.destroy = function()
 };
 
 
-pbTransformObject.prototype.update = function(_drawDictionary)
+pbTransformObject.prototype.update = function(_drawDictionary, parentTransform)
 {
 	if (this.image && this.image.is3D)
-		return this.update3D(_drawDictionary);
-	return this.update2D(_drawDictionary);
+		return this.update3D(_drawDictionary, parentTransform);
+	return this.update2D(_drawDictionary, parentTransform);
 };
 
 
-pbTransformObject.prototype.update2D = function(_drawDictionary)
+pbTransformObject.prototype.update2D = function(_drawDictionary, parentTransform)
 {
 	// console.log("pbTransformObject.update");
 
@@ -131,8 +131,8 @@ pbTransformObject.prototype.update2D = function(_drawDictionary)
 	pbMatrix3.setTransform(this.transform, this.x, this.y, this.angleInRadians, this.scaleX, this.scaleY);
 
 	// multiply with the transform matrix from my parent
-	if (this.parent && this.parent.transform)
-		pbMatrix3.setFastMultiply(this.transform, this.parent.transform);
+	if (parentTransform)
+		pbMatrix3.setFastMultiply(this.transform, parentTransform);
 	
 	// draw if this sprite has an image
 	if (this.image && this.visible)
@@ -147,7 +147,7 @@ pbTransformObject.prototype.update2D = function(_drawDictionary)
 			var child = this.children[c];
 
 			// update this child
-			if (!child.update(_drawDictionary))
+			if (!child.update(_drawDictionary, this.transform))
 			{
 				child.destroy();
 				this.removechildAt(c);
@@ -159,7 +159,7 @@ pbTransformObject.prototype.update2D = function(_drawDictionary)
 };
 
 
-pbTransformObject.prototype.update3D = function(_drawDictionary)
+pbTransformObject.prototype.update3D = function(_drawDictionary, parentTransform)
 {
 	// console.log("pbTransformObject.update3D");
 
@@ -169,13 +169,13 @@ pbTransformObject.prototype.update3D = function(_drawDictionary)
 	// set my own transform matrix
 	pbMatrix4.setTransform(this.transform, this.x, this.y, this.z, this.rx, this.ry, this.rz, this.scaleX, this.scaleY, this.scaleZ);
 	// multiply with the transform matrix from my parent
-	if (this.parent && this.parent.transform)
+	if (parentTransform)
 	{
 		// parent layer might not be using 3D, convert it's 2D transformation into 3D
-		if (this.parent.transform.length == 9)
-			pbMatrix4.setFastMultiply3(this.transform, this.parent.transform);
+		if (parentTransform.length == 9)
+			pbMatrix4.setFastMultiply3(this.transform, parentTransform);
 		else
-			pbMatrix4.setFastMultiply(this.transform, this.parent.transform);
+			pbMatrix4.setFastMultiply(this.transform, parentTransform);
 	}
 	
 	// draw if this sprite has an image
@@ -191,7 +191,7 @@ pbTransformObject.prototype.update3D = function(_drawDictionary)
 			var child = this.children[c];
 
 			// update this child
-			if (!child.update(_drawDictionary))
+			if (!child.update(_drawDictionary, this.transform))
 			{
 				child.destroy();
 				this.removechildAt(c);

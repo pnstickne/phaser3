@@ -166,7 +166,7 @@ pbPhaserRender.prototype.update = function()
 
 		// create the rootLayer container for all graphics
 		rootLayer = new layerClass();
-		rootLayer.create(null, pbPhaserRender.renderer, 0, 0, 0, 0, 1, 1);
+		rootLayer.create(null, null, 0, 0, 0, 0, 1, 1);
 		
 	    // call the game's boot callback if there's nothing left to load
 	    this.bootCallback.call( this.gameContext );

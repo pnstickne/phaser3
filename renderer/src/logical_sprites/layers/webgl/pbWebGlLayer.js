@@ -56,7 +56,7 @@ pbWebGlLayer.prototype.destroy = function()
 };
 
 
-pbWebGlLayer.prototype.update = function(_dictionary)
+pbWebGlLayer.prototype.update = function(_dictionary, parentTransform)
 {
 	// TODO: check this dictionary implementation works correctly with nested layers, nested sprites, and combinations of both
 	// prepare the dictionary
@@ -66,7 +66,7 @@ pbWebGlLayer.prototype.update = function(_dictionary)
 	this.drawDictionary.clear();
 
 	// call the pbBaseLayer update for this pbWebGlLayer to access the child hierarchy
-	this.super(pbWebGlLayer, 'update', this.drawDictionary);
+	this.super(pbWebGlLayer, 'update', this.drawDictionary, parentTransform);
 
 	if (this.clip)
 	{

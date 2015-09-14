@@ -138,12 +138,13 @@ pbRenderer.prototype.update = function( _callback, _context )
 	if ( _callback )
 		_callback.call( _context );
 
-	// update all object transforms then draw everything
-	if ( rootLayer )
-	{
-		// the rootLayer update will iterate the entire display list
-		rootLayer.update();
-	}
+	var camera = new pbCamera();
+	camera.create(0, 0, 0, 0, 1, 0.5);
+	camera.update([], rootLayer);
+
+	var camera = new pbCamera();
+	camera.create(0, 0, 0, 0, 0.5, 1);
+	camera.update([], rootLayer);
 
 	// postUpdate if required
 	if ( this.postUpdate )
